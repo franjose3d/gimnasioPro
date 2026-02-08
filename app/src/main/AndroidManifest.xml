@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <application
+        android:name=".GimnasioproApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.GimnasioPro">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.GimnasioPro">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".GimActivity"
+            android:exported="false"
+            android:label="@string/btn_gim"
+            android:theme="@style/Theme.GimnasioPro" />
+
+        <activity
+            android:name=".EjerciciosActivity"
+            android:exported="false"
+            android:label="@string/btn_ejercicios"
+            android:theme="@style/Theme.GimnasioPro" />
+
+        <activity
+            android:name=".ListaEjerciciosActivity"
+            android:exported="false"
+            android:label="@string/titulo_ejercicios"
+            android:theme="@style/Theme.GimnasioPro" />
+
+        <activity
+            android:name=".RutinasActivity"
+            android:exported="false"
+            android:label="@string/btn_rutinas"
+            android:theme="@style/Theme.GimnasioPro" />
+
+        <activity
+            android:name=".DetalleRutinaActivity"
+            android:exported="false"
+            android:label="@string/titulo_detalle_rutina"
+            android:theme="@style/Theme.GimnasioPro" />
+
+        <activity
+            android:name=".ProgresoActivity"
+            android:exported="false"
+            android:label="@string/btn_progreso"
+            android:theme="@style/Theme.GimnasioPro" />
+
+        <activity
+            android:name=".PersonalTrainerActivity"
+            android:exported="false"
+            android:label="@string/btn_personal_trainer"
+            android:theme="@style/Theme.GimnasioPro" />
+
+        <activity
+            android:name=".EntrenamientoActivity"
+            android:exported="false"
+            android:label="@string/titulo_entrenamiento"
+            android:theme="@style/Theme.GimnasioPro" />
+    </application>
+
+</manifest>

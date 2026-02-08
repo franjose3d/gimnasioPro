@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/dark_green_background"
+    android:fitsSystemWindows="true"
+    tools:context=".DetalleRutinaActivity">
+
+    <!-- Cabecera -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp"
+        android:paddingTop="32dp"
+        android:background="@color/dark_green_header">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/btn_volver"
+            android:src="@drawable/ic_arrow_back"
+            android:scaleType="centerInside"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/tvTituloRutina"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/titulo_detalle_rutina"
+            android:textColor="@color/electric_green_button"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/btnLimpiarRutina"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/btn_limpiar_rutina"
+            android:src="@android:drawable/ic_menu_delete"
+            android:padding="12dp" />
+
+    </LinearLayout>
+
+    <!-- Mensaje cuando la rutina está vacía -->
+    <LinearLayout
+        android:id="@+id/layoutRutinaVacia"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        android:padding="32dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/rutina_vacia_mensaje"
+            android:textColor="@color/light_text"
+            android:textSize="18sp"
+            android:textAlignment="center"
+            android:gravity="center" />
+
+        <Button
+            android:id="@+id/btnAgregarEjercicios"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/btn_agregar_ejercicios"
+            android:textColor="@color/text_on_button"
+            android:backgroundTint="@color/electric_green_button" />
+
+    </LinearLayout>
+
+    <!-- Lista de ejercicios -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvEjerciciosRutina"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="16dp"
+        android:clipToPadding="false" />
+
+    <!-- Botones de acción -->
+    <LinearLayout
+        android:id="@+id/layoutAcciones"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@color/dark_green_header">
+
+        <!-- Fila superior: Añadir y Borrar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/btnAnadirEjercicio"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="@string/btn_anadir"
+                android:textColor="@color/text_on_button"
+                android:backgroundTint="@color/electric_green_button" />
+
+            <Button
+                android:id="@+id/btnBorrarEjercicio"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="@string/btn_borrar"
+                android:textColor="@color/text_on_button"
+                android:backgroundTint="@color/red_delete" />
+
+        </LinearLayout>
+
+        <!-- Botón Iniciar (ancho completo) -->
+        <Button
+            android:id="@+id/btnIniciarRutina"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/btn_iniciar_rutina"
+            android:textColor="@color/text_on_button"
+            android:backgroundTint="@color/orange_accent" />
+
+    </LinearLayout>
+
+</LinearLayout>
+

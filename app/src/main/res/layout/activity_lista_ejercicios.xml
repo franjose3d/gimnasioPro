@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/dark_green_background"
+    android:fitsSystemWindows="true"
+    tools:context=".ListaEjerciciosActivity">
+
+    <!-- Header con título del grupo muscular -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/darker_green_header">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="16dp"
+            android:paddingTop="32dp">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_arrow_back"
+                android:contentDescription="@string/desc_btn_back"
+                android:scaleType="centerInside"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
+                android:id="@+id/tvGrupoMuscular"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="@string/titulo_ejercicios"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@color/electric_green_button" />
+        </LinearLayout>
+
+        <!-- Indicación de selección -->
+        <TextView
+            android:id="@+id/tvInfoSeleccion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="12dp"
+            android:text="@string/info_selecciona_ejercicios"
+            android:textSize="13sp"
+            android:textColor="@color/text_light_gray" />
+    </LinearLayout>
+
+    <!-- RecyclerView para la lista de ejercicios -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvEjercicios"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:clipToPadding="false" />
+
+        <TextView
+            android:id="@+id/tvNoEjercicios"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/no_ejercicios"
+            android:textSize="16sp"
+            android:textColor="@color/text_light_gray"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <!-- Barra de selección (visible cuando hay ejercicios seleccionados) -->
+    <LinearLayout
+        android:id="@+id/layoutSeleccion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp"
+        android:background="@color/darker_green_header"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tvContadorSeleccion"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/seleccion_contador_default"
+            android:textSize="14sp"
+            android:textColor="@color/electric_green_button" />
+
+        <Button
+            android:id="@+id/btnCancelarSeleccion"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:text="@string/btn_cancelar"
+            android:textSize="12sp"
+            android:textColor="@color/text_on_button"
+            android:backgroundTint="@color/gray_button" />
+
+        <Button
+            android:id="@+id/btnGuardarSeleccion"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="@string/btn_guardar"
+            android:textSize="12sp"
+            android:textColor="@color/text_on_button"
+            android:backgroundTint="@color/electric_green_button" />
+    </LinearLayout>
+
+
+</LinearLayout>
+

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- GimnasioPro Colors -->
+    <color name="dark_green_background">#FF1B4D3E</color>
+    <color name="electric_green_button">#FF39FF14</color>
+    <color name="electric_green_dark">#FF32CD32</color>
+    <color name="text_on_button">#FF000000</color>
+    <color name="text_on_background">#FFFFFFFF</color>
+    <color name="calendar_background">#FF0D2818</color>
+    <color name="darker_green_header">#FF0F3027</color>
+    <color name="card_background">#FF234D3A</color>
+    <color name="text_light_gray">#FFD0D0D0</color>
+    <color name="gray_button">#FF606060</color>
+    <color name="light_text">#FFCCCCCC</color>
+    <color name="dark_green_header">#FF0F3027</color>
+    <color name="orange_accent">#FFFF6B35</color>
+    <color name="rutina_asignada">#FF1E90FF</color>
+    <color name="rutina_vacia">#FF39FF14</color>
+    <color name="red_delete">#FFFF5252</color>
+</resources>

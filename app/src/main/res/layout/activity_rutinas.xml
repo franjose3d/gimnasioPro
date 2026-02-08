@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/dark_green_background"
+    android:fitsSystemWindows="true"
+    tools:context=".RutinasActivity">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp"
+        android:paddingTop="32dp"
+        android:background="@color/darker_green_header">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_back"
+            android:contentDescription="@string/btn_volver"
+            android:scaleType="centerInside"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="@string/titulo_rutinas"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@color/electric_green_button" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Fila 1: Rutina 1 y 2 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+
+                <Button
+                    android:id="@+id/btnRutina1"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="@string/rutina_1"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+
+                <Button
+                    android:id="@+id/btnRutina2"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:text="@string/rutina_2"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+            </LinearLayout>
+
+            <!-- Fila 2: Rutina 3 y 4 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+
+                <Button
+                    android:id="@+id/btnRutina3"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="@string/rutina_3"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+
+                <Button
+                    android:id="@+id/btnRutina4"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:text="@string/rutina_4"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+            </LinearLayout>
+
+            <!-- Fila 3: Rutina 5 y 6 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+
+                <Button
+                    android:id="@+id/btnRutina5"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="@string/rutina_5"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+
+                <Button
+                    android:id="@+id/btnRutina6"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:text="@string/rutina_6"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+            </LinearLayout>
+
+            <!-- Fila 4: Rutina 7 y 8 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+
+                <Button
+                    android:id="@+id/btnRutina7"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="@string/rutina_7"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+
+                <Button
+                    android:id="@+id/btnRutina8"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:text="@string/rutina_8"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+            </LinearLayout>
+
+            <!-- Fila 5: Rutina 9 y 10 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+
+                <Button
+                    android:id="@+id/btnRutina9"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="@string/rutina_9"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+
+                <Button
+                    android:id="@+id/btnRutina10"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:text="@string/rutina_10"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+            </LinearLayout>
+
+            <!-- Filas adicionales para rutinas 11-20 (ocultas inicialmente) -->
+            <LinearLayout
+                android:id="@+id/rowRutinas11_12"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone">
+
+                <Button
+                    android:id="@+id/btnRutina11"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="Rutina 11"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+
+                <Button
+                    android:id="@+id/btnRutina12"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:text="Rutina 12"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowRutinas13_14"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone">
+
+                <Button
+                    android:id="@+id/btnRutina13"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="Rutina 13"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+
+                <Button
+                    android:id="@+id/btnRutina14"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:text="Rutina 14"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowRutinas15_16"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone">
+
+                <Button
+                    android:id="@+id/btnRutina15"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="Rutina 15"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+
+                <Button
+                    android:id="@+id/btnRutina16"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:text="Rutina 16"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowRutinas17_18"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone">
+
+                <Button
+                    android:id="@+id/btnRutina17"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="Rutina 17"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+
+                <Button
+                    android:id="@+id/btnRutina18"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:text="Rutina 18"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rowRutinas19_20"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone">
+
+                <Button
+                    android:id="@+id/btnRutina19"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="Rutina 19"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+
+                <Button
+                    android:id="@+id/btnRutina20"
+                    android:layout_width="0dp"
+                    android:layout_height="110dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:text="Rutina 20"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+            </LinearLayout>
+
+            <!-- Botones Incrementar/Decrementar -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="24dp">
+
+                <Button
+                    android:id="@+id/btnDecrementarRutinas"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:text="-"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+
+                <TextView
+                    android:id="@+id/tvContadorRutinas"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginEnd="24dp"
+                    android:text="10"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/electric_green_button" />
+
+                <Button
+                    android:id="@+id/btnIncrementarRutinas"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:text="+"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/btn_rounded_green"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+    </LinearLayout>
+
+</LinearLayout>

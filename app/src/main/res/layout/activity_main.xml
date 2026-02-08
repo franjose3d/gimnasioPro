@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    android:background="@color/dark_green_background"
+    android:fitsSystemWindows="true"
+    tools:context=".MainActivity">
+
+    <Button
+        android:id="@+id/btnGim"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/btn_gim"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_on_button"
+        android:background="@drawable/btn_rounded_green"
+        android:elevation="8dp"
+        android:stateListAnimator="@null" />
+
+    <Button
+        android:id="@+id/btnEjercicios"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/btn_ejercicios"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_on_button"
+        android:background="@drawable/btn_rounded_green"
+        android:elevation="8dp"
+        android:stateListAnimator="@null" />
+
+    <Button
+        android:id="@+id/btnRutinas"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/btn_rutinas"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_on_button"
+        android:background="@drawable/btn_rounded_green"
+        android:elevation="8dp"
+        android:stateListAnimator="@null" />
+
+    <Button
+        android:id="@+id/btnProgreso"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/btn_progreso"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_on_button"
+        android:background="@drawable/btn_rounded_green"
+        android:elevation="8dp"
+        android:stateListAnimator="@null" />
+
+    <Button
+        android:id="@+id/btnPersonalTrainer"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="@string/btn_personal_trainer"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_on_button"
+        android:background="@drawable/btn_rounded_green"
+        android:elevation="8dp"
+        android:stateListAnimator="@null" />
+
+</LinearLayout>

@@ -1,0 +1,153 @@
+<resources>
+    <string name="app_name">Gimnasio Pro</string>
+
+    <!-- Main Menu Buttons -->
+    <string name="btn_gim">GIM</string>
+    <string name="btn_ejercicios">Ejercicios</string>
+    <string name="btn_rutinas">Rutinas</string>
+    <string name="btn_progreso">Progreso</string>
+    <string name="btn_personal_trainer">Personal-Trainer</string>
+
+    <!-- Content Descriptions -->
+    <string name="desc_btn_gim">Acceder al gimnasio</string>
+    <string name="desc_btn_ejercicios">Ver lista de ejercicios</string>
+    <string name="desc_btn_rutinas">Gestionar rutinas</string>
+    <string name="desc_btn_progreso">Ver progreso</string>
+    <string name="desc_btn_personal_trainer">Contactar entrenador personal</string>
+
+    <!-- GIM Screen -->
+    <string name="question_what_today">¿Qué Quieres Hacer Hoy?</string>
+    <string name="btn_mi_rutina">Mi-Rutina</string>
+    <string name="btn_nueva_rutina">Nueva-Rutina</string>
+
+    <!-- Calendar -->
+    <string name="desc_previous_month">Mes anterior</string>
+    <string name="desc_next_month">Mes siguiente</string>
+    <string name="day_mon">L</string>
+    <string name="day_tue">M</string>
+    <string name="day_wed">X</string>
+    <string name="day_thu">J</string>
+    <string name="day_fri">V</string>
+    <string name="day_sat">S</string>
+    <string name="day_sun">D</string>
+
+    <!-- Grupos Musculares -->
+    <string name="titulo_grupos_musculares">Grupos Musculares</string>
+    <string name="grupo_pectorales">Pectorales</string>
+    <string name="grupo_espalda">Espalda</string>
+    <string name="grupo_hombros">Hombros</string>
+    <string name="grupo_biceps">Bíceps y Antebrazo</string>
+    <string name="grupo_triceps">Tríceps</string>
+    <string name="grupo_abdominales">Abdominales</string>
+    <string name="grupo_piernas">Piernas</string>
+    <string name="grupo_gluteos">Glúteos</string>
+    <string name="grupo_gemelos">Gemelos</string>
+
+    <!-- Lista de Ejercicios -->
+    <string name="titulo_ejercicios">Ejercicios</string>
+    <string name="desc_btn_back">Volver atrás</string>
+    <string name="no_ejercicios">No hay ejercicios disponibles</string>
+    <string name="info_selecciona_ejercicios">Selecciona hasta 10 ejercicios para tu rutina</string>
+    <string name="cargando_ejercicios">Cargando ejercicios…</string>
+    <string name="error_cargar_ejercicios">Error al cargar ejercicios</string>
+
+    <!-- Rutinas -->
+    <string name="titulo_rutinas">Mis Rutinas</string>
+    <string name="rutina_1">Rutina 1</string>
+    <string name="rutina_2">Rutina 2</string>
+    <string name="rutina_3">Rutina 3</string>
+    <string name="rutina_4">Rutina 4</string>
+    <string name="rutina_5">Rutina 5</string>
+    <string name="rutina_6">Rutina 6</string>
+    <string name="rutina_7">Rutina 7</string>
+    <string name="rutina_8">Rutina 8</string>
+    <string name="rutina_9">Rutina 9</string>
+    <string name="rutina_10">Rutina 10</string>
+
+    <!-- Selección de ejercicios -->
+    <string name="seleccion_contador">%1$d seleccionados</string>
+    <string name="seleccion_contador_default">0 seleccionados</string>
+    <string name="btn_cancelar">Cancelar</string>
+    <string name="btn_guardar">Guardar</string>
+    <string name="max_ejercicios_alcanzado">Máximo 10 ejercicios por rutina</string>
+    <string name="selecciona_ejercicios">Selecciona al menos un ejercicio</string>
+    <string name="selecciona_rutina">Seleccionar rutina</string>
+    <string name="ejercicios_guardados">Ejercicios guardados correctamente</string>
+
+    <!-- Detalle de Rutina -->
+    <string name="titulo_detalle_rutina">Rutina</string>
+    <string name="btn_volver">Volver</string>
+    <string name="btn_limpiar_rutina">Limpiar rutina</string>
+    <string name="btn_agregar_ejercicios">Agregar ejercicios</string>
+    <string name="btn_editar_rutina">Editar</string>
+    <string name="btn_anadir">Añadir</string>
+    <string name="btn_borrar">Borrar</string>
+    <string name="btn_iniciar_rutina">Iniciar</string>
+    <string name="rutina_vacia_mensaje">Esta rutina está vacía.\nAgrega ejercicios para comenzar.</string>
+    <string name="confirmar_limpiar_rutina">¿Estás seguro de que quieres eliminar todos los ejercicios de esta rutina?</string>
+    <string name="rutina_limpiada">Rutina limpiada correctamente</string>
+    <string name="confirmar_borrar_ejercicios">¿Estás seguro de que quieres eliminar los ejercicios seleccionados?</string>
+    <string name="ejercicios_eliminados">%1$d ejercicio(s) eliminado(s)</string>
+    <string name="selecciona_ejercicios_borrar">Selecciona los ejercicios que deseas eliminar</string>
+
+    <!-- Colores adicionales -->
+    <string name="light_text">Texto claro</string>
+
+    <!-- Progreso Screen -->
+    <string name="titulo_progreso">Mi Progreso</string>
+    <string name="estadisticas_generales">Estadísticas Generales</string>
+    <string name="tiempo_entrenamiento_hoy">Tiempo Entrenamiento Hoy</string>
+    <string name="tiempo_entrenamiento_mes">Tiempo Total del Mes</string>
+    <string name="entrenamientos_mes">Entrenamientos del Mes</string>
+    <string name="entrenamientos_totales">Entrenamientos Totales</string>
+    <string name="tiempo_total_entrenamiento">Tiempo Total de Entrenamiento</string>
+    <string name="racha_actual">Racha Actual</string>
+    <string name="dias">días</string>
+    <string name="tiempo_inicial">0h 0min</string>
+    <string name="valor_cero_entero">0</string>
+    <string name="progreso_en_desarrollo">Más estadísticas detalladas próximamente</string>
+
+    <!-- Personal Trainer Screen -->
+    <string name="titulo_personal_trainer">Personal Trainer</string>
+    <string name="desc_personal_trainer_icon">Icono del Personal Trainer</string>
+    <string name="personal_trainer_bienvenida">¡Tu Entrenador Virtual!</string>
+    <string name="personal_trainer_descripcion">Muy pronto tendrás acceso a un asistente de inteligencia artificial que te ayudará a alcanzar tus objetivos de fitness de manera personalizada.</string>
+    <string name="funciones_proximamente">Funciones que estarán disponibles:</string>
+    <string name="funcion_asistente_ia">Asistente IA para resolver dudas</string>
+    <string name="funcion_rutinas_personalizadas">Rutinas personalizadas según tus objetivos</string>
+    <string name="funcion_consejos_nutricion">Consejos de nutrición</string>
+    <string name="funcion_seguimiento_progreso">Seguimiento inteligente de tu progreso</string>
+    <string name="personal_trainer_en_desarrollo">🚧 En desarrollo - Próximamente disponible</string>
+
+    <!-- Entrenamiento Screen -->
+    <string name="titulo_entrenamiento">Entrenamiento</string>
+    <string name="titulo_entrenamiento_con_numero">Entrenamiento - Rutina %1$d</string>
+    <string name="btn_finalizar_entrenamiento">Finalizar Entrenamiento</string>
+    <string name="label_rep">Rep.</string>
+    <string name="label_kg">Kg.</string>
+    <string name="label_rep1_kg">Rep.1 Kg.</string>
+    <string name="label_rep2_kg">Rep.2 Kg.</string>
+    <string name="label_rep3_kg">Rep.3 Kg.</string>
+    <string name="label_rep4_kg">Rep.4 Kg.</string>
+    <string name="label_rep5_kg">Rep.5 Kg.</string>
+    <string name="label_rep6_kg">Rep.6 Kg.</string>
+    <string name="desc_incrementar">Incrementar</string>
+    <string name="desc_decrementar">Decrementar</string>
+    <string name="desc_agregar_serie">Agregar serie</string>
+    <string name="desc_quitar_serie">Quitar serie</string>
+    <string name="entrenamiento_guardado">Entrenamiento guardado correctamente</string>
+    <string name="confirmar_salir_entrenamiento">¿Estás seguro de que quieres salir? Se perderán los datos del entrenamiento.</string>
+    <string name="titulo_ingresar_peso">Ingresar peso</string>
+    <string name="hint_peso">Peso en kg</string>
+    <string name="valor_cero">0</string>
+    <string name="nombre_ejercicio_placeholder">Nombre del ejercicio</string>
+
+    <!-- Progreso - Equilibrio muscular -->
+    <string name="equilibrio_muscular">Equilibrio Muscular</string>
+    <string name="porcentaje_cero">0%</string>
+
+    <!-- Diálogo cambiar nombre rutina -->
+    <string name="titulo_cambiar_nombre_rutina">Cambiar nombre</string>
+    <string name="hint_nombre_rutina">Nombre de la rutina</string>
+    <string name="nombre_rutina_actualizado">Nombre actualizado</string>
+</resources>

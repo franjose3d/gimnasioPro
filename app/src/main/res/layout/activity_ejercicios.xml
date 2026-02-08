@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/dark_green_background"
+    android:fitsSystemWindows="true"
+    tools:context=".EjerciciosActivity">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp"
+        android:paddingTop="32dp"
+        android:background="@color/darker_green_header">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_back"
+            android:contentDescription="@string/btn_volver"
+            android:scaleType="centerInside"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="@string/titulo_grupos_musculares"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@color/electric_green_button" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:rowCount="5"
+            android:padding="12dp"
+            android:useDefaultMargins="true"
+            android:alignmentMode="alignBounds">
+
+            <!-- Pectorales -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/btnPectorales"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/darker_green_header"
+                app:cardCornerRadius="100dp"
+                app:cardElevation="0dp">
+
+                <ImageView
+                    android:id="@+id/imgPectorales"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="@string/grupo_pectorales" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- Espalda -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/btnEspalda"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/darker_green_header"
+                app:cardCornerRadius="100dp"
+                app:cardElevation="0dp">
+
+                <ImageView
+                    android:id="@+id/imgEspalda"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="@string/grupo_espalda" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- Hombros -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/btnHombros"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/darker_green_header"
+                app:cardCornerRadius="100dp"
+                app:cardElevation="0dp">
+
+                <ImageView
+                    android:id="@+id/imgHombros"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="@string/grupo_hombros" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- Biceps -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/btnBiceps"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/darker_green_header"
+                app:cardCornerRadius="100dp"
+                app:cardElevation="0dp">
+
+                <ImageView
+                    android:id="@+id/imgBiceps"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="@string/grupo_biceps" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- Triceps -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/btnTriceps"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/darker_green_header"
+                app:cardCornerRadius="100dp"
+                app:cardElevation="0dp">
+
+                <ImageView
+                    android:id="@+id/imgTriceps"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="@string/grupo_triceps" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- Abdominales -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/btnAbdominales"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/darker_green_header"
+                app:cardCornerRadius="100dp"
+                app:cardElevation="0dp">
+
+                <ImageView
+                    android:id="@+id/imgAbdominales"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="@string/grupo_abdominales" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- Piernas -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/btnPiernas"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/darker_green_header"
+                app:cardCornerRadius="100dp"
+                app:cardElevation="0dp">
+
+                <ImageView
+                    android:id="@+id/imgPiernas"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="@string/grupo_piernas" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- Gluteos -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/btnGluteos"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/darker_green_header"
+                app:cardCornerRadius="100dp"
+                app:cardElevation="0dp">
+
+                <ImageView
+                    android:id="@+id/imgGluteos"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="@string/grupo_gluteos" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- Gemelos -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/btnGemelos"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/darker_green_header"
+                app:cardCornerRadius="100dp"
+                app:cardElevation="0dp">
+
+                <ImageView
+                    android:id="@+id/imgGemelos"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="@string/grupo_gemelos" />
+            </androidx.cardview.widget.CardView>
+
+        </GridLayout>
+    </ScrollView>
+
+</LinearLayout>
