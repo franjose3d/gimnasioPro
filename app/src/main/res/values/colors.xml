@@ -10,7 +10,7 @@
 
     <!-- GimnasioPro Colors -->
     <color name="dark_green_background">#FF1B4D3E</color>
-    <color name="electric_green_button">#FF39FF14</color>
+    <color name="electric_green_button">#68D955</color>
     <color name="electric_green_dark">#FF32CD32</color>
     <color name="text_on_button">#FF000000</color>
     <color name="text_on_background">#FFFFFFFF</color>

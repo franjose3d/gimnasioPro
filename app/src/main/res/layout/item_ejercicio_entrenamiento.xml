@@ -86,7 +86,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@android:drawable/btn_minus"
+                            android:src="@drawable/ic_minus"
                             android:scaleType="centerInside"
                             android:contentDescription="@string/desc_decrementar" />
 
@@ -108,7 +108,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@android:drawable/btn_plus"
+                            android:src="@drawable/ic_plus"
                             android:scaleType="centerInside"
                             android:contentDescription="@string/desc_incrementar" />
                     </LinearLayout>
@@ -144,7 +144,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@android:drawable/btn_minus"
+                            android:src="@drawable/ic_minus"
                             android:scaleType="centerInside"
                             android:contentDescription="@string/desc_decrementar" />
 
@@ -166,7 +166,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@android:drawable/btn_plus"
+                            android:src="@drawable/ic_plus"
                             android:scaleType="centerInside"
                             android:contentDescription="@string/desc_incrementar" />
                     </LinearLayout>
@@ -202,7 +202,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@android:drawable/btn_minus"
+                            android:src="@drawable/ic_minus"
                             android:scaleType="centerInside"
                             android:contentDescription="@string/desc_decrementar" />
 
@@ -224,7 +224,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@android:drawable/btn_plus"
+                            android:src="@drawable/ic_plus"
                             android:scaleType="centerInside"
                             android:contentDescription="@string/desc_incrementar" />
                     </LinearLayout>
@@ -302,7 +302,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@android:drawable/btn_minus"
+                            android:src="@drawable/ic_minus"
                             android:scaleType="centerInside"
                             android:contentDescription="@string/desc_decrementar" />
 
@@ -324,7 +324,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@android:drawable/btn_plus"
+                            android:src="@drawable/ic_plus"
                             android:scaleType="centerInside"
                             android:contentDescription="@string/desc_incrementar" />
                     </LinearLayout>
@@ -361,7 +361,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@android:drawable/btn_minus"
+                            android:src="@drawable/ic_minus"
                             android:scaleType="centerInside"
                             android:contentDescription="@string/desc_decrementar" />
 
@@ -383,7 +383,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@android:drawable/btn_plus"
+                            android:src="@drawable/ic_plus"
                             android:scaleType="centerInside"
                             android:contentDescription="@string/desc_incrementar" />
                     </LinearLayout>
@@ -420,7 +420,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@android:drawable/btn_minus"
+                            android:src="@drawable/ic_minus"
                             android:scaleType="centerInside"
                             android:contentDescription="@string/desc_decrementar" />
 
@@ -442,7 +442,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@android:drawable/btn_plus"
+                            android:src="@drawable/ic_plus"
                             android:scaleType="centerInside"
                             android:contentDescription="@string/desc_incrementar" />
                     </LinearLayout>
@@ -461,4 +461,3 @@
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>
-
