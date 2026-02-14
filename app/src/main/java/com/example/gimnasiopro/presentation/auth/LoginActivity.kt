@@ -11,10 +11,14 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.example.gimnasiopro.GimnasioproApplication
 import com.example.gimnasiopro.MainActivity
 import com.example.gimnasiopro.R
+import com.example.gimnasiopro.data.firestore.UserDataMigrationHelper
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
 
 /**
  * Activity de Login.
@@ -146,6 +150,9 @@ class LoginActivity : AppCompatActivity() {
                         "✅ Bienvenido ${user.email}",
                         Toast.LENGTH_SHORT
                     ).show()
+
+                    // Migrar datos del usuario a Firestore en background (no bloquea)
+                    migrarDatosUsuarioEnBackground()
 
                     irAMainActivity()
                 } else {
@@ -350,5 +357,51 @@ class LoginActivity : AppCompatActivity() {
         btnRegistrarse.isEnabled = !show
         etEmail.isEnabled = !show
         etPassword.isEnabled = !show
+    }
+
+    /**
+     * Migrar datos del usuario a Firestore en background
+     * No bloquea la UI, se ejecuta después del login
+     */
+    private fun migrarDatosUsuarioEnBackground() {
+        lifecycleScope.launch {
+            try {
+                val app = application as GimnasioproApplication
+                val migrationHelper = UserDataMigrationHelper(
+                    context = this@LoginActivity,
+                    rutinaRepository = app.rutinaRepository,
+                    registroEntrenamientoRepository = app.registroEntrenamientoRepository,
+                    rutinaDiaSemanaRepository = app.rutinaDiaSemanaRepository,
+                    estadisticaRepository = app.estadisticaRepository
+                )
+
+                // Solo migrar si no se ha migrado antes
+                if (!migrationHelper.datosYaMigrados()) {
+                    migrationHelper.migrarDatosUsuario().fold(
+                        onSuccess = { result ->
+                            android.util.Log.d(
+                                "LoginActivity",
+                                "✅ Datos migrados: ${result.rutinasMigradas} rutinas, " +
+                                        "${result.entrenamientosMigrados} entrenamientos"
+                            )
+                        },
+                        onFailure = { error ->
+                            android.util.Log.e(
+                                "LoginActivity",
+                                "⚠️ Error al migrar datos: ${error.message}",
+                                error
+                            )
+                            // No mostrar error al usuario, es en background
+                        }
+                    )
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(
+                    "LoginActivity",
+                    "⚠️ Error al iniciar migración: ${e.message}",
+                    e
+                )
+            }
+        }
     }
 }

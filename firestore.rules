@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==================== EJERCICIOS (Global) ====================
+    // Los ejercicios son globales, todos los usuarios autenticados pueden leerlos
+    // Solo pueden crear/editar ejercicios que ellos mismos crearon
+    match /ejercicios/{ejercicioId} {
+      // Cualquier usuario autenticado puede leer ejercicios
+      allow read: if request.auth != null;
+      
+      // Crear ejercicio: solo usuarios autenticados, debe incluir creadoPor
+      allow create: if request.auth != null && 
+                       request.resource.data.creadoPor == request.auth.uid;
+      
+      // Actualizar: solo el creador o si es predefinido (admin)
+      allow update: if request.auth != null && 
+                       (resource.data.creadoPor == request.auth.uid || 
+                        resource.data.esPredefinido == true);
+      
+      // Eliminar: solo el creador
+      allow delete: if request.auth != null && 
+                       resource.data.creadoPor == request.auth.uid;
+    }
+    
+    // ==================== USUARIOS ====================
+    // Cada usuario solo puede acceder a sus propios datos
+    match /users/{userId} {
+      // Solo el propio usuario puede leer/escribir sus datos
+      allow read, write: if request.auth != null && userId == request.auth.uid;
+      
+      // ==================== RUTINAS ====================
+      match /rutinas/{rutinaId} {
+        allow read, write: if request.auth != null && userId == request.auth.uid;
+      }
+      
+      // ==================== CALENDARIO ====================
+      match /calendario/{diaSemana} {
+        allow read, write: if request.auth != null && userId == request.auth.uid;
+      }
+      
+      // ==================== ENTRENAMIENTOS ====================
+      match /entrenamientos/{entrenamientoId} {
+        allow read, write: if request.auth != null && userId == request.auth.uid;
+      }
+      
+      // ==================== ESTADÍSTICAS ====================
+      match /estadisticas/{fecha} {
+        allow read, write: if request.auth != null && userId == request.auth.uid;
+      }
+    }
+    
+    // ==================== TRAINERS (Si se necesita en el futuro) ====================
+    // Los trainers pueden tener rutinas para sus clientes
+    match /trainers/{trainerId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && trainerId == request.auth.uid;
+      
+      match /rutinas/{rutinaId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && trainerId == request.auth.uid;
+      }
+    }
+  }
+}

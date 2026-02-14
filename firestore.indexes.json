@@ -1,0 +1,81 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "ejercicios",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "grupoMuscular",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nombre",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "entrenamientos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "fechaEntrenamiento",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "entrenamientos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "fechaEntrenamiento",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fechaEntrenamiento",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "estadisticas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "anio",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "mes",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "estadisticas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "fechaTimestamp",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "estadisticas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "fechaTimestamp",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fechaTimestamp",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
