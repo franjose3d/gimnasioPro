@@ -22,29 +22,53 @@ class EjercicioRepositoryHibrido(
 ) {
 
     /**
-     * Obtener todos los ejercicios.
+     * Flow de todos los ejercicios (compatible con el EjercicioRepository original).
+     */
+    val allEjercicios: Flow<List<Ejercicio>>
+        get() = obtenerTodosEjercicios()
+
+    /**
+     * Flow de todos los grupos musculares (compatible con el EjercicioRepository original).
+     */
+    val allGruposMusculares: Flow<List<String>>
+        get() = obtenerTodosGruposMusculares()
+
+
+    /**
+     * Obtener todos los ejercicios con sincronización híbrida.
      * Primero carga de Room, luego sincroniza con Firestore.
      */
-    fun getAllEjercicios(): Flow<List<Ejercicio>> = flow {
+    private fun obtenerTodosEjercicios(): Flow<List<Ejercicio>> = flow {
         // 1. Emitir datos locales primero (inmediato)
         val ejerciciosLocales = localRepository.allEjercicios.first()
-        emit(ejerciciosLocales)
 
-        // 2. Sincronizar con Firestore en background
+        // Si Room está vacío, no emitir lista vacía - esperar a Firebase
+        if (ejerciciosLocales.isNotEmpty()) {
+            emit(ejerciciosLocales)
+        }
+
+        // 2. Sincronizar con Firestore (crítico si Room está vacío)
         try {
             val ejerciciosRemotos = remoteRepository.getAllEjercicios().first()
             
-            // Convertir Firestore a Room y actualizar cache local
-            ejerciciosRemotos.forEach { ejercicioFirestore ->
-                val ejercicioRoom = ejercicioFirestore.toRoom()
-                localRepository.updateEjercicio(ejercicioRoom)
+            if (ejerciciosRemotos.isNotEmpty()) {
+                // Convertir Firestore a Room y actualizar cache local
+                ejerciciosRemotos.forEach { ejercicioFirestore ->
+                    val ejercicioRoom = ejercicioFirestore.toRoom()
+                    localRepository.updateEjercicio(ejercicioRoom)
+                }
+
+                // Emitir datos actualizados desde Room (para mantener consistencia)
+                emit(localRepository.allEjercicios.first())
+            } else if (ejerciciosLocales.isEmpty()) {
+                // Ni Room ni Firebase tienen datos - emitir vacío como último recurso
+                emit(emptyList())
             }
-            
-            // Emitir datos actualizados
-            emit(localRepository.allEjercicios.first())
         } catch (e: Exception) {
-            // Si falla la sincronización, mantener datos locales
-            // Log error pero no fallar
+            // Si falla la sincronización, usar datos locales o emitir vacío
+            if (ejerciciosLocales.isEmpty()) {
+                emit(emptyList()) // Forzar emisión para que UI sepa que terminó la carga
+            }
         }
     }
 
@@ -52,20 +76,29 @@ class EjercicioRepositoryHibrido(
      * Obtener ejercicios por grupo muscular.
      */
     fun getEjerciciosByGrupoMuscular(grupoMuscular: String): Flow<List<Ejercicio>> = flow {
-        // 1. Emitir datos locales primero
+        // 1. Emitir datos locales solo si no están vacíos
         val ejerciciosLocales = localRepository.getEjerciciosByGrupoMuscular(grupoMuscular).first()
-        emit(ejerciciosLocales)
+        if (ejerciciosLocales.isNotEmpty()) {
+            emit(ejerciciosLocales)
+        }
 
-        // 2. Sincronizar con Firestore
+        // 2. Sincronizar con Firestore (prioritario si Room vacío)
         try {
             val ejerciciosRemotos = remoteRepository.getEjerciciosByGrupoMuscular(grupoMuscular).first()
-            ejerciciosRemotos.forEach { ejercicioFirestore ->
-                val ejercicioRoom = ejercicioFirestore.toRoom()
-                localRepository.updateEjercicio(ejercicioRoom)
+
+            if (ejerciciosRemotos.isNotEmpty()) {
+                ejerciciosRemotos.forEach { ejercicioFirestore ->
+                    val ejercicioRoom = ejercicioFirestore.toRoom()
+                    localRepository.updateEjercicio(ejercicioRoom)
+                }
+                emit(localRepository.getEjerciciosByGrupoMuscular(grupoMuscular).first())
+            } else if (ejerciciosLocales.isEmpty()) {
+                emit(emptyList())
             }
-            emit(localRepository.getEjerciciosByGrupoMuscular(grupoMuscular).first())
         } catch (e: Exception) {
-            // Mantener datos locales si falla
+            if (ejerciciosLocales.isEmpty()) {
+                emit(emptyList())
+            }
         }
     }
 
@@ -91,9 +124,9 @@ class EjercicioRepositoryHibrido(
     }
 
     /**
-     * Obtener todos los grupos musculares.
+     * Obtener todos los grupos musculares (función con sincronización).
      */
-    fun getAllGruposMusculares(): Flow<List<String>> = flow {
+    private fun obtenerTodosGruposMusculares(): Flow<List<String>> = flow {
         val gruposLocales = localRepository.allGruposMusculares.first()
         emit(gruposLocales)
 
@@ -106,6 +139,107 @@ class EjercicioRepositoryHibrido(
         } catch (e: Exception) {
             // Mantener datos locales
         }
+    }
+
+    // =============== MÉTODOS DE ESCRITURA (delegados al local por ahora) ===============
+
+    /**
+     * Obtener ejercicio por ID.
+     */
+    suspend fun getEjercicioById(id: Long): Ejercicio? {
+        return localRepository.getEjercicioById(id)
+    }
+
+    /**
+     * Insertar nuevo ejercicio (local + Firestore).
+     */
+    suspend fun insertEjercicio(ejercicio: Ejercicio): Long {
+        // Insertar en local primero
+        val localId = localRepository.insertEjercicio(ejercicio)
+
+        // Intentar insertar en Firestore
+        try {
+            val ejercicioFirestore = ejercicio.toFirestoreModel()
+            remoteRepository.crearEjercicio(ejercicioFirestore)
+        } catch (e: Exception) {
+            // Log pero no fallar si Firestore falla
+        }
+
+        return localId
+    }
+
+    /**
+     * Insertar múltiples ejercicios.
+     */
+    suspend fun insertAllEjercicios(ejercicios: List<Ejercicio>) {
+        localRepository.insertAllEjercicios(ejercicios)
+
+        // Sincronizar con Firestore en background
+        try {
+            ejercicios.forEach { ejercicio ->
+                val ejercicioFirestore = ejercicio.toFirestoreModel()
+                remoteRepository.crearEjercicio(ejercicioFirestore)
+            }
+        } catch (e: Exception) {
+            // Log pero no fallar
+        }
+    }
+
+    /**
+     * Actualizar ejercicio.
+     */
+    suspend fun updateEjercicio(ejercicio: Ejercicio) {
+        localRepository.updateEjercicio(ejercicio)
+
+        try {
+            val ejercicioFirestore = ejercicio.toFirestoreModel()
+            remoteRepository.actualizarEjercicio(ejercicioFirestore)
+        } catch (e: Exception) {
+            // Log pero no fallar
+        }
+    }
+
+    /**
+     * Eliminar ejercicio.
+     */
+    suspend fun deleteEjercicio(ejercicio: Ejercicio) {
+        localRepository.deleteEjercicio(ejercicio)
+
+        try {
+            remoteRepository.eliminarEjercicio(ejercicio.id.toString())
+        } catch (e: Exception) {
+            // Log pero no fallar
+        }
+    }
+
+    /**
+     * Eliminar todos los ejercicios.
+     */
+    suspend fun deleteAllEjercicios() {
+        localRepository.deleteAllEjercicios()
+        // No eliminamos de Firestore ya que son datos compartidos
+    }
+
+    /**
+     * Obtener conteo de ejercicios.
+     */
+    suspend fun getEjerciciosCount(): Int {
+        return localRepository.getEjerciciosCount()
+    }
+
+    /**
+     * Obtener ejercicios por lista de IDs.
+     */
+    suspend fun getEjerciciosByIds(ids: List<Long>): List<Ejercicio> {
+        return localRepository.getEjerciciosByIds(ids)
+    }
+
+    /**
+     * Obtener conteo de ejercicios por grupo muscular.
+     * Se usa para calcular el equilibrio muscular.
+     */
+    suspend fun getConteoPorGrupoMuscular(ejercicioIds: List<Long>): Map<String, Int> {
+        return localRepository.getConteoPorGrupoMuscular(ejercicioIds)
     }
 }
 
@@ -124,7 +258,6 @@ fun EjercicioFirestore.toRoom(): Ejercicio {
 
 /**
  * Extension function para convertir Ejercicio (Room) a EjercicioFirestore
- * Se ha renombrado para evitar conflictos si ya existiera otra extensión similar.
  */
 fun Ejercicio.toFirestoreModel(): EjercicioFirestore {
     return EjercicioFirestore(

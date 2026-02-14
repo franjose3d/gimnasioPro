@@ -18,8 +18,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.gimnasiopro.components.EjercicioAdapter
 import com.example.gimnasiopro.data.DatabaseInitializer
 import com.example.gimnasiopro.data.Ejercicio
-import com.example.gimnasiopro.data.EjercicioRepository
 import com.example.gimnasiopro.data.RutinaRepository
+import com.example.gimnasiopro.data.firestore.EjercicioRepositoryHibrido
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -34,7 +34,7 @@ class ListaEjerciciosActivity : AppCompatActivity() {
         private const val MAX_EJERCICIOS = 10
     }
 
-    private lateinit var ejercicioRepository: EjercicioRepository
+    private lateinit var ejercicioRepository: EjercicioRepositoryHibrido
     private lateinit var rutinaRepository: RutinaRepository
     private lateinit var adapter: EjercicioAdapter
     private lateinit var tvGrupoMuscular: TextView
@@ -290,7 +290,7 @@ class ListaEjerciciosActivity : AppCompatActivity() {
                     android.util.Log.w("ListaEjercicios", "¡BD vacía! Forzando reinicialización...")
                     // Intentar reinicializar
                     val app = application as GimnasioproApplication
-                    DatabaseInitializer.initializeIfNeeded(this@ListaEjerciciosActivity, ejercicioRepository, app.rutinaRepository)
+                    DatabaseInitializer.initializeIfNeeded(this@ListaEjerciciosActivity, app.localEjercicioRepository, app.rutinaRepository)
                 }
 
                 ejercicioRepository.getEjerciciosByGrupoMuscular(grupoMuscular).collectLatest { ejercicios ->

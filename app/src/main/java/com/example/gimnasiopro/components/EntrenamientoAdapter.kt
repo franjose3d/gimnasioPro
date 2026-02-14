@@ -1,7 +1,9 @@
 package com.example.gimnasiopro.components
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.graphics.Paint
+import android.net.Uri
 import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +16,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gimnasiopro.R
 import com.example.gimnasiopro.data.EjercicioEntrenamiento
+import java.net.URLEncoder
 import java.util.Locale
 
 /**
@@ -49,15 +52,19 @@ class EntrenamientoAdapter(
     inner class EntrenamientoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val tvNombreEjercicio: TextView = itemView.findViewById(R.id.tvNombreEjercicio)
         private val checkboxCompletado: CheckBox = itemView.findViewById(R.id.checkboxCompletado)
+        private val btnVerVideo: ImageButton = itemView.findViewById(R.id.btnVerVideo)
 
-        // Series 1-3 (siempre visibles)
+        // Fila 1: Series 1 y 2 (siempre visibles)
         private val containerSerie1: LinearLayout = itemView.findViewById(R.id.containerSerie1)
         private val containerSerie2: LinearLayout = itemView.findViewById(R.id.containerSerie2)
-        private val containerSerie3: LinearLayout = itemView.findViewById(R.id.containerSerie3)
 
-        // Series 4-6 (opcionales)
-        private val containerSeriesExtra: LinearLayout = itemView.findViewById(R.id.containerSeriesExtra)
+        // Fila 2: Series 3 y 4 (ocultas inicialmente)
+        private val containerSeriesFila2: LinearLayout = itemView.findViewById(R.id.containerSeriesFila2)
+        private val containerSerie3: LinearLayout = itemView.findViewById(R.id.containerSerie3)
         private val containerSerie4: LinearLayout = itemView.findViewById(R.id.containerSerie4)
+
+        // Fila 3: Series 5 y 6 (ocultas inicialmente)
+        private val containerSeriesFila3: LinearLayout = itemView.findViewById(R.id.containerSeriesFila3)
         private val containerSerie5: LinearLayout = itemView.findViewById(R.id.containerSerie5)
         private val containerSerie6: LinearLayout = itemView.findViewById(R.id.containerSerie6)
 
@@ -101,6 +108,11 @@ class EntrenamientoAdapter(
                 onEjercicioCompletado(adapterPosition, isChecked)
             }
 
+            // Botón para ver video en YouTube
+            btnVerVideo.setOnClickListener {
+                abrirVideoYouTube(ejercicioEntrenamiento.ejercicio.nombre)
+            }
+
             // Actualizar visibilidad de series
             actualizarVisibilidadSeries(ejercicioEntrenamiento)
 
@@ -129,6 +141,22 @@ class EntrenamientoAdapter(
                     ejercicioEntrenamiento.seriesVisibles--
                     actualizarVisibilidadSeries(ejercicioEntrenamiento)
                 }
+            }
+        }
+
+        /**
+         * Abre YouTube con una búsqueda del ejercicio
+         */
+        private fun abrirVideoYouTube(nombreEjercicio: String) {
+            try {
+                val query = URLEncoder.encode("$nombreEjercicio ejercicio gym", "UTF-8")
+                val youtubeUrl = "https://www.youtube.com/results?search_query=$query"
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(youtubeUrl))
+                itemView.context.startActivity(intent)
+            } catch (e: Exception) {
+                // Si falla, intentar abrir solo YouTube
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com"))
+                itemView.context.startActivity(intent)
             }
         }
 
@@ -181,14 +209,22 @@ class EntrenamientoAdapter(
         private fun actualizarVisibilidadSeries(ejercicioEntrenamiento: EjercicioEntrenamiento) {
             val visibles = ejercicioEntrenamiento.seriesVisibles
 
-            // Series 4, 5, 6 están en containerSeriesExtra
-            if (visibles > 3) {
-                containerSeriesExtra.visibility = View.VISIBLE
+            // Fila 2: Series 3 y 4
+            if (visibles >= 3) {
+                containerSeriesFila2.visibility = View.VISIBLE
+                containerSerie3.visibility = View.VISIBLE
                 containerSerie4.visibility = if (visibles >= 4) View.VISIBLE else View.GONE
-                containerSerie5.visibility = if (visibles >= 5) View.VISIBLE else View.GONE
+            } else {
+                containerSeriesFila2.visibility = View.GONE
+            }
+
+            // Fila 3: Series 5 y 6
+            if (visibles >= 5) {
+                containerSeriesFila3.visibility = View.VISIBLE
+                containerSerie5.visibility = View.VISIBLE
                 containerSerie6.visibility = if (visibles >= 6) View.VISIBLE else View.GONE
             } else {
-                containerSeriesExtra.visibility = View.GONE
+                containerSeriesFila3.visibility = View.GONE
             }
 
             // Actualizar estado de botones

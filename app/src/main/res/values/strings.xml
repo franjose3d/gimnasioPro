@@ -3,10 +3,25 @@
 
     <!-- Main Menu Buttons -->
     <string name="btn_gim">GYM</string>
-    <string name="btn_ejercicios">Ejercicios</string>
-    <string name="btn_rutinas">Rutinas</string>
-    <string name="btn_progreso">Progreso</string>
+    <string name="btn_ejercicios">EJERCICIOS</string>
+    <string name="btn_rutinas">RUTINAS</string>
+    <string name="btn_progreso">PROGRESO</string>
     <string name="btn_personal_trainer">Personal-Trainer</string>
+
+    <!-- Main Screen New Design -->
+    <string name="greeting_hello">HOLA,</string>
+    <string name="greeting_motivation">¡A DARLE!</string>
+    <string name="default_user_name">USUARIO</string>
+    <string name="racha_title">Racha de %1$d Días</string>
+    <string name="racha_message">¡No pares ahora!</string>
+    <string name="subtitle_biblioteca">BIBLIOTECA</string>
+    <string name="subtitle_mis_planes">MIS PLANES</string>
+    <string name="gym_subtitle">Sede Central • Abierto</string>
+    <string name="btn_registrate">REGÍSTRATE</string>
+    <string name="subtitle_crear_cuenta">INICIAR SESIÓN</string>
+    <string name="desc_notifications">Notificaciones</string>
+    <string name="desc_user_photo">Foto de perfil</string>
+
 
     <!-- Content Descriptions -->
     <string name="desc_btn_gim">Acceder al gimnasio</string>
@@ -14,6 +29,7 @@
     <string name="desc_btn_rutinas">Gestionar rutinas</string>
     <string name="desc_btn_progreso">Ver progreso</string>
     <string name="desc_btn_personal_trainer">Contactar entrenador personal</string>
+    <string name="desc_ver_video">Ver video del ejercicio en YouTube</string>
 
     <!-- GIM Screen -->
     <string name="question_what_today">¿Qué Quieres Hacer Hoy?</string>

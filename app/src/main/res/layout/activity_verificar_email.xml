@@ -28,7 +28,7 @@
             android:text="Verifica tu email"
             android:textSize="28sp"
             android:textStyle="bold"
-            android:textColor="@color/electric_green_button"
+            android:textColor="@color/accent_blue"
             android:gravity="center"
             android:layout_marginBottom="16dp" />
 
@@ -51,7 +51,7 @@
             android:text="ejemplo@gmail.com"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="@color/electric_green_button"
+            android:textColor="@color/accent_blue"
             android:gravity="center"
             android:layout_marginBottom="32dp" />
 
@@ -60,7 +60,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:padding="20dp"
             android:layout_marginBottom="24dp">
 
@@ -135,7 +135,7 @@
             android:textColor="@color/text_on_button"
             android:textStyle="bold"
             android:textSize="16sp"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:elevation="8dp"
             android:stateListAnimator="@null"
             android:layout_marginBottom="12dp" />
@@ -149,7 +149,7 @@
             android:textColor="@color/text_on_button"
             android:textStyle="bold"
             android:textSize="16sp"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:elevation="8dp"
             android:stateListAnimator="@null"
             android:layout_marginBottom="12dp" />

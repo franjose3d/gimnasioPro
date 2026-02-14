@@ -38,7 +38,7 @@
             android:layout_marginStart="8dp"
             android:layout_weight="1"
             android:text="@string/btn_gim"
-            android:textColor="@color/electric_green_button"
+            android:textColor="@color/accent_blue"
             android:textSize="22sp"
             android:textStyle="bold" />
     </LinearLayout>
@@ -78,7 +78,7 @@
             android:layout_height="60dp"
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:elevation="8dp"
             android:stateListAnimator="@null"
             android:text="@string/btn_mi_rutina"
@@ -92,7 +92,7 @@
             android:layout_height="60dp"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:elevation="8dp"
             android:stateListAnimator="@null"
             android:text="@string/btn_nueva_rutina"

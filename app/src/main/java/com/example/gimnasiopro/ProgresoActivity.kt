@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.gimnasiopro.data.EstadisticaRepository
 import com.example.gimnasiopro.data.RegistroEntrenamientoRepository
-import com.example.gimnasiopro.data.EjercicioRepository
+import com.example.gimnasiopro.data.firestore.EjercicioRepositoryHibrido
 import kotlinx.coroutines.launch
 
 /**
@@ -19,7 +19,7 @@ class ProgresoActivity : AppCompatActivity() {
 
     private lateinit var estadisticaRepository: EstadisticaRepository
     private lateinit var registroRepository: RegistroEntrenamientoRepository
-    private lateinit var ejercicioRepository: EjercicioRepository
+    private lateinit var ejercicioRepository: EjercicioRepositoryHibrido
 
     private lateinit var tvTiempoHoy: TextView
     private lateinit var tvTiempoMes: TextView

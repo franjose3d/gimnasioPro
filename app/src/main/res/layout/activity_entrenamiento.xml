@@ -38,7 +38,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="@string/titulo_entrenamiento"
-            android:textColor="@color/electric_green_button"
+            android:textColor="@color/accent_blue"
             android:textSize="20sp"
             android:textStyle="bold" />
 

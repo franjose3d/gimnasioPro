@@ -38,7 +38,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="@string/titulo_detalle_rutina"
-            android:textColor="@color/electric_green_button"
+            android:textColor="@color/accent_blue"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -116,7 +116,7 @@
                 android:layout_marginEnd="8dp"
                 android:text="@string/btn_anadir"
                 android:textColor="@color/text_on_button"
-                android:backgroundTint="@color/electric_green_button" />
+                android:backgroundTint="@color/accent_purple" />
 
             <Button
                 android:id="@+id/btnBorrarEjercicio"
@@ -138,7 +138,7 @@
             android:layout_marginTop="12dp"
             android:text="@string/btn_iniciar_rutina"
             android:textColor="@color/text_on_button"
-            android:backgroundTint="@color/orange_accent" />
+            android:backgroundTint="@color/accent_green_dark" />
 
     </LinearLayout>
 

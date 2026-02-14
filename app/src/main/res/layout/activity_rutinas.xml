@@ -39,7 +39,7 @@
             android:text="@string/titulo_rutinas"
             android:textSize="22sp"
             android:textStyle="bold"
-            android:textColor="@color/electric_green_button" />
+            android:textColor="@color/accent_blue" />
     </LinearLayout>
 
     <LinearLayout
@@ -443,7 +443,7 @@
                     android:textSize="32sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_on_button"
-                    android:background="@drawable/btn_rounded_green"
+                    android:background="@drawable/bg_card_trainer"
                     android:elevation="8dp"
                     android:stateListAnimator="@null" />
 
@@ -456,7 +456,7 @@
                     android:text="10"
                     android:textSize="24sp"
                     android:textStyle="bold"
-                    android:textColor="@color/electric_green_button" />
+                    android:textColor="@color/accent_blue" />
 
                 <Button
                     android:id="@+id/btnIncrementarRutinas"
@@ -466,7 +466,7 @@
                     android:textSize="32sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_on_button"
-                    android:background="@drawable/btn_rounded_green"
+                    android:background="@drawable/bg_card_trainer"
                     android:elevation="8dp"
                     android:stateListAnimator="@null" />
 

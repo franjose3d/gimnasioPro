@@ -46,7 +46,7 @@
                 android:text="@string/titulo_ejercicios"
                 android:textSize="22sp"
                 android:textStyle="bold"
-                android:textColor="@color/electric_green_button" />
+                android:textColor="@color/accent_blue" />
         </LinearLayout>
 
         <!-- Indicación de selección -->
@@ -104,7 +104,7 @@
             android:textSize="32sp"
             android:textStyle="bold"
             android:textColor="@color/text_on_button"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:elevation="8dp"
             android:stateListAnimator="@null" />
 
@@ -119,7 +119,7 @@
             android:textSize="32sp"
             android:textStyle="bold"
             android:textColor="@color/text_on_button"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:elevation="8dp"
             android:stateListAnimator="@null" />
     </LinearLayout>

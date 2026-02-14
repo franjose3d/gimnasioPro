@@ -13,12 +13,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gimnasiopro.components.EntrenamientoAdapter
 import com.example.gimnasiopro.data.EjercicioEntrenamiento
-import com.example.gimnasiopro.data.EjercicioRepository
 import com.example.gimnasiopro.data.EstadisticaRepository
 import com.example.gimnasiopro.data.RegistroEntrenamiento
 import com.example.gimnasiopro.data.RegistroEntrenamientoRepository
 import com.example.gimnasiopro.data.RutinaRepository
 import com.example.gimnasiopro.data.SerieEntrenamiento
+import com.example.gimnasiopro.data.firestore.EjercicioRepositoryHibrido
 import kotlinx.coroutines.launch
 
 /**
@@ -31,7 +31,7 @@ class EntrenamientoActivity : AppCompatActivity() {
         const val EXTRA_NUMERO_RUTINA = "extra_numero_rutina"
     }
 
-    private lateinit var ejercicioRepository: EjercicioRepository
+    private lateinit var ejercicioRepository: EjercicioRepositoryHibrido
     private lateinit var rutinaRepository: RutinaRepository
     private lateinit var registroRepository: RegistroEntrenamientoRepository
     private lateinit var estadisticaRepository: EstadisticaRepository

@@ -17,7 +17,7 @@
             android:text="Registro Personal Trainer"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="@color/electric_green_button"
+            android:textColor="@color/accent_blue"
             android:gravity="center"
             android:layout_marginBottom="24dp" />
 
@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:text="AUTENTICACION"
             android:textSize="16sp"
-            android:textColor="@color/electric_green_button"
+            android:textColor="@color/accent_blue"
             android:textStyle="bold"
             android:layout_marginBottom="12dp" />
 
@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:text="Email"
             android:textSize="14sp"
-            android:textColor="@color/electric_green_button"
+            android:textColor="@color/accent_blue"
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 
@@ -46,7 +46,7 @@
             android:hint="ejemplo@gmail.com"
             android:textColor="#000000"
             android:textColorHint="#808080"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:padding="12dp"
             android:inputType="textEmailAddress"
             android:maxLines="1"
@@ -57,7 +57,7 @@
             android:layout_height="wrap_content"
             android:text="Contraseña"
             android:textSize="14sp"
-            android:textColor="@color/electric_green_button"
+            android:textColor="@color/accent_blue"
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 
@@ -68,7 +68,7 @@
             android:hint="Minimo 6 caracteres"
             android:textColor="#000000"
             android:textColorHint="#808080"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:padding="12dp"
             android:inputType="textPassword"
             android:maxLines="1"
@@ -79,7 +79,7 @@
             android:layout_height="wrap_content"
             android:text="Confirmar contraseña"
             android:textSize="14sp"
-            android:textColor="@color/electric_green_button"
+            android:textColor="@color/accent_blue"
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 
@@ -90,7 +90,7 @@
             android:hint="Repite la contraseña"
             android:textColor="#000000"
             android:textColorHint="#808080"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:padding="12dp"
             android:inputType="textPassword"
             android:maxLines="1"
@@ -101,7 +101,7 @@
             android:layout_height="wrap_content"
             android:text="DATOS PERSONALES"
             android:textSize="16sp"
-            android:textColor="@color/electric_green_button"
+            android:textColor="@color/accent_blue"
             android:textStyle="bold"
             android:layout_marginBottom="12dp" />
 
@@ -110,7 +110,7 @@
             android:layout_height="wrap_content"
             android:text="Nombre y apellidos"
             android:textSize="14sp"
-            android:textColor="@color/electric_green_button"
+            android:textColor="@color/accent_blue"
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 
@@ -121,7 +121,7 @@
             android:hint="Ej: Francisco Jose Garcia"
             android:textColor="#000000"
             android:textColorHint="#808080"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:padding="12dp"
             android:inputType="textPersonName"
             android:maxLines="1"
@@ -132,7 +132,7 @@
             android:layout_height="wrap_content"
             android:text="DNI / NIE"
             android:textSize="14sp"
-            android:textColor="@color/electric_green_button"
+            android:textColor="@color/accent_blue"
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 
@@ -143,7 +143,7 @@
             android:hint="Ej: 12345678A"
             android:textColor="#000000"
             android:textColorHint="#808080"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:padding="12dp"
             android:inputType="textCapCharacters"
             android:maxLength="9"
@@ -155,7 +155,7 @@
             android:layout_height="wrap_content"
             android:text="Ubicacion"
             android:textSize="14sp"
-            android:textColor="@color/electric_green_button"
+            android:textColor="@color/accent_blue"
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 
@@ -166,7 +166,7 @@
             android:hint="Poblacion"
             android:textColor="#000000"
             android:textColorHint="#808080"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:padding="12dp"
             android:inputType="textPersonName"
             android:maxLines="1"
@@ -179,7 +179,7 @@
             android:hint="Municipio"
             android:textColor="#000000"
             android:textColorHint="#808080"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:padding="12dp"
             android:inputType="textPersonName"
             android:maxLines="1"
@@ -190,7 +190,7 @@
             android:layout_height="wrap_content"
             android:text="Telefono de contacto"
             android:textSize="14sp"
-            android:textColor="@color/electric_green_button"
+            android:textColor="@color/accent_blue"
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 
@@ -199,7 +199,7 @@
             android:layout_height="50dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:layout_marginBottom="16dp">
@@ -243,7 +243,7 @@
             android:hint="Cuentanos sobre tu experiencia como entrenador..."
             android:textColor="#000000"
             android:textColorHint="#808080"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:padding="12dp"
             android:gravity="top|start"
             android:inputType="textCapSentences|textMultiLine"
@@ -271,7 +271,7 @@
                 android:id="@+id/ivfotoPerfil"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
-                android:background="@drawable/btn_rounded_green"
+                android:background="@drawable/bg_card_trainer"
                 android:scaleType="centerCrop"
                 android:src="@android:drawable/ic_menu_gallery"
                 android:contentDescription="Foto de perfil" />
@@ -284,7 +284,7 @@
                 android:layout_marginStart="16dp"
                 android:text="Seleccionar foto"
                 android:textColor="@color/text_on_button"
-                android:background="@drawable/btn_rounded_green"
+                android:background="@drawable/bg_card_trainer"
                 android:textSize="14sp" />
         </LinearLayout>
 
@@ -312,7 +312,7 @@
                 android:hint="Precio"
                 android:textColor="#000000"
                 android:textColorHint="#808080"
-                android:background="@drawable/btn_rounded_green"
+                android:background="@drawable/bg_card_trainer"
                 android:padding="12dp"
                 android:inputType="numberDecimal"
                 android:maxLines="1" />
@@ -369,7 +369,7 @@
             android:textColor="@color/text_on_button"
             android:textStyle="bold"
             android:textSize="16sp"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:elevation="8dp"
             android:stateListAnimator="@null" />
 

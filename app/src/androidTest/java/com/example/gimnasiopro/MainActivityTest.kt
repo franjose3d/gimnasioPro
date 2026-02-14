@@ -24,9 +24,11 @@ import org.junit.runner.RunWith
 
 /**
  * Tests instrumentados para MainActivity.
- * Verifica que el layout se muestra correctamente y los botones funcionan.
+ * Verifica que el layout se muestra correctamente y las cards funcionan.
  *
  * Principio TDD: Estos tests definen el comportamiento esperado de la UI.
+ *
+ * NOTA: El layout fue rediseñado de botones a cards.
  */
 @RunWith(AndroidJUnit4::class)
 class MainActivityTest {
@@ -60,69 +62,110 @@ class MainActivityTest {
     // ==================== LAYOUT TESTS ====================
 
     @Test
-    fun layout_shouldDisplayAllFiveButtons() {
-        onView(withId(R.id.btnGim)).check(matches(isDisplayed()))
-        onView(withId(R.id.btnEjercicios)).check(matches(isDisplayed()))
-        onView(withId(R.id.btnRutinas)).check(matches(isDisplayed()))
-        onView(withId(R.id.btnProgreso)).check(matches(isDisplayed()))
-        onView(withId(R.id.btnPersonalTrainer)).check(matches(isDisplayed()))
+    fun layout_shouldDisplayAllCards() {
+        onView(withId(R.id.cardGym)).check(matches(isDisplayed()))
+        onView(withId(R.id.cardEjercicios)).check(matches(isDisplayed()))
+        onView(withId(R.id.cardRutinas)).check(matches(isDisplayed()))
+        onView(withId(R.id.cardProgreso)).check(matches(isDisplayed()))
+        onView(withId(R.id.cardRegistrate)).check(matches(isDisplayed()))
     }
 
     @Test
-    fun layout_allButtonsShouldBeEnabled() {
-        onView(withId(R.id.btnGim)).check(matches(isEnabled()))
-        onView(withId(R.id.btnEjercicios)).check(matches(isEnabled()))
-        onView(withId(R.id.btnRutinas)).check(matches(isEnabled()))
-        onView(withId(R.id.btnProgreso)).check(matches(isEnabled()))
-        onView(withId(R.id.btnPersonalTrainer)).check(matches(isEnabled()))
+    fun layout_shouldDisplayHeader() {
+        onView(withId(R.id.tvUserName)).check(matches(isDisplayed()))
+        onView(withId(R.id.btnNotifications)).check(matches(isDisplayed()))
     }
 
     @Test
-    fun layout_buttonsShouldHaveCorrectText() {
-        onView(withId(R.id.btnGim)).check(matches(withTextIgnoreCase("GIM")))
-        onView(withId(R.id.btnEjercicios)).check(matches(withTextIgnoreCase("Ejercicios")))
-        onView(withId(R.id.btnRutinas)).check(matches(withTextIgnoreCase("Rutinas")))
-        onView(withId(R.id.btnProgreso)).check(matches(withTextIgnoreCase("Progreso")))
-        onView(withId(R.id.btnPersonalTrainer)).check(matches(withTextIgnoreCase("Personal-Trainer")))
+    fun layout_shouldDisplayRachaCard() {
+        onView(withId(R.id.cardRacha)).check(matches(isDisplayed()))
+        onView(withId(R.id.tvRachaTitle)).check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun layout_allCardsShouldBeEnabled() {
+        onView(withId(R.id.cardGym)).check(matches(isEnabled()))
+        onView(withId(R.id.cardEjercicios)).check(matches(isEnabled()))
+        onView(withId(R.id.cardRutinas)).check(matches(isEnabled()))
+        onView(withId(R.id.cardProgreso)).check(matches(isEnabled()))
+        onView(withId(R.id.cardRegistrate)).check(matches(isEnabled()))
     }
 
     // ==================== NAVIGATION TESTS ====================
 
     @Test
-    fun btnGim_whenClicked_shouldNavigateToGimActivity() {
+    fun cardGym_whenClicked_shouldNavigateToGimActivity() {
         Intents.init()
         try {
-            onView(withId(R.id.btnGim)).perform(click())
+            onView(withId(R.id.cardGym)).perform(click())
             Intents.intended(hasComponent(GimActivity::class.java.name))
         } finally {
             Intents.release()
         }
     }
 
-    // ==================== BUTTON CLICK TESTS ====================
-
     @Test
-    fun btnGim_shouldBeClickable() {
-        onView(withId(R.id.btnGim)).perform(click())
+    fun cardEjercicios_whenClicked_shouldNavigateToEjerciciosActivity() {
+        Intents.init()
+        try {
+            onView(withId(R.id.cardEjercicios)).perform(click())
+            Intents.intended(hasComponent(EjerciciosActivity::class.java.name))
+        } finally {
+            Intents.release()
+        }
     }
 
     @Test
-    fun btnEjercicios_shouldBeClickable() {
-        onView(withId(R.id.btnEjercicios)).perform(click())
+    fun cardRutinas_whenClicked_shouldNavigateToRutinasActivity() {
+        Intents.init()
+        try {
+            onView(withId(R.id.cardRutinas)).perform(click())
+            Intents.intended(hasComponent(RutinasActivity::class.java.name))
+        } finally {
+            Intents.release()
+        }
     }
 
     @Test
-    fun btnRutinas_shouldBeClickable() {
-        onView(withId(R.id.btnRutinas)).perform(click())
+    fun cardProgreso_whenClicked_shouldNavigateToProgresoActivity() {
+        Intents.init()
+        try {
+            onView(withId(R.id.cardProgreso)).perform(click())
+            Intents.intended(hasComponent(ProgresoActivity::class.java.name))
+        } finally {
+            Intents.release()
+        }
+    }
+
+    // ==================== CARD CLICK TESTS ====================
+
+    @Test
+    fun cardGym_shouldBeClickable() {
+        onView(withId(R.id.cardGym)).perform(click())
     }
 
     @Test
-    fun btnProgreso_shouldBeClickable() {
-        onView(withId(R.id.btnProgreso)).perform(click())
+    fun cardEjercicios_shouldBeClickable() {
+        onView(withId(R.id.cardEjercicios)).perform(click())
     }
 
     @Test
-    fun btnPersonalTrainer_shouldBeClickable() {
-        onView(withId(R.id.btnPersonalTrainer)).perform(click())
+    fun cardRutinas_shouldBeClickable() {
+        onView(withId(R.id.cardRutinas)).perform(click())
+    }
+
+    @Test
+    fun cardProgreso_shouldBeClickable() {
+        onView(withId(R.id.cardProgreso)).perform(click())
+    }
+
+    @Test
+    fun cardRegistrate_shouldBeClickable() {
+        onView(withId(R.id.cardRegistrate)).perform(click())
+    }
+
+    @Test
+    fun btnNotifications_shouldBeClickable() {
+        onView(withId(R.id.btnNotifications)).perform(click())
     }
 }

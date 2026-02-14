@@ -9,6 +9,8 @@ import com.example.gimnasiopro.data.GymDatabase
 import com.example.gimnasiopro.data.RegistroEntrenamientoRepository
 import com.example.gimnasiopro.data.RutinaRepository
 import com.example.gimnasiopro.data.RutinaDiaSemanaRepository
+import com.example.gimnasiopro.data.firestore.EjercicioFirestoreRepository
+import com.example.gimnasiopro.data.firestore.EjercicioRepositoryHibrido
 import com.example.gimnasiopro.data.firestore.FirestoreInitializer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,10 +32,22 @@ class GimnasioproApplication : Application() {
         GymDatabase.getDatabase(this)
     }
 
-    // Lazy initialization del repositorio de ejercicios
-    val ejercicioRepository: EjercicioRepository by lazy {
-        Log.d(TAG, "Inicializando repositorio de ejercicios...")
+    // Repositorio local (Room) - solo para cache y debugging
+    val localEjercicioRepository: EjercicioRepository by lazy {
+        Log.d(TAG, "Inicializando repositorio local de ejercicios...")
         EjercicioRepository(database.ejercicioDao())
+    }
+
+    // Repositorio remoto (Firestore)
+    private val remoteEjercicioRepository: EjercicioFirestoreRepository by lazy {
+        Log.d(TAG, "Inicializando repositorio remoto de ejercicios...")
+        EjercicioFirestoreRepository()
+    }
+
+    // Repositorio híbrido (combina Room + Firestore)
+    val ejercicioRepository: EjercicioRepositoryHibrido by lazy {
+        Log.d(TAG, "Inicializando repositorio híbrido de ejercicios...")
+        EjercicioRepositoryHibrido(localEjercicioRepository, remoteEjercicioRepository)
     }
 
     // Lazy initialization del repositorio de rutinas
@@ -63,19 +77,19 @@ class GimnasioproApplication : Application() {
     // Scope para operaciones en background
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    // Firestore Initializer
+    // Firestore Initializer (usa el repo local para inicialización)
     val firestoreInitializer: FirestoreInitializer by lazy {
-        FirestoreInitializer(this, ejercicioRepository)
+        FirestoreInitializer(this, localEjercicioRepository)
     }
 
     override fun onCreate() {
         super.onCreate()
-        Log.d(TAG, "Application onCreate - iniciando inicialización de BD")
-        
-        // Inicializar la base de datos local con los ejercicios y rutinas predefinidas
-        DatabaseInitializer.initializeIfNeeded(this, ejercicioRepository, rutinaRepository)
-        
-        // Inicializar Firestore en background (no bloquea el inicio de la app)
+        Log.d(TAG, "Application onCreate - iniciando inicialización híbrida")
+
+        // 1. Inicializar la base de datos local PRIMERO (para cache inmediato)
+        DatabaseInitializer.initializeIfNeeded(this, localEjercicioRepository, rutinaRepository)
+
+        // 2. Inicializar Firestore en background (no bloquea el inicio de la app)
         applicationScope.launch {
             try {
                 val result = firestoreInitializer.inicializarEjercicios()
@@ -86,15 +100,18 @@ class GimnasioproApplication : Application() {
                         } else {
                             Log.d(TAG, "ℹ️ Ejercicios ya estaban migrados a Firestore")
                         }
+                        // Forzar sincronización después de la migración
+                        Log.d(TAG, "🔄 Iniciando sincronización automática...")
                     },
                     onFailure = { error ->
                         Log.e(TAG, "❌ Error al migrar ejercicios a Firestore: ${error.message}", error)
+                        Log.i(TAG, "📱 Modo offline activado - usando solo datos locales")
                     }
                 )
             } catch (e: Exception) {
                 Log.e(TAG, "❌ Error al inicializar Firestore: ${e.message}", e)
+                Log.i(TAG, "📱 Modo offline activado - usando solo datos locales")
             }
         }
     }
 }
-

@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="12dp"
             android:visibility="visible"
-            android:buttonTint="@color/electric_green_button" />
+            android:buttonTint="@color/accent_blue" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -37,7 +37,7 @@
                 android:text="Nombre del ejercicio"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/electric_green_button" />
+                android:textColor="@color/accent_blue" />
 
             <TextView
                 android:id="@+id/tvDescripcionEjercicio"

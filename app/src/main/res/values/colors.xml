@@ -8,21 +8,59 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- GimnasioPro Colors -->
-    <color name="dark_green_background">#FF1B4D3E</color>
-    <color name="electric_green_button">#68D955</color>
-    <color name="electric_green_dark">#FF32CD32</color>
+    <!-- GimnasioPro Colors - Nueva paleta oscura azulada/morada -->
+
+    <!-- Fondos principales -->
+    <color name="dark_background">#0D0D1A</color>
+    <color name="dark_background_secondary">#13132B</color>
+    <color name="card_dark">#1A1A3E</color>
+    <color name="card_dark_secondary">#252550</color>
+
+    <!-- Colores de acento -->
+    <color name="accent_purple">#6B5CE7</color>
+    <color name="accent_purple_light">#8B7CF7</color>
+    <color name="accent_green">#4ADE80</color>
+    <color name="accent_green_dark">#22C55E</color>
+    <color name="accent_blue">#3B82F6</color>
+
+    <!-- Textos -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#A1A1AA</color>
+    <color name="text_muted">#71717A</color>
+
+    <!-- Cards especiales -->
+    <color name="card_gym">#1E3A2F</color>
+    <color name="card_gym_overlay">#2D5A47</color>
+    <color name="card_ejercicios">#1F1F4A</color>
+    <color name="card_rutinas">#1F1F4A</color>
+    <color name="card_progreso">#1A1A3E</color>
+    <color name="card_trainer">#4338CA</color>
+
+    <!-- Racha -->
+    <color name="racha_background">#1A1A3E</color>
+    <color name="racha_day_active">#6B5CE7</color>
+    <color name="racha_day_inactive">#3F3F5A</color>
+
+    <!-- Navegación -->
+    <color name="nav_background">#0D0D1A</color>
+    <color name="nav_selected">#6B5CE7</color>
+    <color name="nav_unselected">#71717A</color>
+
+    <!-- Compatibilidad con código existente -->
+    <color name="dark_green_background">@color/dark_background</color>
+    <color name="electric_green_button">@color/accent_green</color>
+    <color name="electric_green_dark">@color/accent_green_dark</color>
     <color name="text_on_button">#FF000000</color>
-    <color name="text_on_background">#FFFFFFFF</color>
-    <color name="calendar_background">#FF0D2818</color>
-    <color name="darker_green_header">#FF0F3027</color>
-    <color name="card_background">#FF234D3A</color>
-    <color name="text_light_gray">#FFD0D0D0</color>
+    <color name="text_on_background">@color/text_primary</color>
+    <color name="calendar_background">@color/dark_background_secondary</color>
+    <color name="darker_green_header">@color/dark_background_secondary</color>
+    <color name="card_background">@color/card_dark</color>
+    <color name="text_light_gray">@color/text_secondary</color>
     <color name="gray_button">#FF606060</color>
-    <color name="light_text">#FFCCCCCC</color>
-    <color name="dark_green_header">#FF0F3027</color>
+    <color name="light_text">@color/text_secondary</color>
+    <color name="dark_green_header">@color/dark_background_secondary</color>
     <color name="orange_accent">#FFFF6B35</color>
-    <color name="rutina_asignada">#FF1E90FF</color>
-    <color name="rutina_vacia">#FF39FF14</color>
+    <color name="rutina_asignada">@color/accent_blue</color>
+    <color name="rutina_vacia">@color/accent_green</color>
     <color name="red_delete">#FFFF5252</color>
 </resources>

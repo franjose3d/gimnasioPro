@@ -14,7 +14,7 @@
         android:orientation="vertical"
         android:padding="12dp">
 
-        <!-- Cabecera: Checkbox + Nombre del ejercicio -->
+        <!-- Cabecera: Checkbox + Nombre del ejercicio + Icono Video -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -26,8 +26,8 @@
                 android:id="@+id/checkboxCompletado"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
-                android:buttonTint="@color/electric_green_button" />
+                android:layout_marginEnd="8dp"
+                android:buttonTint="@color/accent_green" />
 
             <TextView
                 android:id="@+id/tvNombreEjercicio"
@@ -35,9 +35,20 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/nombre_ejercicio_placeholder"
-                android:textColor="@color/electric_green_button"
+                android:textColor="@color/accent_blue"
                 android:textSize="16sp"
                 android:textStyle="bold" />
+
+            <!-- Icono de reproducir video (YouTube) -->
+            <ImageButton
+                android:id="@+id/btnVerVideo"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_play_video"
+                android:scaleType="centerInside"
+                android:padding="6dp"
+                android:contentDescription="@string/desc_ver_video" />
 
         </LinearLayout>
 
@@ -48,7 +59,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Fila 1: Series 1, 2, 3 + botones -->
+            <!-- Fila 1: Series 1 y 2 + botones -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -64,16 +75,16 @@
                     android:layout_weight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:background="@drawable/bg_input_field"
-                    android:padding="6dp"
-                    android:layout_marginEnd="4dp">
+                    android:background="@drawable/bg_card_trainer"
+                    android:padding="8dp"
+                    android:layout_marginEnd="6dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/label_rep1_kg"
                         android:textColor="@color/light_text"
-                        android:textSize="10sp" />
+                        android:textSize="11sp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -83,8 +94,8 @@
 
                         <ImageButton
                             android:id="@+id/btnDecrementarKg1"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_minus"
                             android:scaleType="centerInside"
@@ -92,21 +103,21 @@
 
                         <EditText
                             android:id="@+id/etPeso1"
-                            android:layout_width="40dp"
-                            android:layout_height="30dp"
+                            android:layout_width="50dp"
+                            android:layout_height="36dp"
                             android:background="@android:color/transparent"
                             android:gravity="center"
                             android:inputType="numberDecimal"
                             android:text="@string/valor_cero"
                             android:autofillHints="none"
                             android:textColor="@color/text_on_background"
-                            android:textSize="14sp"
+                            android:textSize="16sp"
                             android:textStyle="bold" />
 
                         <ImageButton
                             android:id="@+id/btnIncrementarKg1"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_plus"
                             android:scaleType="centerInside"
@@ -122,16 +133,16 @@
                     android:layout_weight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:background="@drawable/bg_input_field"
-                    android:padding="6dp"
-                    android:layout_marginHorizontal="4dp">
+                    android:background="@drawable/bg_card_trainer"
+                    android:padding="8dp"
+                    android:layout_marginEnd="6dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/label_rep2_kg"
                         android:textColor="@color/light_text"
-                        android:textSize="10sp" />
+                        android:textSize="11sp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -141,8 +152,8 @@
 
                         <ImageButton
                             android:id="@+id/btnDecrementarKg2"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_minus"
                             android:scaleType="centerInside"
@@ -150,79 +161,21 @@
 
                         <EditText
                             android:id="@+id/etPeso2"
-                            android:layout_width="40dp"
-                            android:layout_height="30dp"
+                            android:layout_width="50dp"
+                            android:layout_height="36dp"
                             android:background="@android:color/transparent"
                             android:gravity="center"
                             android:inputType="numberDecimal"
                             android:text="@string/valor_cero"
                             android:autofillHints="none"
                             android:textColor="@color/text_on_background"
-                            android:textSize="14sp"
+                            android:textSize="16sp"
                             android:textStyle="bold" />
 
                         <ImageButton
                             android:id="@+id/btnIncrementarKg2"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@drawable/ic_plus"
-                            android:scaleType="centerInside"
-                            android:contentDescription="@string/desc_incrementar" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Serie 3 -->
-                <LinearLayout
-                    android:id="@+id/containerSerie3"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:background="@drawable/bg_input_field"
-                    android:padding="6dp"
-                    android:layout_marginStart="4dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_rep3_kg"
-                        android:textColor="@color/light_text"
-                        android:textSize="10sp" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center">
-
-                        <ImageButton
-                            android:id="@+id/btnDecrementarKg3"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@drawable/ic_minus"
-                            android:scaleType="centerInside"
-                            android:contentDescription="@string/desc_decrementar" />
-
-                        <EditText
-                            android:id="@+id/etPeso3"
-                            android:layout_width="40dp"
-                            android:layout_height="30dp"
-                            android:background="@android:color/transparent"
-                            android:gravity="center"
-                            android:inputType="numberDecimal"
-                            android:text="@string/valor_cero"
-                            android:autofillHints="none"
-                            android:textColor="@color/text_on_background"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
-
-                        <ImageButton
-                            android:id="@+id/btnIncrementarKg3"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_plus"
                             android:scaleType="centerInside"
@@ -235,41 +188,100 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:gravity="center"
-                    android:layout_marginStart="8dp">
+                    android:gravity="center">
 
                     <ImageButton
                         android:id="@+id/btnAgregarSerie"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
                         android:background="@drawable/btn_rounded_green"
                         android:src="@drawable/ic_plus"
                         android:scaleType="centerInside"
-                        android:padding="4dp"
+                        android:padding="6dp"
                         android:contentDescription="@string/desc_agregar_serie" />
 
                     <ImageButton
                         android:id="@+id/btnQuitarSerie"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_marginTop="4dp"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_marginTop="6dp"
                         android:background="@drawable/btn_rounded_red"
                         android:src="@drawable/ic_minus"
                         android:scaleType="centerInside"
-                        android:padding="4dp"
+                        android:padding="6dp"
                         android:contentDescription="@string/desc_quitar_serie" />
                 </LinearLayout>
 
             </LinearLayout>
 
-            <!-- Fila 2: Series adicionales (4, 5, 6) - inicialmente oculta -->
+            <!-- Fila 2: Series 3 y 4 - inicialmente oculta -->
             <LinearLayout
-                android:id="@+id/containerSeriesExtra"
+                android:id="@+id/containerSeriesFila2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
+                android:layout_marginBottom="8dp"
                 android:visibility="gone">
+
+                <!-- Serie 3 -->
+                <LinearLayout
+                    android:id="@+id/containerSerie3"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:background="@drawable/bg_card_trainer"
+                    android:padding="8dp"
+                    android:layout_marginEnd="6dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_rep3_kg"
+                        android:textColor="@color/light_text"
+                        android:textSize="11sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center">
+
+                        <ImageButton
+                            android:id="@+id/btnDecrementarKg3"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_minus"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@string/desc_decrementar" />
+
+                        <EditText
+                            android:id="@+id/etPeso3"
+                            android:layout_width="50dp"
+                            android:layout_height="36dp"
+                            android:background="@android:color/transparent"
+                            android:gravity="center"
+                            android:inputType="numberDecimal"
+                            android:text="@string/valor_cero"
+                            android:autofillHints="none"
+                            android:textColor="@color/text_on_background"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <ImageButton
+                            android:id="@+id/btnIncrementarKg3"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_plus"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@string/desc_incrementar" />
+                    </LinearLayout>
+                </LinearLayout>
 
                 <!-- Serie 4 -->
                 <LinearLayout
@@ -279,9 +291,9 @@
                     android:layout_weight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:background="@drawable/bg_input_field"
-                    android:padding="6dp"
-                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/bg_card_trainer"
+                    android:padding="8dp"
+                    android:layout_marginEnd="6dp"
                     android:visibility="gone">
 
                     <TextView
@@ -289,7 +301,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/label_rep4_kg"
                         android:textColor="@color/light_text"
-                        android:textSize="10sp" />
+                        android:textSize="11sp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -299,8 +311,8 @@
 
                         <ImageButton
                             android:id="@+id/btnDecrementarKg4"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_minus"
                             android:scaleType="centerInside"
@@ -308,27 +320,43 @@
 
                         <EditText
                             android:id="@+id/etPeso4"
-                            android:layout_width="40dp"
-                            android:layout_height="30dp"
+                            android:layout_width="50dp"
+                            android:layout_height="36dp"
                             android:background="@android:color/transparent"
                             android:gravity="center"
                             android:inputType="numberDecimal"
                             android:text="@string/valor_cero"
                             android:autofillHints="none"
                             android:textColor="@color/text_on_background"
-                            android:textSize="14sp"
+                            android:textSize="16sp"
                             android:textStyle="bold" />
 
                         <ImageButton
                             android:id="@+id/btnIncrementarKg4"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_plus"
                             android:scaleType="centerInside"
                             android:contentDescription="@string/desc_incrementar" />
                     </LinearLayout>
                 </LinearLayout>
+
+                <!-- Espacio para alinear con los botones +/- -->
+                <View
+                    android:layout_width="36dp"
+                    android:layout_height="1dp" />
+
+            </LinearLayout>
+
+            <!-- Fila 3: Series 5 y 6 - inicialmente oculta -->
+            <LinearLayout
+                android:id="@+id/containerSeriesFila3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:visibility="gone">
 
                 <!-- Serie 5 -->
                 <LinearLayout
@@ -338,9 +366,9 @@
                     android:layout_weight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:background="@drawable/bg_input_field"
-                    android:padding="6dp"
-                    android:layout_marginHorizontal="4dp"
+                    android:background="@drawable/bg_card_trainer"
+                    android:padding="8dp"
+                    android:layout_marginEnd="6dp"
                     android:visibility="gone">
 
                     <TextView
@@ -348,7 +376,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/label_rep5_kg"
                         android:textColor="@color/light_text"
-                        android:textSize="10sp" />
+                        android:textSize="11sp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -358,8 +386,8 @@
 
                         <ImageButton
                             android:id="@+id/btnDecrementarKg5"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_minus"
                             android:scaleType="centerInside"
@@ -367,21 +395,21 @@
 
                         <EditText
                             android:id="@+id/etPeso5"
-                            android:layout_width="40dp"
-                            android:layout_height="30dp"
+                            android:layout_width="50dp"
+                            android:layout_height="36dp"
                             android:background="@android:color/transparent"
                             android:gravity="center"
                             android:inputType="numberDecimal"
                             android:text="@string/valor_cero"
                             android:autofillHints="none"
                             android:textColor="@color/text_on_background"
-                            android:textSize="14sp"
+                            android:textSize="16sp"
                             android:textStyle="bold" />
 
                         <ImageButton
                             android:id="@+id/btnIncrementarKg5"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_plus"
                             android:scaleType="centerInside"
@@ -397,9 +425,9 @@
                     android:layout_weight="1"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:background="@drawable/bg_input_field"
-                    android:padding="6dp"
-                    android:layout_marginStart="4dp"
+                    android:background="@drawable/bg_card_trainer"
+                    android:padding="8dp"
+                    android:layout_marginEnd="6dp"
                     android:visibility="gone">
 
                     <TextView
@@ -407,7 +435,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/label_rep6_kg"
                         android:textColor="@color/light_text"
-                        android:textSize="10sp" />
+                        android:textSize="11sp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -417,8 +445,8 @@
 
                         <ImageButton
                             android:id="@+id/btnDecrementarKg6"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_minus"
                             android:scaleType="centerInside"
@@ -426,21 +454,21 @@
 
                         <EditText
                             android:id="@+id/etPeso6"
-                            android:layout_width="40dp"
-                            android:layout_height="30dp"
+                            android:layout_width="50dp"
+                            android:layout_height="36dp"
                             android:background="@android:color/transparent"
                             android:gravity="center"
                             android:inputType="numberDecimal"
                             android:text="@string/valor_cero"
                             android:autofillHints="none"
                             android:textColor="@color/text_on_background"
-                            android:textSize="14sp"
+                            android:textSize="16sp"
                             android:textStyle="bold" />
 
                         <ImageButton
                             android:id="@+id/btnIncrementarKg6"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_plus"
                             android:scaleType="centerInside"
@@ -450,9 +478,8 @@
 
                 <!-- Espacio para alinear con los botones +/- -->
                 <View
-                    android:layout_width="40dp"
-                    android:layout_height="1dp"
-                    android:layout_marginStart="8dp" />
+                    android:layout_width="36dp"
+                    android:layout_height="1dp" />
 
             </LinearLayout>
 

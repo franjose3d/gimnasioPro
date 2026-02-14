@@ -41,7 +41,7 @@
             android:text="@string/titulo_grupos_musculares"
             android:textSize="22sp"
             android:textStyle="bold"
-            android:textColor="@color/electric_green_button" />
+            android:textColor="@color/accent_blue" />
     </LinearLayout>
 
     <ScrollView

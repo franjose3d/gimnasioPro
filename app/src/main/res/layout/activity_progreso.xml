@@ -39,7 +39,7 @@
             android:text="@string/titulo_progreso"
             android:textSize="22sp"
             android:textStyle="bold"
-            android:textColor="@color/electric_green_button" />
+            android:textColor="@color/accent_blue" />
     </LinearLayout>
 
     <!-- Contenido principal -->
@@ -61,7 +61,7 @@
                 android:text="@string/estadisticas_generales"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/electric_green_button"
+                android:textColor="@color/accent_blue"
                 android:layout_marginBottom="16dp" />
 
             <!-- Fila 1: Tiempo Hoy + Tiempo Mes -->
@@ -104,7 +104,7 @@
                             android:text="@string/tiempo_inicial"
                             android:textSize="22sp"
                             android:textStyle="bold"
-                            android:textColor="@color/electric_green_button"
+                            android:textColor="@color/accent_blue"
                             android:layout_marginTop="4dp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
@@ -141,7 +141,7 @@
                             android:text="@string/tiempo_inicial"
                             android:textSize="22sp"
                             android:textStyle="bold"
-                            android:textColor="@color/electric_green_button"
+                            android:textColor="@color/accent_blue"
                             android:layout_marginTop="4dp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
@@ -187,7 +187,7 @@
                             android:text="@string/valor_cero_entero"
                             android:textSize="22sp"
                             android:textStyle="bold"
-                            android:textColor="@color/electric_green_button"
+                            android:textColor="@color/accent_blue"
                             android:layout_marginTop="4dp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
@@ -252,7 +252,7 @@
                 android:text="@string/equilibrio_muscular"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/electric_green_button"
+                android:textColor="@color/accent_blue"
                 android:layout_marginBottom="16dp" />
 
             <!-- Card de barras de progreso muscular -->

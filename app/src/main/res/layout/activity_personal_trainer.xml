@@ -40,7 +40,7 @@
             android:text="Personal Trainer"
             android:textSize="22sp"
             android:textStyle="bold"
-            android:textColor="@color/electric_green_button" />
+            android:textColor="@color/accent_blue" />
     </LinearLayout>
 
     <!-- Contenido principal -->
@@ -60,7 +60,7 @@
             android:text="Gestiona tu entrenamiento"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="@color/electric_green_button"
+            android:textColor="@color/accent_blue"
             android:gravity="center"
             android:layout_marginBottom="16dp" />
 
@@ -84,7 +84,7 @@
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="@color/text_on_button"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:elevation="8dp"
             android:stateListAnimator="@null"
             android:layout_marginBottom="24dp" />
@@ -93,7 +93,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@color/electric_green_button"
+            android:background="@color/accent_blue"
             android:alpha="0.3"
             android:layout_marginBottom="16dp" />
 
@@ -115,7 +115,7 @@
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="@color/text_on_button"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:elevation="8dp"
             android:stateListAnimator="@null"
             android:layout_marginBottom="16dp" />
@@ -129,7 +129,7 @@
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="@color/text_on_button"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:elevation="8dp"
             android:stateListAnimator="@null"
             android:layout_marginBottom="16dp" />
@@ -143,7 +143,7 @@
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="@color/text_on_button"
-            android:background="@drawable/btn_rounded_green"
+            android:background="@drawable/bg_card_trainer"
             android:elevation="8dp"
             android:stateListAnimator="@null"
             android:layout_marginBottom="24dp" />
@@ -152,7 +152,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@color/electric_green_button"
+            android:background="@color/accent_blue"
             android:alpha="0.3"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp" />
