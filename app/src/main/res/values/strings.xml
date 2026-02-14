@@ -2,7 +2,7 @@
     <string name="app_name">Gimnasio Pro</string>
 
     <!-- Main Menu Buttons -->
-    <string name="btn_gim">GIM</string>
+    <string name="btn_gim">GYM</string>
     <string name="btn_ejercicios">Ejercicios</string>
     <string name="btn_rutinas">Rutinas</string>
     <string name="btn_progreso">Progreso</string>
@@ -150,4 +150,33 @@
     <string name="titulo_cambiar_nombre_rutina">Cambiar nombre</string>
     <string name="hint_nombre_rutina">Nombre de la rutina</string>
     <string name="nombre_rutina_actualizado">Nombre actualizado</string>
+
+    <!-- Diálogo eliminar rutina -->
+    <string name="titulo_eliminar_rutina">Eliminar Rutina</string>
+    <string name="confirmar_eliminar_rutina">¿Estás seguro de que quieres eliminar esta
+    rutina?</string>
+    <string name="rutina_eliminada">Rutina
+    eliminada</string>
+
+    <!-- Registre Traniner -->
+    <string name="titulo_registrar_trainer">Registro Personal Trainer</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Contraseña</string>
+    <string name="hint_password_confirm">Confirmar contraseña</string>
+    <string name="hint_nombre">Nombre y apellidos</string>
+    <string name="hint_dni">DNI / NIE</string>
+    <string name="hint_poblacion">Poblacion</string>
+    <string name="hint_municipio">Municipio</string>
+    <string name="hint_telefono">Telefono de contacto</string>
+    <string name="hint_sobre_mi">Sobre mi (opcional)</string>
+    <string name="hint_tarifa">Tarifa por sesion (opcional)</string>
+    <string name="btn_registrar">Registrar</string>
+    <string name="btn_seleccionar_foto">Seleccionar foto</string>
+    <string name="btn_crear_cuenta">Crear cuenta</string>
+    <string name="btn_verificar_email">Verificar email</string>
+    <string name="btn_continuar">Continuar</string>
+    <string name="DNI">DNI</string>
+    <string name="telefono">Telefono</string>
+    <string name="registrate">REGISTRATE</string>
+
 </resources>

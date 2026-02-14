@@ -27,7 +27,7 @@
             android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_back"
-            android:contentDescription="@string/btn_volver"
+            android:contentDescription="Volver"
             android:scaleType="centerInside"
             android:clickable="true"
             android:focusable="true" />
@@ -37,182 +37,136 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:text="@string/titulo_personal_trainer"
+            android:text="Personal Trainer"
             android:textSize="22sp"
             android:textStyle="bold"
             android:textColor="@color/electric_green_button" />
     </LinearLayout>
 
     <!-- Contenido principal -->
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center">
 
-        <LinearLayout
+
+
+        <!-- Título -->
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="24dp"
-            android:gravity="center_horizontal">
+            android:text="Gestiona tu entrenamiento"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/electric_green_button"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
 
-            <!-- Icono de entrenador -->
-            <ImageView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:src="@android:drawable/ic_menu_myplaces"
-                android:contentDescription="@string/desc_personal_trainer_icon"
-                app:tint="@color/electric_green_button"
-                android:layout_marginBottom="24dp" />
+        <!-- Descripción -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Encuentra entrenadores profesionales o regístrate para ofrecer tus servicios"
+            android:textSize="16sp"
+            android:textColor="@color/text_light_gray"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.3"
+            android:layout_marginBottom="48dp" />
 
-            <!-- Título de bienvenida -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/personal_trainer_bienvenida"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@color/electric_green_button"
-                android:textAlignment="center"
-                android:layout_marginBottom="16dp" />
+        <!-- BOTÓN 0: INICIAR SESIÓN (NUEVO) -->
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:text="INICIAR SESION"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_on_button"
+            android:background="@drawable/btn_rounded_green"
+            android:elevation="8dp"
+            android:stateListAnimator="@null"
+            android:layout_marginBottom="24dp" />
 
-            <!-- Descripción -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/personal_trainer_descripcion"
-                android:textSize="16sp"
-                android:textColor="@color/text_light_gray"
-                android:textAlignment="center"
-                android:lineSpacingMultiplier="1.3"
-                android:layout_marginBottom="32dp" />
+        <!-- Separador -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/electric_green_button"
+            android:alpha="0.3"
+            android:layout_marginBottom="16dp" />
 
-            <!-- Card de funciones próximamente -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="@color/card_background"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="¿Eres nuevo?"
+            android:textSize="14sp"
+            android:textColor="@color/text_light_gray"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
+        <!-- BOTÓN 1: BUSCAR ENTRENADORES -->
+        <Button
+            android:id="@+id/btnBuscarTrainers"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:text="BUSCAR ENTRENADORES"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_on_button"
+            android:background="@drawable/btn_rounded_green"
+            android:elevation="8dp"
+            android:stateListAnimator="@null"
+            android:layout_marginBottom="16dp" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/funciones_proximamente"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/electric_green_button"
-                        android:layout_marginBottom="16dp" />
+        <!-- BOTÓN 2: REGISTRARSE COMO USUARIO/CLIENTE -->
+        <Button
+            android:id="@+id/btnRegistrarseUsuario"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:text="REGISTRARSE COMO USUARIO"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_on_button"
+            android:background="@drawable/btn_rounded_green"
+            android:elevation="8dp"
+            android:stateListAnimator="@null"
+            android:layout_marginBottom="16dp" />
 
-                    <!-- Función 1 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
+        <!-- BOTÓN 3: REGISTRARSE COMO ENTRENADOR -->
+        <Button
+            android:id="@+id/btnRegistrarseTrainer"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:text="REGISTRARSE COMO ENTRENADOR"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_on_button"
+            android:background="@drawable/btn_rounded_green"
+            android:elevation="8dp"
+            android:stateListAnimator="@null"
+            android:layout_marginBottom="24dp" />
 
-                        <View
-                            android:layout_width="8dp"
-                            android:layout_height="8dp"
-                            android:background="@color/electric_green_button" />
+        <!-- Separador -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/electric_green_button"
+            android:alpha="0.3"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/funcion_asistente_ia"
-                            android:textSize="14sp"
-                            android:textColor="@color/text_light_gray"
-                            android:layout_marginStart="12dp" />
-                    </LinearLayout>
+        <!-- Info adicional -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Entrenadores verificados\nRutinas personalizadas\nSeguimiento de progreso"
+            android:textSize="14sp"
+            android:textColor="@color/text_light_gray"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.5" />
 
-                    <!-- Función 2 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
-
-                        <View
-                            android:layout_width="8dp"
-                            android:layout_height="8dp"
-                            android:background="@color/electric_green_button" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/funcion_rutinas_personalizadas"
-                            android:textSize="14sp"
-                            android:textColor="@color/text_light_gray"
-                            android:layout_marginStart="12dp" />
-                    </LinearLayout>
-
-                    <!-- Función 3 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
-
-                        <View
-                            android:layout_width="8dp"
-                            android:layout_height="8dp"
-                            android:background="@color/electric_green_button" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/funcion_consejos_nutricion"
-                            android:textSize="14sp"
-                            android:textColor="@color/text_light_gray"
-                            android:layout_marginStart="12dp" />
-                    </LinearLayout>
-
-                    <!-- Función 4 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <View
-                            android:layout_width="8dp"
-                            android:layout_height="8dp"
-                            android:background="@color/electric_green_button" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/funcion_seguimiento_progreso"
-                            android:textSize="14sp"
-                            android:textColor="@color/text_light_gray"
-                            android:layout_marginStart="12dp" />
-                    </LinearLayout>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Mensaje de desarrollo -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/personal_trainer_en_desarrollo"
-                android:textSize="14sp"
-                android:textColor="@color/orange_accent"
-                android:textAlignment="center"
-                android:textStyle="italic"
-                android:layout_marginTop="16dp" />
-
-        </LinearLayout>
-    </ScrollView>
+    </LinearLayout>
 
 </LinearLayout>
-

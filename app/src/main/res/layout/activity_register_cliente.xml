@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dark_green_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Registro de Usuario"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/electric_green_button"
+            android:gravity="center"
+            android:layout_marginBottom="24dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="AUTENTICACION"
+            android:textSize="16sp"
+            android:textColor="@color/electric_green_button"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Email"
+            android:textSize="14sp"
+            android:textColor="@color/electric_green_button"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="ejemplo@gmail.com"
+            android:textColor="#000000"
+            android:textColorHint="#808080"
+            android:background="@drawable/btn_rounded_green"
+            android:padding="12dp"
+            android:inputType="textEmailAddress"
+            android:maxLines="1"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Contraseña"
+            android:textSize="14sp"
+            android:textColor="@color/electric_green_button"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="Minimo 6 caracteres"
+            android:textColor="#000000"
+            android:textColorHint="#808080"
+            android:background="@drawable/btn_rounded_green"
+            android:padding="12dp"
+            android:inputType="textPassword"
+            android:maxLines="1"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Confirmar contraseña"
+            android:textSize="14sp"
+            android:textColor="@color/electric_green_button"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/etPasswordConfirm"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="Repite la contraseña"
+            android:textColor="#000000"
+            android:textColorHint="#808080"
+            android:background="@drawable/btn_rounded_green"
+            android:padding="12dp"
+            android:inputType="textPassword"
+            android:maxLines="1"
+            android:layout_marginBottom="24dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DATOS PERSONALES"
+            android:textSize="16sp"
+            android:textColor="@color/electric_green_button"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nombre completo"
+            android:textSize="14sp"
+            android:textColor="@color/electric_green_button"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/etNombre"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="Ej: Juan Perez"
+            android:textColor="#000000"
+            android:textColorHint="#808080"
+            android:background="@drawable/btn_rounded_green"
+            android:padding="12dp"
+            android:inputType="textPersonName"
+            android:maxLines="1"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Telefono de contacto"
+            android:textSize="14sp"
+            android:textColor="@color/electric_green_button"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/btn_rounded_green"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+34"
+                android:textSize="16sp"
+                android:textColor="#000000"
+                android:textStyle="bold"
+                android:paddingEnd="8dp" />
+
+            <EditText
+                android:id="@+id/etTelefono"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:hint="612345678"
+                android:textColor="#000000"
+                android:textColorHint="#808080"
+                android:background="@null"
+                android:inputType="phone"
+                android:maxLength="9"
+                android:maxLines="1" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DATOS FISICOS"
+            android:textSize="16sp"
+            android:textColor="@color/electric_green_button"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginEnd="8dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Peso (kg)"
+                    android:textSize="14sp"
+                    android:textColor="@color/electric_green_button"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <EditText
+                    android:id="@+id/etPeso"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:hint="75.5"
+                    android:textColor="#000000"
+                    android:textColorHint="#808080"
+                    android:background="@drawable/btn_rounded_green"
+                    android:padding="12dp"
+                    android:inputType="numberDecimal"
+                    android:maxLines="1" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="8dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Altura (cm)"
+                    android:textSize="14sp"
+                    android:textColor="@color/electric_green_button"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <EditText
+                    android:id="@+id/etAltura"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:hint="175"
+                    android:textColor="#000000"
+                    android:textColorHint="#808080"
+                    android:background="@drawable/btn_rounded_green"
+                    android:padding="12dp"
+                    android:inputType="numberDecimal"
+                    android:maxLines="1" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Edad"
+            android:textSize="14sp"
+            android:textColor="@color/electric_green_button"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/etEdad"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="25"
+            android:textColor="#000000"
+            android:textColorHint="#808080"
+            android:background="@drawable/btn_rounded_green"
+            android:padding="12dp"
+            android:inputType="number"
+            android:maxLines="1"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Genero"
+            android:textSize="14sp"
+            android:textColor="@color/electric_green_button"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <Spinner
+            android:id="@+id/spinnerGenero"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/btn_rounded_green"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:entries="@array/generos"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="OBJETIVO"
+            android:textSize="16sp"
+            android:textColor="@color/electric_green_button"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Que quieres conseguir"
+            android:textSize="14sp"
+            android:textColor="@color/electric_green_button"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <Spinner
+            android:id="@+id/spinnerObjetivo"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/btn_rounded_green"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:entries="@array/objetivos"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nivel de experiencia"
+            android:textSize="14sp"
+            android:textColor="@color/electric_green_button"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <Spinner
+            android:id="@+id/spinnerNivel"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/btn_rounded_green"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:entries="@array/niveles"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Foto de perfil (opcional)"
+            android:textSize="14sp"
+            android:textColor="@color/text_light_gray"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <ImageView
+                android:id="@+id/ivFotoPerfil"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:background="@drawable/btn_rounded_green"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_menu_gallery"
+                android:contentDescription="Foto de perfil" />
+
+            <Button
+                android:id="@+id/btnSeleccionarFoto"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:text="Seleccionar foto"
+                android:textColor="@color/text_on_button"
+                android:background="@drawable/btn_rounded_green"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Recibiras un email para verificar tu cuenta"
+            android:textSize="11sp"
+            android:textColor="@color/text_light_gray"
+            android:textStyle="italic"
+            android:layout_marginBottom="16dp" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/btnRegistrar"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="CREAR CUENTA Y REGISTRARSE"
+            android:textColor="@color/text_on_button"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:background="@drawable/btn_rounded_green"
+            android:elevation="8dp"
+            android:stateListAnimator="@null" />
+
+    </LinearLayout>
+
+</ScrollView>

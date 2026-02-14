@@ -85,6 +85,45 @@
             android:visibility="gone" />
     </FrameLayout>
 
+    <!-- NUEVO: Botones para Agregar/Eliminar Ejercicios -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:background="@color/dark_green_background">
+
+        <!-- Botón AGREGAR (+) -->
+        <Button
+            android:id="@+id/btnAgregarEjercicio"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:text="+"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_on_button"
+            android:background="@drawable/btn_rounded_green"
+            android:elevation="8dp"
+            android:stateListAnimator="@null" />
+
+        <!-- Botón ELIMINAR (-) -->
+        <Button
+            android:id="@+id/btnEliminarEjercicio"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:text="-"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_on_button"
+            android:background="@drawable/btn_rounded_green"
+            android:elevation="8dp"
+            android:stateListAnimator="@null" />
+    </LinearLayout>
+
     <!-- Barra de selección (visible cuando hay ejercicios seleccionados) -->
     <LinearLayout
         android:id="@+id/layoutSeleccion"
@@ -125,6 +164,4 @@
             android:backgroundTint="@color/electric_green_button" />
     </LinearLayout>
 
-
 </LinearLayout>
-

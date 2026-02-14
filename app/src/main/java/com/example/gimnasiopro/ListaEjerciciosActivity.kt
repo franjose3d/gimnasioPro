@@ -1,8 +1,10 @@
 package com.example.gimnasiopro
 
 import android.os.Bundle
+import android.text.InputFilter
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -42,6 +44,9 @@ class ListaEjerciciosActivity : AppCompatActivity() {
     private lateinit var btnCancelarSeleccion: Button
     private lateinit var btnGuardarSeleccion: Button
     private lateinit var tvNoEjercicios: TextView
+    private lateinit var btnAgregarEjercicio: Button
+    private lateinit var btnEliminarEjercicio: Button
+    private lateinit var grupoMuscularActual: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,14 +58,14 @@ class ListaEjerciciosActivity : AppCompatActivity() {
         rutinaRepository = app.rutinaRepository
 
         // Obtener el grupo muscular del intent
-        val grupoMuscular = intent.getStringExtra(EXTRA_GRUPO_MUSCULAR) ?: run {
+        grupoMuscularActual = intent.getStringExtra(EXTRA_GRUPO_MUSCULAR) ?: run {
             finish()
             return
         }
 
-        setupViews(grupoMuscular)
+        setupViews(grupoMuscularActual)
         setupBackPressedCallback()
-        loadEjercicios(grupoMuscular)
+        loadEjercicios(grupoMuscularActual)
     }
 
     private fun setupViews(grupoMuscular: String) {
@@ -71,6 +76,8 @@ class ListaEjerciciosActivity : AppCompatActivity() {
         btnCancelarSeleccion = findViewById(R.id.btnCancelarSeleccion)
         btnGuardarSeleccion = findViewById(R.id.btnGuardarSeleccion)
         tvNoEjercicios = findViewById(R.id.tvNoEjercicios)
+        btnAgregarEjercicio = findViewById(R.id.btnAgregarEjercicio)
+        btnEliminarEjercicio = findViewById(R.id.btnEliminarEjercicio)
         val btnBack = findViewById<ImageButton>(R.id.btnBack)
 
         // Configurar título
@@ -114,6 +121,153 @@ class ListaEjerciciosActivity : AppCompatActivity() {
 
         btnGuardarSeleccion.setOnClickListener {
             guardarSeleccion()
+        }
+
+        // NUEVO: Configurar botones + y -
+        btnAgregarEjercicio.setOnClickListener {
+            mostrarDialogoAgregarEjercicio()
+        }
+
+        btnEliminarEjercicio.setOnClickListener {
+            mostrarDialogoEliminarEjercicio()
+        }
+    }
+
+    /**
+     * Muestra diálogo para agregar un ejercicio personalizado.
+     */
+    private fun mostrarDialogoAgregarEjercicio() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_agregar_ejercicio, null)
+        val etNombre = dialogView.findViewById<EditText>(R.id.etNombreEjercicio)
+        val etDescripcion = dialogView.findViewById<EditText>(R.id.etDescripcionEjercicio)
+
+        // Limitar descripción a 200 caracteres
+        etDescripcion.filters = arrayOf(InputFilter.LengthFilter(200))
+
+        AlertDialog.Builder(this)
+            .setTitle("Agregar Ejercicio")
+            .setView(dialogView)
+            .setPositiveButton("Guardar") { _, _ ->
+                val nombre = etNombre.text.toString().trim()
+                val descripcion = etDescripcion.text.toString().trim()
+
+                if (nombre.isEmpty()) {
+                    Toast.makeText(this, "El nombre no puede estar vacío", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+
+                if (descripcion.isEmpty()) {
+                    Toast.makeText(this, "La descripción no puede estar vacía", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+
+                // Crear y guardar el ejercicio
+                val nuevoEjercicio = Ejercicio(
+                    grupoMuscular = grupoMuscularActual,
+                    nombre = nombre,
+                    descripcion = descripcion,
+                    imagenUrl = null
+                )
+
+                lifecycleScope.launch {
+                    try {
+                        ejercicioRepository.insertEjercicio(nuevoEjercicio)
+                        Toast.makeText(
+                            this@ListaEjerciciosActivity,
+                            "Ejercicio agregado correctamente",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        // La lista se actualizará automáticamente gracias al Flow
+                    } catch (e: Exception) {
+                        Toast.makeText(
+                            this@ListaEjerciciosActivity,
+                            "Error al guardar: ${e.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    /**
+     * Muestra diálogo para seleccionar y eliminar un ejercicio.
+     */
+    private fun mostrarDialogoEliminarEjercicio() {
+        lifecycleScope.launch {
+            try {
+                // Obtener todos los ejercicios del grupo muscular actual
+                ejercicioRepository.getEjerciciosByGrupoMuscular(grupoMuscularActual)
+                    .collectLatest { ejercicios ->
+                        if (ejercicios.isEmpty()) {
+                            Toast.makeText(
+                                this@ListaEjerciciosActivity,
+                                "No hay ejercicios para eliminar",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@collectLatest
+                        }
+
+                        // Crear array de nombres para el diálogo
+                        val nombresEjercicios = ejercicios.map { it.nombre }.toTypedArray()
+
+                        AlertDialog.Builder(this@ListaEjerciciosActivity)
+                            .setTitle("¿Qué ejercicio deseas eliminar?")
+                            .setItems(nombresEjercicios) { _, which ->
+                                val ejercicioSeleccionado = ejercicios[which]
+                                confirmarEliminacion(ejercicioSeleccionado)
+                            }
+                            .setNegativeButton("Cancelar", null)
+                            .show()
+
+                        // Importante: romper el Flow después de mostrar el diálogo
+                        return@collectLatest
+                    }
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@ListaEjerciciosActivity,
+                    "Error al cargar ejercicios: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    /**
+     * Muestra diálogo de confirmación antes de eliminar un ejercicio.
+     */
+    private fun confirmarEliminacion(ejercicio: Ejercicio) {
+        AlertDialog.Builder(this)
+            .setTitle("Confirmar eliminación")
+            .setMessage("¿Estás seguro de que deseas eliminar '${ejercicio.nombre}'?")
+            .setPositiveButton("Eliminar") { _, _ ->
+                eliminarEjercicio(ejercicio)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    /**
+     * Elimina un ejercicio de la base de datos.
+     */
+    private fun eliminarEjercicio(ejercicio: Ejercicio) {
+        lifecycleScope.launch {
+            try {
+                ejercicioRepository.deleteEjercicio(ejercicio)
+                Toast.makeText(
+                    this@ListaEjerciciosActivity,
+                    "Ejercicio eliminado correctamente",
+                    Toast.LENGTH_SHORT
+                ).show()
+                // La lista se actualizará automáticamente gracias al Flow
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@ListaEjerciciosActivity,
+                    "Error al eliminar: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
     }
 
@@ -280,4 +434,3 @@ class ListaEjerciciosActivity : AppCompatActivity() {
         }
     }
 }
-

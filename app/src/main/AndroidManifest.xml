@@ -72,6 +72,26 @@
             android:exported="false"
             android:label="@string/titulo_entrenamiento"
             android:theme="@style/Theme.GimnasioPro" />
+        <activity
+            android:name=".presentation.trainer.RegisterTrainerActivity"
+            android:exported="false"
+            android:label="Registro de Entrenador"
+            android:theme="@style/Theme.GimnasioPro" />
+        <activity
+            android:name=".presentation.auth.VerificarEmailActivity"
+            android:exported="false"
+            />
+        <activity
+            android:name=".presentation.auth.LoginActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <!-- Registro Cliente -->
+        <activity
+            android:name=".presentation.cliente.RegisterClienteActivity"
+            android:exported="false" />
+
+
+
     </application>
 
 </manifest>
