@@ -8,7 +8,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.example.gimnasiopro.presentation.auth.LoginActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
@@ -50,9 +49,6 @@ class MainActivity : AppCompatActivity() {
         tvDayM = findViewById(R.id.tvDayM)
         tvDayX = findViewById(R.id.tvDayX)
         cardRegistrate = findViewById(R.id.cardRegistrate)
-
-        // Buscar los TextViews dentro de cardRegistrate para actualizarlos dinámicamente
-        // No es necesario si usamos strings dinámicos
     }
 
     private fun setupCards() {
@@ -80,11 +76,12 @@ class MainActivity : AppCompatActivity() {
         cardRegistrate.setOnClickListener {
             val currentUser = auth.currentUser
             if (currentUser != null) {
-                // Ya está logueado - mostrar opciones de perfil o cerrar sesión
+                // Ya está logueado - mostrar opciones de perfil
                 mostrarOpcionesPerfil()
             } else {
-                // No está logueado - ir a login
-                navigateToLogin()
+                // No está logueado - ir a PersonalTrainerActivity que tiene todas las opciones
+                val intent = Intent(this, PersonalTrainerActivity::class.java)
+                startActivity(intent)
             }
         }
 
@@ -93,6 +90,7 @@ class MainActivity : AppCompatActivity() {
             // TODO: Implementar pantalla de notificaciones
         }
     }
+
 
     private fun loadUserData() {
         val currentUser = auth.currentUser
@@ -187,8 +185,9 @@ class MainActivity : AppCompatActivity() {
             .setItems(opciones) { _, which ->
                 when (which) {
                     0 -> {
-                        // Ver perfil - por ahora mostrar info básica
-                        Toast.makeText(this, "Email: ${currentUser.email}", Toast.LENGTH_SHORT).show()
+                        // Ver perfil - abrir PerfilActivity
+                        val intent = Intent(this, PerfilActivity::class.java)
+                        startActivity(intent)
                     }
                     1 -> {
                         // Cerrar sesión
@@ -236,11 +235,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun navigateToProgreso() {
         val intent = Intent(this, ProgresoActivity::class.java)
-        startActivity(intent)
-    }
-
-    private fun navigateToLogin() {
-        val intent = Intent(this, LoginActivity::class.java)
         startActivity(intent)
     }
 }

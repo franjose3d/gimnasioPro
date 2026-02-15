@@ -195,4 +195,16 @@
     <string name="telefono">Telefono</string>
     <string name="registrate">REGISTRATE</string>
 
+    <!-- Trainer - Creación de ejercicios -->
+    <string name="advertencia_trainer_ejercicios">Generación de nuevos ejercicios. Esta función debe utilizarse con responsabilidad y en cumplimiento de nuestras normativas. El uso indebido de la herramienta podrá resultar en la suspensión o eliminación definitiva de su cuenta.</string>
+    <string name="btn_nuevo_ejercicio">+ NUEVO EJERCICIO</string>
+
+    <!-- Cargar ejercicios desde Firebase -->
+    <string name="btn_cargar_ejercicios">⬇️ CARGAR MÁS EJERCICIOS</string>
+    <string name="cargando_ejercicios_firebase">Cargando ejercicios desde la nube…</string>
+    <string name="ejercicios_cargados">¡%1$d ejercicios cargados correctamente!</string>
+    <string name="error_cargar_ejercicios_firebase">Error al cargar ejercicios</string>
+    <string name="debe_registrarse">Debes registrarte para acceder a más ejercicios</string>
+    <string name="no_hay_mas_ejercicios">Ya tienes todos los ejercicios disponibles</string>
+
 </resources>

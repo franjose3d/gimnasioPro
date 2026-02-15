@@ -152,17 +152,20 @@ class EjercicioRepositoryHibrido(
 
     /**
      * Insertar nuevo ejercicio (local + Firestore).
+     * @param ejercicio El ejercicio a insertar
+     * @param creadoPor ID del usuario (trainer) que crea el ejercicio (opcional)
      */
-    suspend fun insertEjercicio(ejercicio: Ejercicio): Long {
+    suspend fun insertEjercicio(ejercicio: Ejercicio, creadoPor: String? = null): Long {
         // Insertar en local primero
         val localId = localRepository.insertEjercicio(ejercicio)
 
         // Intentar insertar en Firestore
         try {
-            val ejercicioFirestore = ejercicio.toFirestoreModel()
+            val ejercicioFirestore = ejercicio.toFirestoreModel(creadoPor)
             remoteRepository.crearEjercicio(ejercicioFirestore)
         } catch (e: Exception) {
             // Log pero no fallar si Firestore falla
+            android.util.Log.e("EjercicioRepoHibrido", "Error al guardar en Firestore", e)
         }
 
         return localId
@@ -206,7 +209,7 @@ class EjercicioRepositoryHibrido(
         localRepository.deleteEjercicio(ejercicio)
 
         try {
-            remoteRepository.eliminarEjercicio(ejercicio.id.toString())
+            remoteRepository.eliminarEjercicio(ejercicio.grupoMuscular, ejercicio.id.toString())
         } catch (e: Exception) {
             // Log pero no fallar
         }
@@ -258,15 +261,17 @@ fun EjercicioFirestore.toRoom(): Ejercicio {
 
 /**
  * Extension function para convertir Ejercicio (Room) a EjercicioFirestore
+ * @param creadoPor ID del trainer que crea el ejercicio (opcional)
  */
-fun Ejercicio.toFirestoreModel(): EjercicioFirestore {
+fun Ejercicio.toFirestoreModel(creadoPor: String? = null): EjercicioFirestore {
     return EjercicioFirestore(
-        id = this.id.toString(),
+        id = "", // Dejar vacío para que Firestore genere el ID automáticamente
         grupoMuscular = this.grupoMuscular,
         nombre = this.nombre,
         descripcion = this.descripcion,
         imagenUrl = this.imagenUrl,
-        esPredefinido = true,
+        creadoPor = creadoPor, // ID del trainer que lo creó (guardado en campo separado)
+        esPredefinido = creadoPor == null, // Es predefinido solo si no tiene creador
         fechaCreacion = java.util.Date()
     )
 }

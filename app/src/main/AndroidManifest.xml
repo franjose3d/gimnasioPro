@@ -90,7 +90,12 @@
             android:name=".presentation.cliente.RegisterClienteActivity"
             android:exported="false" />
 
-
+        <!-- Perfil de usuario -->
+        <activity
+            android:name=".PerfilActivity"
+            android:exported="false"
+            android:label="Mi Perfil"
+            android:theme="@style/Theme.GimnasioPro" />
 
     </application>
 

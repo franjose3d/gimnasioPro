@@ -85,38 +85,58 @@
             android:visibility="gone" />
     </FrameLayout>
 
-    <!-- NUEVO: Botones para Agregar/Eliminar Ejercicios -->
+    <!-- Botón Cargar Ejercicios (visible para usuarios logueados) -->
     <LinearLayout
+        android:id="@+id/layoutCargarEjercicios"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:background="@color/dark_green_background"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/btnCargarEjercicios"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="@string/btn_cargar_ejercicios"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_on_button"
+            android:background="@drawable/bg_card_trainer"
+            android:elevation="4dp"
+            android:stateListAnimator="@null" />
+    </LinearLayout>
+
+    <!-- Sección para Agregar Ejercicios (Solo Trainers) -->
+    <LinearLayout
+        android:id="@+id/layoutTrainerControls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:padding="12dp"
         android:background="@color/dark_green_background">
+
+        <!-- Texto de advertencia -->
+        <TextView
+            android:id="@+id/tvAdvertenciaTrainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/advertencia_trainer_ejercicios"
+            android:textSize="11sp"
+            android:textColor="@color/text_light_gray"
+            android:textStyle="italic"
+            android:gravity="center"
+            android:paddingHorizontal="8dp"
+            android:paddingBottom="8dp" />
 
         <!-- Botón AGREGAR (+) -->
         <Button
             android:id="@+id/btnAgregarEjercicio"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="6dp"
-            android:text="+"
-            android:textSize="32sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_on_button"
-            android:background="@drawable/bg_card_trainer"
-            android:elevation="8dp"
-            android:stateListAnimator="@null" />
-
-        <!-- Botón ELIMINAR (-) -->
-        <Button
-            android:id="@+id/btnEliminarEjercicio"
-            android:layout_width="0dp"
-            android:layout_height="60dp"
-            android:layout_weight="1"
-            android:layout_marginStart="6dp"
-            android:text="-"
-            android:textSize="32sp"
+            android:text="@string/btn_nuevo_ejercicio"
+            android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="@color/text_on_button"
             android:background="@drawable/bg_card_trainer"

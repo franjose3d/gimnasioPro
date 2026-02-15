@@ -38,8 +38,8 @@ class GimnasioproApplication : Application() {
         EjercicioRepository(database.ejercicioDao())
     }
 
-    // Repositorio remoto (Firestore)
-    private val remoteEjercicioRepository: EjercicioFirestoreRepository by lazy {
+    // Repositorio remoto (Firestore) - público para acceso desde Activities
+    val ejercicioFirestoreRepository: EjercicioFirestoreRepository by lazy {
         Log.d(TAG, "Inicializando repositorio remoto de ejercicios...")
         EjercicioFirestoreRepository()
     }
@@ -47,7 +47,7 @@ class GimnasioproApplication : Application() {
     // Repositorio híbrido (combina Room + Firestore)
     val ejercicioRepository: EjercicioRepositoryHibrido by lazy {
         Log.d(TAG, "Inicializando repositorio híbrido de ejercicios...")
-        EjercicioRepositoryHibrido(localEjercicioRepository, remoteEjercicioRepository)
+        EjercicioRepositoryHibrido(localEjercicioRepository, ejercicioFirestoreRepository)
     }
 
     // Lazy initialization del repositorio de rutinas

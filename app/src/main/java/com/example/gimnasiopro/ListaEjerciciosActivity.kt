@@ -1,5 +1,6 @@
 package com.example.gimnasiopro
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.InputFilter
 import android.view.View
@@ -20,7 +21,11 @@ import com.example.gimnasiopro.data.DatabaseInitializer
 import com.example.gimnasiopro.data.Ejercicio
 import com.example.gimnasiopro.data.RutinaRepository
 import com.example.gimnasiopro.data.firestore.EjercicioRepositoryHibrido
+import com.example.gimnasiopro.data.firestore.toRoom
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -45,12 +50,23 @@ class ListaEjerciciosActivity : AppCompatActivity() {
     private lateinit var btnGuardarSeleccion: Button
     private lateinit var tvNoEjercicios: TextView
     private lateinit var btnAgregarEjercicio: Button
-    private lateinit var btnEliminarEjercicio: Button
+    private lateinit var layoutTrainerControls: LinearLayout
+    private lateinit var layoutCargarEjercicios: LinearLayout
+    private lateinit var btnCargarEjercicios: Button
     private lateinit var grupoMuscularActual: String
+
+    // Firebase
+    private lateinit var auth: FirebaseAuth
+    private lateinit var firestore: FirebaseFirestore
+    private var tipoUsuario: String = "" // "trainer" o "cliente"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_lista_ejercicios)
+
+        // Inicializar Firebase
+        auth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
 
         // Obtener los repositorios desde la Application
         val app = application as GimnasioproApplication
@@ -66,6 +82,51 @@ class ListaEjerciciosActivity : AppCompatActivity() {
         setupViews(grupoMuscularActual)
         setupBackPressedCallback()
         loadEjercicios(grupoMuscularActual)
+
+        // Detectar tipo de usuario y mostrar/ocultar controles de trainer
+        detectarTipoUsuario()
+    }
+
+    /**
+     * Detecta si el usuario actual es trainer o cliente
+     * y muestra/oculta los controles correspondientes:
+     * - Trainer: ve botón "Cargar ejercicios" + botón "+ Nuevo ejercicio"
+     * - Cliente: ve solo botón "Cargar ejercicios"
+     * - No logueado: ve botón "Cargar ejercicios" (al pulsarlo le pide registrarse)
+     */
+    private fun detectarTipoUsuario() {
+        val userId = auth.currentUser?.uid
+
+        // SIEMPRE mostrar el botón de cargar ejercicios (incentiva el registro)
+        layoutCargarEjercicios.visibility = View.VISIBLE
+
+        if (userId == null) {
+            // Usuario no logueado - ocultar controles de trainer
+            layoutTrainerControls.visibility = View.GONE
+            return
+        }
+
+        // Buscar en la colección users para saber el tipo
+        firestore.collection("users").document(userId).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    tipoUsuario = document.getString("tipo") ?: ""
+
+                    // Mostrar controles de trainer solo si es trainer
+                    layoutTrainerControls.visibility = if (tipoUsuario == "trainer") {
+                        View.VISIBLE
+                    } else {
+                        View.GONE
+                    }
+                } else {
+                    // Usuario no encontrado en Firestore - ocultar controles de trainer
+                    layoutTrainerControls.visibility = View.GONE
+                }
+            }
+            .addOnFailureListener {
+                // Error al consultar - ocultar controles de trainer por seguridad
+                layoutTrainerControls.visibility = View.GONE
+            }
     }
 
     private fun setupViews(grupoMuscular: String) {
@@ -77,8 +138,15 @@ class ListaEjerciciosActivity : AppCompatActivity() {
         btnGuardarSeleccion = findViewById(R.id.btnGuardarSeleccion)
         tvNoEjercicios = findViewById(R.id.tvNoEjercicios)
         btnAgregarEjercicio = findViewById(R.id.btnAgregarEjercicio)
-        btnEliminarEjercicio = findViewById(R.id.btnEliminarEjercicio)
+        layoutTrainerControls = findViewById(R.id.layoutTrainerControls)
+        layoutCargarEjercicios = findViewById(R.id.layoutCargarEjercicios)
+        btnCargarEjercicios = findViewById(R.id.btnCargarEjercicios)
         val btnBack = findViewById<ImageButton>(R.id.btnBack)
+
+        // Ocultar controles de trainer por defecto (se mostrarán si el usuario es trainer)
+        layoutTrainerControls.visibility = View.GONE
+        // Ocultar botón cargar ejercicios por defecto (se mostrará según estado de login)
+        layoutCargarEjercicios.visibility = View.GONE
 
         // Configurar título
         tvGrupoMuscular.text = grupoMuscular
@@ -123,13 +191,14 @@ class ListaEjerciciosActivity : AppCompatActivity() {
             guardarSeleccion()
         }
 
-        // NUEVO: Configurar botones + y -
+        // Configurar botón para agregar ejercicio (solo trainers)
         btnAgregarEjercicio.setOnClickListener {
             mostrarDialogoAgregarEjercicio()
         }
 
-        btnEliminarEjercicio.setOnClickListener {
-            mostrarDialogoEliminarEjercicio()
+        // Configurar botón para cargar ejercicios desde Firebase
+        btnCargarEjercicios.setOnClickListener {
+            cargarEjerciciosDesdeFirebase()
         }
     }
 
@@ -138,8 +207,37 @@ class ListaEjerciciosActivity : AppCompatActivity() {
      */
     private fun mostrarDialogoAgregarEjercicio() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_agregar_ejercicio, null)
+        val spinnerGrupo = dialogView.findViewById<android.widget.Spinner>(R.id.spinnerGrupoMuscular)
         val etNombre = dialogView.findViewById<EditText>(R.id.etNombreEjercicio)
         val etDescripcion = dialogView.findViewById<EditText>(R.id.etDescripcionEjercicio)
+
+        // Lista de grupos musculares
+        val gruposMusculares = listOf(
+            "Pectorales",
+            "Espalda",
+            "Hombros",
+            "Bíceps y Antebrazo",
+            "Tríceps",
+            "Abdominales",
+            "Piernas",
+            "Glúteos",
+            "Gemelos"
+        )
+
+        // Configurar Spinner
+        val adapter = android.widget.ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            gruposMusculares
+        )
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerGrupo.adapter = adapter
+
+        // Seleccionar el grupo muscular actual por defecto
+        val indexActual = gruposMusculares.indexOf(grupoMuscularActual)
+        if (indexActual >= 0) {
+            spinnerGrupo.setSelection(indexActual)
+        }
 
         // Limitar descripción a 200 caracteres
         etDescripcion.filters = arrayOf(InputFilter.LengthFilter(200))
@@ -148,6 +246,7 @@ class ListaEjerciciosActivity : AppCompatActivity() {
             .setTitle("Agregar Ejercicio")
             .setView(dialogView)
             .setPositiveButton("Guardar") { _, _ ->
+                val grupoSeleccionado = spinnerGrupo.selectedItem.toString()
                 val nombre = etNombre.text.toString().trim()
                 val descripcion = etDescripcion.text.toString().trim()
 
@@ -161,115 +260,176 @@ class ListaEjerciciosActivity : AppCompatActivity() {
                     return@setPositiveButton
                 }
 
-                // Crear y guardar el ejercicio
+                // Verificar si el ejercicio ya existe y guardarlo
+                guardarEjercicioSiNoExiste(grupoSeleccionado, nombre, descripcion)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    /**
+     * Verifica si un ejercicio ya existe en Firebase y lo guarda si no existe.
+     * Muestra mensaje de error si ya existe.
+     */
+    private fun guardarEjercicioSiNoExiste(grupoMuscular: String, nombre: String, descripcion: String) {
+        lifecycleScope.launch {
+            try {
+                // Obtener la app para acceder al repositorio remoto
+                val app = application as GimnasioproApplication
+                val remoteRepository = app.ejercicioFirestoreRepository
+
+                // Verificar si ya existe un ejercicio con ese nombre en el grupo
+                val ejerciciosExistentes = remoteRepository.getEjerciciosByGrupoMuscular(grupoMuscular).first()
+                val yaExiste = ejerciciosExistentes.any {
+                    it.nombre.equals(nombre, ignoreCase = true)
+                }
+
+                if (yaExiste) {
+                    // El ejercicio ya existe - mostrar aviso
+                    runOnUiThread {
+                        AlertDialog.Builder(this@ListaEjerciciosActivity)
+                            .setTitle("⚠️ Ejercicio duplicado")
+                            .setMessage("Ya existe un ejercicio llamado \"$nombre\" en el grupo $grupoMuscular.\n\nPor favor, elige otro nombre o verifica si el ejercicio ya está disponible.")
+                            .setPositiveButton("Entendido", null)
+                            .show()
+                    }
+                    return@launch
+                }
+
+                // El ejercicio no existe - guardarlo
                 val nuevoEjercicio = Ejercicio(
-                    grupoMuscular = grupoMuscularActual,
+                    grupoMuscular = grupoMuscular,
                     nombre = nombre,
                     descripcion = descripcion,
                     imagenUrl = null
                 )
 
-                lifecycleScope.launch {
-                    try {
-                        ejercicioRepository.insertEjercicio(nuevoEjercicio)
-                        Toast.makeText(
-                            this@ListaEjerciciosActivity,
-                            "Ejercicio agregado correctamente",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        // La lista se actualizará automáticamente gracias al Flow
-                    } catch (e: Exception) {
-                        Toast.makeText(
-                            this@ListaEjerciciosActivity,
-                            "Error al guardar: ${e.message}",
-                            Toast.LENGTH_LONG
-                        ).show()
+                val trainerId = auth.currentUser?.uid
+                ejercicioRepository.insertEjercicio(nuevoEjercicio, trainerId)
+
+                runOnUiThread {
+                    Toast.makeText(
+                        this@ListaEjerciciosActivity,
+                        "✅ Ejercicio agregado correctamente",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    // Recargar lista si el ejercicio es del grupo actual
+                    if (grupoMuscular == grupoMuscularActual) {
+                        loadEjercicios(grupoMuscularActual)
                     }
                 }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    Toast.makeText(
+                        this@ListaEjerciciosActivity,
+                        "Error al guardar: ${e.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
-            .setNegativeButton("Cancelar", null)
+        }
+    }
+
+    /**
+     * Muestra diálogo invitando al usuario a registrarse para acceder a más ejercicios.
+     */
+    private fun mostrarDialogoRegistro() {
+        AlertDialog.Builder(this)
+            .setTitle("🔐 Registro requerido")
+            .setMessage("Para acceder a todos los ejercicios disponibles, necesitas crear una cuenta.\n\n¿Quieres registrarte ahora?")
+            .setPositiveButton("Registrarme") { _, _ ->
+                // Ir a PersonalTrainerActivity (tiene opciones de registro)
+                val intent = Intent(this, PersonalTrainerActivity::class.java)
+                startActivity(intent)
+            }
+            .setNegativeButton("Ahora no", null)
             .show()
     }
 
     /**
-     * Muestra diálogo para seleccionar y eliminar un ejercicio.
+     * Carga ejercicios del grupo muscular actual desde Firebase.
+     * Si no está logueado, muestra diálogo para registrarse.
      */
-    private fun mostrarDialogoEliminarEjercicio() {
+    private fun cargarEjerciciosDesdeFirebase() {
+        val userId = auth.currentUser?.uid
+
+        if (userId == null) {
+            // Usuario no logueado - mostrar diálogo para registrarse
+            mostrarDialogoRegistro()
+            return
+        }
+
+        // Mostrar indicador de carga
+        btnCargarEjercicios.isEnabled = false
+        btnCargarEjercicios.text = getString(R.string.cargando_ejercicios_firebase)
+
         lifecycleScope.launch {
             try {
-                // Obtener todos los ejercicios del grupo muscular actual
-                ejercicioRepository.getEjerciciosByGrupoMuscular(grupoMuscularActual)
-                    .collectLatest { ejercicios ->
-                        if (ejercicios.isEmpty()) {
-                            Toast.makeText(
-                                this@ListaEjerciciosActivity,
-                                "No hay ejercicios para eliminar",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            return@collectLatest
+                // Obtener la app para acceder al repositorio remoto
+                val app = application as GimnasioproApplication
+                val remoteRepository = app.ejercicioFirestoreRepository
+
+                // Obtener ejercicios de Firebase para este grupo muscular
+                remoteRepository.getEjerciciosByGrupoMuscular(grupoMuscularActual)
+                    .collect { ejerciciosFirestore ->
+                        var ejerciciosCargados = 0
+
+                        for (ejercicioFirestore in ejerciciosFirestore) {
+                            // Convertir a modelo Room
+                            val ejercicioRoom = ejercicioFirestore.toRoom()
+
+                            // Verificar si ya existe en local (por nombre y grupo)
+                            val existente = ejercicioRepository.getEjerciciosByGrupoMuscular(grupoMuscularActual)
+                                .first()
+                                .find { it.nombre.equals(ejercicioRoom.nombre, ignoreCase = true) }
+
+                            if (existente == null) {
+                                // No existe, insertarlo
+                                ejercicioRepository.insertEjercicio(ejercicioRoom)
+                                ejerciciosCargados++
+                            }
                         }
 
-                        // Crear array de nombres para el diálogo
-                        val nombresEjercicios = ejercicios.map { it.nombre }.toTypedArray()
+                        // Mostrar resultado
+                        runOnUiThread {
+                            btnCargarEjercicios.isEnabled = true
+                            btnCargarEjercicios.text = getString(R.string.btn_cargar_ejercicios)
 
-                        AlertDialog.Builder(this@ListaEjerciciosActivity)
-                            .setTitle("¿Qué ejercicio deseas eliminar?")
-                            .setItems(nombresEjercicios) { _, which ->
-                                val ejercicioSeleccionado = ejercicios[which]
-                                confirmarEliminacion(ejercicioSeleccionado)
+                            if (ejerciciosCargados > 0) {
+                                Toast.makeText(
+                                    this@ListaEjerciciosActivity,
+                                    getString(R.string.ejercicios_cargados, ejerciciosCargados),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                // Recargar la lista
+                                loadEjercicios(grupoMuscularActual)
+                            } else {
+                                Toast.makeText(
+                                    this@ListaEjerciciosActivity,
+                                    getString(R.string.no_hay_mas_ejercicios),
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
-                            .setNegativeButton("Cancelar", null)
-                            .show()
+                        }
 
-                        // Importante: romper el Flow después de mostrar el diálogo
-                        return@collectLatest
+                        // Solo procesar la primera emisión
+                        return@collect
                     }
             } catch (e: Exception) {
-                Toast.makeText(
-                    this@ListaEjerciciosActivity,
-                    "Error al cargar ejercicios: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
+                runOnUiThread {
+                    btnCargarEjercicios.isEnabled = true
+                    btnCargarEjercicios.text = getString(R.string.btn_cargar_ejercicios)
+                    Toast.makeText(
+                        this@ListaEjerciciosActivity,
+                        "${getString(R.string.error_cargar_ejercicios_firebase)}: ${e.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
         }
     }
 
-    /**
-     * Muestra diálogo de confirmación antes de eliminar un ejercicio.
-     */
-    private fun confirmarEliminacion(ejercicio: Ejercicio) {
-        AlertDialog.Builder(this)
-            .setTitle("Confirmar eliminación")
-            .setMessage("¿Estás seguro de que deseas eliminar '${ejercicio.nombre}'?")
-            .setPositiveButton("Eliminar") { _, _ ->
-                eliminarEjercicio(ejercicio)
-            }
-            .setNegativeButton("Cancelar", null)
-            .show()
-    }
-
-    /**
-     * Elimina un ejercicio de la base de datos.
-     */
-    private fun eliminarEjercicio(ejercicio: Ejercicio) {
-        lifecycleScope.launch {
-            try {
-                ejercicioRepository.deleteEjercicio(ejercicio)
-                Toast.makeText(
-                    this@ListaEjerciciosActivity,
-                    "Ejercicio eliminado correctamente",
-                    Toast.LENGTH_SHORT
-                ).show()
-                // La lista se actualizará automáticamente gracias al Flow
-            } catch (e: Exception) {
-                Toast.makeText(
-                    this@ListaEjerciciosActivity,
-                    "Error al eliminar: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-        }
-    }
 
     private fun loadEjercicios(grupoMuscular: String) {
         android.util.Log.d("ListaEjercicios", "=== Iniciando carga de ejercicios ===")
