@@ -13,10 +13,12 @@ import com.example.gimnasiopro.data.Ejercicio
 
 /**
  * Adaptador para mostrar la lista de ejercicios con soporte para selección múltiple.
+ * Soporta long press para eliminar ejercicios del dispositivo local.
  */
 class EjercicioAdapter(
     private val onEjercicioClick: (Ejercicio) -> Unit,
     private val onSelectionChanged: (Set<Ejercicio>) -> Unit,
+    private val onEjercicioLongPress: ((Ejercicio) -> Unit)? = null,
     private val maxSeleccion: Int = 10
 ) : ListAdapter<Ejercicio, EjercicioAdapter.EjercicioViewHolder>(EjercicioDiffCallback()) {
 
@@ -88,6 +90,12 @@ class EjercicioAdapter(
                 if (wasToggled) {
                     checkBox.isChecked = selectedEjercicios.contains(ejercicio)
                 }
+            }
+
+            // Configurar long click listener para eliminar ejercicio (solo local)
+            itemView.setOnLongClickListener {
+                onEjercicioLongPress?.invoke(ejercicio)
+                true // Consumir el evento
             }
 
             // Click en el checkbox

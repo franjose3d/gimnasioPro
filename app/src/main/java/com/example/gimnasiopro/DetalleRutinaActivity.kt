@@ -15,8 +15,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gimnasiopro.components.EjercicioAdapter
 import com.example.gimnasiopro.data.Ejercicio
-import com.example.gimnasiopro.data.RutinaRepository
 import com.example.gimnasiopro.data.firestore.EjercicioRepositoryHibrido
+import com.example.gimnasiopro.data.firestore.RutinaRepositoryHibrido
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -30,7 +30,7 @@ class DetalleRutinaActivity : AppCompatActivity() {
     }
 
     private lateinit var ejercicioRepository: EjercicioRepositoryHibrido
-    private lateinit var rutinaRepository: RutinaRepository
+    private lateinit var rutinaRepository: RutinaRepositoryHibrido
     private lateinit var adapter: EjercicioAdapter
 
     private lateinit var tvTituloRutina: TextView
@@ -54,7 +54,7 @@ class DetalleRutinaActivity : AppCompatActivity() {
         // Obtener los repositorios desde la Application
         val app = application as GimnasioproApplication
         ejercicioRepository = app.ejercicioRepository
-        rutinaRepository = app.rutinaRepository
+        rutinaRepository = app.rutinaRepositoryHibrido
 
         setupBackButton()
         setupViews()
@@ -91,6 +91,7 @@ class DetalleRutinaActivity : AppCompatActivity() {
                 // Actualizar estado del botón borrar según selección
                 actualizarEstadoBotonBorrar(selectedEjercicios.size)
             },
+            onEjercicioLongPress = null, // No se usa long press aquí
             maxSeleccion = 10 // Permitir seleccionar hasta 10 ejercicios
         )
         rvEjerciciosRutina.layoutManager = LinearLayoutManager(this)
@@ -180,8 +181,14 @@ class DetalleRutinaActivity : AppCompatActivity() {
 
     private fun limpiarRutina() {
         lifecycleScope.launch {
-            rutinaRepository.limpiarEjerciciosDeRutina(numeroRutina)
-            Toast.makeText(this@DetalleRutinaActivity, R.string.rutina_limpiada, Toast.LENGTH_SHORT).show()
+            rutinaRepository.limpiarEjerciciosDeRutina(numeroRutina).fold(
+                onSuccess = {
+                    Toast.makeText(this@DetalleRutinaActivity, R.string.rutina_limpiada, Toast.LENGTH_SHORT).show()
+                },
+                onFailure = { error ->
+                    Toast.makeText(this@DetalleRutinaActivity, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                }
+            )
         }
     }
 

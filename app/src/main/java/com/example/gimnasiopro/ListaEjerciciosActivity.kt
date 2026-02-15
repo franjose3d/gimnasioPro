@@ -40,7 +40,7 @@ class ListaEjerciciosActivity : AppCompatActivity() {
     }
 
     private lateinit var ejercicioRepository: EjercicioRepositoryHibrido
-    private lateinit var rutinaRepository: RutinaRepository
+    private lateinit var rutinaRepository: com.example.gimnasiopro.data.firestore.RutinaRepositoryHibrido
     private lateinit var adapter: EjercicioAdapter
     private lateinit var tvGrupoMuscular: TextView
     private lateinit var rvEjercicios: RecyclerView
@@ -51,9 +51,14 @@ class ListaEjerciciosActivity : AppCompatActivity() {
     private lateinit var tvNoEjercicios: TextView
     private lateinit var btnAgregarEjercicio: Button
     private lateinit var layoutTrainerControls: LinearLayout
-    private lateinit var layoutCargarEjercicios: LinearLayout
     private lateinit var btnCargarEjercicios: Button
     private lateinit var grupoMuscularActual: String
+
+    // Panel colapsable
+    private lateinit var btnExpandirOpciones: LinearLayout
+    private lateinit var layoutContenidoColapsable: LinearLayout
+    private lateinit var ivExpandirFlecha: android.widget.ImageView
+    private var panelExpandido = false
 
     // Firebase
     private lateinit var auth: FirebaseAuth
@@ -71,7 +76,7 @@ class ListaEjerciciosActivity : AppCompatActivity() {
         // Obtener los repositorios desde la Application
         val app = application as GimnasioproApplication
         ejercicioRepository = app.ejercicioRepository
-        rutinaRepository = app.rutinaRepository
+        rutinaRepository = app.rutinaRepositoryHibrido
 
         // Obtener el grupo muscular del intent
         grupoMuscularActual = intent.getStringExtra(EXTRA_GRUPO_MUSCULAR) ?: run {
@@ -98,7 +103,7 @@ class ListaEjerciciosActivity : AppCompatActivity() {
         val userId = auth.currentUser?.uid
 
         // SIEMPRE mostrar el botón de cargar ejercicios (incentiva el registro)
-        layoutCargarEjercicios.visibility = View.VISIBLE
+        btnCargarEjercicios.visibility = View.VISIBLE
 
         if (userId == null) {
             // Usuario no logueado - ocultar controles de trainer
@@ -106,27 +111,47 @@ class ListaEjerciciosActivity : AppCompatActivity() {
             return
         }
 
-        // Buscar en la colección users para saber el tipo
-        firestore.collection("users").document(userId).get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    tipoUsuario = document.getString("tipo") ?: ""
-
-                    // Mostrar controles de trainer solo si es trainer
-                    layoutTrainerControls.visibility = if (tipoUsuario == "trainer") {
-                        View.VISIBLE
-                    } else {
-                        View.GONE
-                    }
+        // Buscar primero en trainers
+        firestore.collection("trainers").document(userId).get()
+            .addOnSuccessListener { trainerDoc ->
+                if (trainerDoc.exists()) {
+                    tipoUsuario = "trainer"
+                    layoutTrainerControls.visibility = View.VISIBLE
                 } else {
-                    // Usuario no encontrado en Firestore - ocultar controles de trainer
-                    layoutTrainerControls.visibility = View.GONE
+                    // Si no es trainer, buscar en clientes
+                    firestore.collection("clientes").document(userId).get()
+                        .addOnSuccessListener { clienteDoc ->
+                            if (clienteDoc.exists()) {
+                                tipoUsuario = "cliente"
+                            }
+                            layoutTrainerControls.visibility = View.GONE
+                        }
+                        .addOnFailureListener {
+                            layoutTrainerControls.visibility = View.GONE
+                        }
                 }
             }
             .addOnFailureListener {
                 // Error al consultar - ocultar controles de trainer por seguridad
                 layoutTrainerControls.visibility = View.GONE
             }
+    }
+
+    /**
+     * Expande o contrae el panel de opciones (cargar ejercicios, nuevo ejercicio)
+     */
+    private fun togglePanelOpciones() {
+        panelExpandido = !panelExpandido
+
+        if (panelExpandido) {
+            // Expandir
+            layoutContenidoColapsable.visibility = View.VISIBLE
+            ivExpandirFlecha.animate().rotation(180f).setDuration(200).start()
+        } else {
+            // Contraer
+            layoutContenidoColapsable.visibility = View.GONE
+            ivExpandirFlecha.animate().rotation(0f).setDuration(200).start()
+        }
     }
 
     private fun setupViews(grupoMuscular: String) {
@@ -139,14 +164,23 @@ class ListaEjerciciosActivity : AppCompatActivity() {
         tvNoEjercicios = findViewById(R.id.tvNoEjercicios)
         btnAgregarEjercicio = findViewById(R.id.btnAgregarEjercicio)
         layoutTrainerControls = findViewById(R.id.layoutTrainerControls)
-        layoutCargarEjercicios = findViewById(R.id.layoutCargarEjercicios)
         btnCargarEjercicios = findViewById(R.id.btnCargarEjercicios)
         val btnBack = findViewById<ImageButton>(R.id.btnBack)
+
+        // Panel colapsable
+        btnExpandirOpciones = findViewById(R.id.btnExpandirOpciones)
+        layoutContenidoColapsable = findViewById(R.id.layoutContenidoColapsable)
+        ivExpandirFlecha = findViewById(R.id.ivExpandirFlecha)
 
         // Ocultar controles de trainer por defecto (se mostrarán si el usuario es trainer)
         layoutTrainerControls.visibility = View.GONE
         // Ocultar botón cargar ejercicios por defecto (se mostrará según estado de login)
-        layoutCargarEjercicios.visibility = View.GONE
+        btnCargarEjercicios.visibility = View.GONE
+
+        // Configurar botón expandir/contraer panel
+        btnExpandirOpciones.setOnClickListener {
+            togglePanelOpciones()
+        }
 
         // Configurar título
         tvGrupoMuscular.text = grupoMuscular
@@ -176,6 +210,10 @@ class ListaEjerciciosActivity : AppCompatActivity() {
             },
             onSelectionChanged = { selectedEjercicios ->
                 onSelectionChanged(selectedEjercicios)
+            },
+            onEjercicioLongPress = { ejercicio ->
+                // Mostrar diálogo para eliminar ejercicio del dispositivo local
+                mostrarDialogoEliminarEjercicioLocal(ejercicio)
             },
             maxSeleccion = MAX_EJERCICIOS
         )
@@ -324,6 +362,54 @@ class ListaEjerciciosActivity : AppCompatActivity() {
                     Toast.makeText(
                         this@ListaEjerciciosActivity,
                         "Error al guardar: ${e.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+    }
+
+    /**
+     * Muestra diálogo para eliminar un ejercicio SOLO del dispositivo local.
+     * El ejercicio seguirá existiendo en Firebase y se puede volver a cargar.
+     */
+    private fun mostrarDialogoEliminarEjercicioLocal(ejercicio: Ejercicio) {
+        AlertDialog.Builder(this)
+            .setTitle("🗑️ Eliminar ejercicio")
+            .setMessage("¿Quieres eliminar \"${ejercicio.nombre}\" de tu dispositivo?\n\nEste ejercicio solo se eliminará de tu teléfono. Puedes volver a cargarlo desde la nube en cualquier momento.")
+            .setPositiveButton("Eliminar") { _, _ ->
+                eliminarEjercicioLocal(ejercicio)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    /**
+     * Elimina un ejercicio de la base de datos local (Room).
+     * NO lo elimina de Firebase.
+     */
+    private fun eliminarEjercicioLocal(ejercicio: Ejercicio) {
+        lifecycleScope.launch {
+            try {
+                // Obtener repositorio local
+                val app = application as GimnasioproApplication
+                app.localEjercicioRepository.deleteEjercicio(ejercicio)
+
+                runOnUiThread {
+                    Toast.makeText(
+                        this@ListaEjerciciosActivity,
+                        "✅ Ejercicio eliminado de tu dispositivo",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    // Recargar la lista
+                    loadEjercicios(grupoMuscularActual)
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    Toast.makeText(
+                        this@ListaEjerciciosActivity,
+                        "Error al eliminar: ${e.message}",
                         Toast.LENGTH_LONG
                     ).show()
                 }

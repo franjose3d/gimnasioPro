@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.example.gimnasiopro.data.firestore.UserHelper
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -124,27 +125,36 @@ class PerfilActivity : AppCompatActivity() {
         // Mostrar email
         tvEmail.text = auth.currentUser?.email ?: ""
 
-        // Primero buscar el tipo de usuario
-        firestore.collection("users").document(userId).get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    tipoUsuario = document.getString("tipo") ?: ""
-                    tvTipoUsuario.text = tipoUsuario.uppercase()
+        // Buscar el tipo de usuario usando UserHelper (busca en clientes/trainers)
+        lifecycleScope.launch {
+            try {
+                val userInfo = UserHelper.getUserInfo(userId)
+                if (userInfo != null) {
+                    tipoUsuario = userInfo.tipo
+                    runOnUiThread {
+                        tvTipoUsuario.text = tipoUsuario.uppercase()
 
-                    // Cargar datos comunes
-                    etNombre.setText(document.getString("nombre") ?: "")
-                    etTelefono.setText(document.getString("telefono") ?: "")
+                        // Cargar datos comunes desde el documento encontrado
+                        etNombre.setText(userInfo.nombre ?: "")
+                        etTelefono.setText(userInfo.documento?.getString("telefono") ?: "")
 
-                    // Mostrar campos específicos según el tipo
-                    when (tipoUsuario) {
-                        "trainer" -> cargarDatosTrainer()
-                        "cliente" -> cargarDatosCliente()
+                        // Mostrar campos específicos según el tipo
+                        when (tipoUsuario) {
+                            "trainer" -> cargarDatosTrainer()
+                            "cliente" -> cargarDatosCliente()
+                        }
+                    }
+                } else {
+                    runOnUiThread {
+                        Toast.makeText(this@PerfilActivity, "No se encontró el perfil", Toast.LENGTH_SHORT).show()
                     }
                 }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    Toast.makeText(this@PerfilActivity, "Error al cargar perfil", Toast.LENGTH_SHORT).show()
+                }
             }
-            .addOnFailureListener {
-                Toast.makeText(this, "Error al cargar perfil", Toast.LENGTH_SHORT).show()
-            }
+        }
     }
 
     private fun cargarDatosTrainer() {
@@ -208,27 +218,14 @@ class PerfilActivity : AppCompatActivity() {
         btnGuardarCambios.isEnabled = false
         btnGuardarCambios.text = "Guardando..."
 
-        // Actualizar datos comunes en users/
-        val datosComunes = mapOf(
-            "nombre" to nombre,
-            "telefono" to telefono
-        )
-
-        firestore.collection("users").document(userId)
-            .update(datosComunes)
-            .addOnSuccessListener {
-                // Actualizar datos específicos según el tipo
-                when (tipoUsuario) {
-                    "trainer" -> guardarDatosTrainer(nombre, telefono)
-                    "cliente" -> guardarDatosCliente(nombre, telefono)
-                    else -> {
-                        finalizarGuardado(true)
-                    }
-                }
-            }
-            .addOnFailureListener {
+        // Actualizar datos directamente en la colección correspondiente (clientes/trainers)
+        when (tipoUsuario) {
+            "trainer" -> guardarDatosTrainer(nombre, telefono)
+            "cliente" -> guardarDatosCliente(nombre, telefono)
+            else -> {
                 finalizarGuardado(false)
             }
+        }
     }
 
     private fun guardarDatosTrainer(nombre: String, telefono: String) {
@@ -304,7 +301,7 @@ class PerfilActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                // 1. Eliminar de la colección específica (trainers o clientes)
+                // Eliminar de la colección específica (trainers o clientes)
                 when (tipoUsuario) {
                     "trainer" -> {
                         firestore.collection("trainers").document(userId).delete().await()
@@ -314,10 +311,7 @@ class PerfilActivity : AppCompatActivity() {
                     }
                 }
 
-                // 2. Eliminar de la colección users
-                firestore.collection("users").document(userId).delete().await()
-
-                // 3. Eliminar la cuenta de Firebase Auth
+                // Eliminar la cuenta de Firebase Auth
                 auth.currentUser?.delete()?.await()
 
                 runOnUiThread {

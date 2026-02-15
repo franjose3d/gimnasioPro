@@ -85,63 +85,103 @@
             android:visibility="gone" />
     </FrameLayout>
 
-    <!-- Botón Cargar Ejercicios (visible para usuarios logueados) -->
+    <!-- Panel colapsable de opciones -->
     <LinearLayout
-        android:id="@+id/layoutCargarEjercicios"
+        android:id="@+id/layoutPanelOpciones"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp"
-        android:background="@color/dark_green_background"
-        android:visibility="gone">
+        android:background="@color/darker_green_header">
 
-        <Button
-            android:id="@+id/btnCargarEjercicios"
+        <!-- Botón para expandir/contraer -->
+        <LinearLayout
+            android:id="@+id/btnExpandirOpciones"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:text="@string/btn_cargar_ejercicios"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_on_button"
-            android:background="@drawable/bg_card_trainer"
-            android:elevation="4dp"
-            android:stateListAnimator="@null" />
-    </LinearLayout>
+            android:layout_height="44dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
 
-    <!-- Sección para Agregar Ejercicios (Solo Trainers) -->
-    <LinearLayout
-        android:id="@+id/layoutTrainerControls"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="12dp"
-        android:background="@color/dark_green_background">
+            <TextView
+                android:id="@+id/tvExpandirOpciones"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Más opciones"
+                android:textColor="@color/text_light_gray"
+                android:textSize="13sp" />
 
-        <!-- Texto de advertencia -->
-        <TextView
-            android:id="@+id/tvAdvertenciaTrainer"
+            <ImageView
+                android:id="@+id/ivExpandirFlecha"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="6dp"
+                android:src="@drawable/ic_arrow_down"
+                android:rotation="0"
+                android:contentDescription="Expandir" />
+        </LinearLayout>
+
+        <!-- Contenido colapsable -->
+        <LinearLayout
+            android:id="@+id/layoutContenidoColapsable"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/advertencia_trainer_ejercicios"
-            android:textSize="11sp"
-            android:textColor="@color/text_light_gray"
-            android:textStyle="italic"
-            android:gravity="center"
-            android:paddingHorizontal="8dp"
-            android:paddingBottom="8dp" />
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:paddingHorizontal="12dp"
+            android:paddingBottom="12dp">
 
-        <!-- Botón AGREGAR (+) -->
-        <Button
-            android:id="@+id/btnAgregarEjercicio"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:text="@string/btn_nuevo_ejercicio"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_on_button"
-            android:background="@drawable/bg_card_trainer"
-            android:elevation="8dp"
-            android:stateListAnimator="@null" />
+            <!-- Botón Cargar Ejercicios (visible para usuarios logueados) -->
+            <Button
+                android:id="@+id/btnCargarEjercicios"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="@string/btn_cargar_ejercicios"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_on_button"
+                android:background="@drawable/bg_card_trainer"
+                android:elevation="4dp"
+                android:stateListAnimator="@null"
+                android:visibility="gone" />
+
+            <!-- Sección para Agregar Ejercicios (Solo Trainers) -->
+            <LinearLayout
+                android:id="@+id/layoutTrainerControls"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp"
+                android:visibility="gone">
+
+                <!-- Texto de advertencia -->
+                <TextView
+                    android:id="@+id/tvAdvertenciaTrainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/advertencia_trainer_ejercicios"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_light_gray"
+                    android:textStyle="italic"
+                    android:gravity="center"
+                    android:paddingHorizontal="8dp"
+                    android:paddingBottom="8dp" />
+
+                <!-- Botón AGREGAR (+) -->
+                <Button
+                    android:id="@+id/btnAgregarEjercicio"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:text="@string/btn_nuevo_ejercicio"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_button"
+                    android:background="@drawable/bg_card_trainer"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Barra de selección (visible cuando hay ejercicios seleccionados) -->

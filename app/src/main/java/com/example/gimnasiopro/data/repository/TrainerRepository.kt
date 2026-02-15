@@ -8,14 +8,12 @@ import kotlinx.coroutines.tasks.await
 /**
  * Repository para Trainers.
  *
- * GUARDA EN 2 COLECCIONES:
- * 1. users/ → Datos comunes (para búsqueda rápida por tipo)
- * 2. trainers/ → Datos específicos del trainer
+ * GUARDA SOLO EN:
+ * trainers/{userId} → Datos completos del trainer + subcolecciones (rutinas, estadisticas, etc.)
  */
 class TrainerRepository {
 
     private val firestore = FirebaseFirestore.getInstance()
-    private val usersCollection = firestore.collection("users")
     private val trainersCollection = firestore.collection("trainers")
 
     /**
@@ -55,16 +53,13 @@ class TrainerRepository {
                 )
             }
 
-            // GUARDAR EN users/ (colección común)
-            usersCollection
-                .document(trainer.userId)
-                .set(trainer.toUserMap(), SetOptions.merge())
-                .await()
+            // GUARDAR EN trainers/ (todos los datos del trainer)
+            val datosTrainer = trainer.toTrainerMap().toMutableMap()
+            datosTrainer["tipo"] = "trainer"
 
-            // GUARDAR EN trainers/ (colección específica)
             trainersCollection
                 .document(trainer.userId)
-                .set(trainer.toTrainerMap())
+                .set(datosTrainer)
                 .await()
 
             Result.success(Unit)
@@ -101,16 +96,13 @@ class TrainerRepository {
      */
     suspend fun updateTrainer(trainer: Trainer): Result<Unit> {
         return try {
-            // Actualizar en users/
-            usersCollection
-                .document(trainer.userId)
-                .set(trainer.toUserMap(), SetOptions.merge())
-                .await()
+            // Actualizar en trainers/ (incluye todos los datos)
+            val datosCompletos = trainer.toTrainerMap().toMutableMap()
+            datosCompletos["tipo"] = "trainer"
 
-            // Actualizar en trainers/
             trainersCollection
                 .document(trainer.userId)
-                .set(trainer.toTrainerMap(), SetOptions.merge())
+                .set(datosCompletos, SetOptions.merge())
                 .await()
 
             Result.success(Unit)
@@ -125,13 +117,7 @@ class TrainerRepository {
      */
     suspend fun updateEmailVerified(userId: String, verified: Boolean): Result<Unit> {
         return try {
-            // Actualizar en users/
-            usersCollection
-                .document(userId)
-                .update("emailVerificado", verified)
-                .await()
-
-            // Actualizar en trainers/
+            // Actualizar solo en trainers/
             trainersCollection
                 .document(userId)
                 .update("emailVerificado", verified)

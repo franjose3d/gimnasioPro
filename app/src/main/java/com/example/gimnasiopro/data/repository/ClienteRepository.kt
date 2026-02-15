@@ -8,14 +8,12 @@ import kotlinx.coroutines.tasks.await
 /**
  * Repository para Clientes.
  *
- * GUARDA EN 2 COLECCIONES:
- * 1. users/ → Datos comunes (para búsqueda rápida por tipo)
- * 2. clientes/ → Datos específicos del cliente
+ * GUARDA SOLO EN:
+ * clientes/{userId} → Datos completos del cliente + subcolecciones (rutinas, estadisticas, etc.)
  */
 class ClienteRepository {
 
     private val firestore = FirebaseFirestore.getInstance()
-    private val usersCollection = firestore.collection("users")
     private val clientesCollection = firestore.collection("clientes")
 
     /**
@@ -43,16 +41,13 @@ class ClienteRepository {
                 )
             }
 
-            // GUARDAR EN users/ (colección común)
-            usersCollection
-                .document(cliente.userId)
-                .set(cliente.toUserMap(), SetOptions.merge())
-                .await()
+            // GUARDAR EN clientes/ (todos los datos del cliente)
+            val datosCliente = cliente.toClienteMap().toMutableMap()
+            datosCliente["tipo"] = "cliente"
 
-            // GUARDAR EN clientes/ (colección específica)
             clientesCollection
                 .document(cliente.userId)
-                .set(cliente.toClienteMap())
+                .set(datosCliente)
                 .await()
 
             Result.success(Unit)
@@ -89,16 +84,13 @@ class ClienteRepository {
      */
     suspend fun updateCliente(cliente: Cliente): Result<Unit> {
         return try {
-            // Actualizar en users/
-            usersCollection
-                .document(cliente.userId)
-                .set(cliente.toUserMap(), SetOptions.merge())
-                .await()
+            // Actualizar en clientes/ (incluye todos los datos)
+            val datosCompletos = cliente.toClienteMap().toMutableMap()
+            datosCompletos["tipo"] = "cliente"
 
-            // Actualizar en clientes/
             clientesCollection
                 .document(cliente.userId)
-                .set(cliente.toClienteMap(), SetOptions.merge())
+                .set(datosCompletos, SetOptions.merge())
                 .await()
 
             Result.success(Unit)
@@ -156,11 +148,6 @@ class ClienteRepository {
      */
     suspend fun updateEmailVerified(userId: String, verified: Boolean): Result<Unit> {
         return try {
-            // Actualizar en users/
-            usersCollection
-                .document(userId)
-                .update("emailVerificado", verified)
-                .await()
 
             // Actualizar en clientes/
             clientesCollection

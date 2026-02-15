@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.gimnasiopro.R
+import com.example.gimnasiopro.data.firestore.UserHelper
 import com.example.gimnasiopro.data.repository.ClienteRepository
 import com.example.gimnasiopro.data.repository.TrainerRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -180,45 +181,38 @@ class VerificarEmailActivity : AppCompatActivity() {
     private fun actualizarEmailVerificadoEnFirestore(userId: String) {
         lifecycleScope.launch {
             try {
-                // Consultar la colección users/ para determinar el tipo
-                val userDoc = firestore.collection("users")
-                    .document(userId)
-                    .get()
-                    .await()
+                // Usar UserHelper para determinar el tipo de usuario
+                val userInfo = UserHelper.getUserInfo(userId)
 
-                if (userDoc.exists()) {
-                    val tipo = userDoc.data?.get("tipo") as? String
-                    
-                    when (tipo) {
-                        "cliente" -> {
-                            val result = clienteRepository.updateEmailVerified(userId, true)
-                            if (result.isSuccess) {
-                                // Actualizado correctamente
-                            } else {
-                                Toast.makeText(
-                                    this@VerificarEmailActivity,
-                                    "⚠️ Email verificado pero error al actualizar base de datos",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
+                when (userInfo?.tipo) {
+                    "cliente" -> {
+                        val result = clienteRepository.updateEmailVerified(userId, true)
+                        if (result.isSuccess) {
+                            // Actualizado correctamente
+                        } else {
+                            Toast.makeText(
+                                this@VerificarEmailActivity,
+                                "⚠️ Email verificado pero error al actualizar base de datos",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
-                        "trainer" -> {
-                            val result = trainerRepository.updateEmailVerified(userId, true)
-                            if (result.isSuccess) {
-                                // Actualizado correctamente
-                            } else {
-                                Toast.makeText(
-                                    this@VerificarEmailActivity,
-                                    "⚠️ Email verificado pero error al actualizar base de datos",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
+                    }
+                    "trainer" -> {
+                        val result = trainerRepository.updateEmailVerified(userId, true)
+                        if (result.isSuccess) {
+                            // Actualizado correctamente
+                        } else {
+                            Toast.makeText(
+                                this@VerificarEmailActivity,
+                                "⚠️ Email verificado pero error al actualizar base de datos",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
-                        else -> {
-                            // Tipo desconocido, intentar actualizar en ambas colecciones
-                            clienteRepository.updateEmailVerified(userId, true)
-                            trainerRepository.updateEmailVerified(userId, true)
-                        }
+                    }
+                    else -> {
+                        // Tipo desconocido, intentar actualizar en ambas colecciones
+                        clienteRepository.updateEmailVerified(userId, true)
+                        trainerRepository.updateEmailVerified(userId, true)
                     }
                 }
             } catch (e: Exception) {

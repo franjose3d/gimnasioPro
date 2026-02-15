@@ -37,8 +37,8 @@ class FirestoreMigrationHelper(
     suspend fun migrarRutinasUsuario(userId: String): Result<Int> {
         return try {
             val rutinas = rutinaRepository.getAllRutinas().first()
-            val rutinaFirestoreRepo = RutinaFirestoreRepository(userId)
-            
+            val rutinaFirestoreRepo = RutinaFirestoreRepository(userId, "cliente")
+
             var count = 0
             rutinas.forEach { rutina ->
                 val rutinaFirestore = rutina.toFirestore()
@@ -233,7 +233,8 @@ fun Rutina.toFirestore(): RutinaFirestore {
         ejercicioIds = this.ejercicioIds.map { it.toString() },
         fechaCreacion = java.util.Date(this.fechaCreacion),
         fechaModificacion = java.util.Date(this.fechaModificacion),
-        creadoPor = ""
+        creadoPorId = "",
+        creadoPorTipo = "cliente"
     )
 }
 

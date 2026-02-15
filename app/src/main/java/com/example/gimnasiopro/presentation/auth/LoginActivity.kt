@@ -331,8 +331,29 @@ class LoginActivity : AppCompatActivity() {
 
     /**
      * IR A MAINACTIVITY
+     * Antes de ir, migrar rutinas locales a Firebase
      */
     private fun irAMainActivity() {
+        // Migrar rutinas a Firebase en background
+        lifecycleScope.launch {
+            try {
+                val app = application as GimnasioproApplication
+                val resultado = app.rutinaRepositoryHibrido.migrarRutinasAFirebase()
+                resultado.fold(
+                    onSuccess = { count ->
+                        if (count > 0) {
+                            android.util.Log.d("LoginActivity", "Migradas $count rutinas a Firebase")
+                        }
+                    },
+                    onFailure = { error ->
+                        android.util.Log.e("LoginActivity", "Error migrando rutinas: ${error.message}")
+                    }
+                )
+            } catch (e: Exception) {
+                android.util.Log.e("LoginActivity", "Error en migración: ${e.message}")
+            }
+        }
+
         val intent = Intent(this, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)

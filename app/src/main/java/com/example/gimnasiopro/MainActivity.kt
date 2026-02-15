@@ -125,45 +125,30 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // Si no hay displayName, buscar en Firestore (colección users)
-        firestore.collection("users").document(uid).get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    val nombre = document.getString("nombre")
+        // Buscar en clientes primero
+        firestore.collection("clientes").document(uid).get()
+            .addOnSuccessListener { clienteDoc ->
+                if (clienteDoc.exists()) {
+                    val nombre = clienteDoc.getString("nombre")
                     if (!nombre.isNullOrBlank()) {
                         tvUserName.text = nombre.uppercase()
                         return@addOnSuccessListener
                     }
                 }
 
-                // Si no está en users, buscar en clientes
-                firestore.collection("clientes").document(uid).get()
-                    .addOnSuccessListener { clienteDoc ->
-                        if (clienteDoc.exists()) {
-                            val nombre = clienteDoc.getString("nombre")
+                // Si no está en clientes, buscar en trainers
+                firestore.collection("trainers").document(uid).get()
+                    .addOnSuccessListener { trainerDoc ->
+                        if (trainerDoc.exists()) {
+                            val nombre = trainerDoc.getString("nombre")
                             if (!nombre.isNullOrBlank()) {
                                 tvUserName.text = nombre.uppercase()
                                 return@addOnSuccessListener
                             }
                         }
 
-                        // Si no está en clientes, buscar en trainers
-                        firestore.collection("trainers").document(uid).get()
-                            .addOnSuccessListener { trainerDoc ->
-                                if (trainerDoc.exists()) {
-                                    val nombre = trainerDoc.getString("nombre")
-                                    if (!nombre.isNullOrBlank()) {
-                                        tvUserName.text = nombre.uppercase()
-                                        return@addOnSuccessListener
-                                    }
-                                }
-
-                                // Fallback: usar email
-                                tvUserName.text = email?.substringBefore("@")?.uppercase() ?: "USUARIO"
-                            }
-                            .addOnFailureListener {
-                                tvUserName.text = email?.substringBefore("@")?.uppercase() ?: "USUARIO"
-                            }
+                        // Fallback: usar email
+                        tvUserName.text = email?.substringBefore("@")?.uppercase() ?: "USUARIO"
                     }
                     .addOnFailureListener {
                         tvUserName.text = email?.substringBefore("@")?.uppercase() ?: "USUARIO"

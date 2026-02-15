@@ -9,13 +9,18 @@ import java.util.Date
 
 /**
  * Repositorio para entrenamientos en Firestore.
- * Se guarda en users/{userId}/entrenamientos/{entrenamientoId}
+ * Se guarda en clientes/{userId}/entrenamientos/{entrenamientoId}
+ * o trainers/{userId}/entrenamientos/{entrenamientoId}
  */
-class EntrenamientoFirestoreRepository(private val userId: String) {
+class EntrenamientoFirestoreRepository(
+    private val userId: String,
+    private val tipoUsuario: String = "cliente"
+) {
 
     private val firestore = FirebaseFirestore.getInstance()
+    private val coleccionBase = if (tipoUsuario == "trainer") "trainers" else "clientes"
     private val entrenamientosCollection = firestore
-        .collection("users")
+        .collection(coleccionBase)
         .document(userId)
         .collection("entrenamientos")
 

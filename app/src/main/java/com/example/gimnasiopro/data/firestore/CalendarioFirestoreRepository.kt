@@ -7,13 +7,18 @@ import kotlinx.coroutines.tasks.await
 
 /**
  * Repositorio para calendario (rutinas por día de semana) en Firestore.
- * Se guarda en users/{userId}/calendario/{diaSemana}
+ * Se guarda en clientes/{userId}/calendario/{diaSemana}
+ * o trainers/{userId}/calendario/{diaSemana}
  */
-class CalendarioFirestoreRepository(private val userId: String) {
+class CalendarioFirestoreRepository(
+    private val userId: String,
+    private val tipoUsuario: String = "cliente"
+) {
 
     private val firestore = FirebaseFirestore.getInstance()
+    private val coleccionBase = if (tipoUsuario == "trainer") "trainers" else "clientes"
     private val calendarioCollection = firestore
-        .collection("users")
+        .collection(coleccionBase)
         .document(userId)
         .collection("calendario")
 

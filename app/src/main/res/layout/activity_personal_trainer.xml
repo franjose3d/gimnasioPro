@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:text="Personal Trainer"
+            android:text="Tu Registro"
             android:textSize="22sp"
             android:textStyle="bold"
             android:textColor="@color/accent_blue" />

@@ -9,13 +9,17 @@ import java.util.Date
 
 /**
  * Repositorio para estadísticas en Firestore.
- * Se guarda en users/{userId}/estadisticas/{fecha}
+ * Se guarda en clientes/{userId}/estadisticas/{fecha} o trainers/{userId}/estadisticas/{fecha}
  */
-class EstadisticaFirestoreRepository(private val userId: String) {
+class EstadisticaFirestoreRepository(
+    private val userId: String,
+    private val tipoUsuario: String = "cliente"
+) {
 
     private val firestore = FirebaseFirestore.getInstance()
+    private val coleccionBase = if (tipoUsuario == "trainer") "trainers" else "clientes"
     private val estadisticasCollection = firestore
-        .collection("users")
+        .collection(coleccionBase)
         .document(userId)
         .collection("estadisticas")
 

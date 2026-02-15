@@ -50,10 +50,22 @@ class GimnasioproApplication : Application() {
         EjercicioRepositoryHibrido(localEjercicioRepository, ejercicioFirestoreRepository)
     }
 
-    // Lazy initialization del repositorio de rutinas
+    // Lazy initialization del repositorio de rutinas (local)
     val rutinaRepository: RutinaRepository by lazy {
         Log.d(TAG, "Inicializando repositorio de rutinas...")
         RutinaRepository(database.rutinaDao())
+    }
+
+    // Repositorio híbrido de rutinas (Room + Firebase)
+    val rutinaRepositoryHibrido: com.example.gimnasiopro.data.firestore.RutinaRepositoryHibrido by lazy {
+        Log.d(TAG, "Inicializando repositorio híbrido de rutinas...")
+        com.example.gimnasiopro.data.firestore.RutinaRepositoryHibrido(rutinaRepository)
+    }
+
+    // Repositorio de conexiones trainer-cliente
+    val conexionRepository: com.example.gimnasiopro.data.firestore.ConexionRepository by lazy {
+        Log.d(TAG, "Inicializando repositorio de conexiones...")
+        com.example.gimnasiopro.data.firestore.ConexionRepository()
     }
 
     // Lazy initialization del repositorio de registros de entrenamiento
