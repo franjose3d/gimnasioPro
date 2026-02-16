@@ -1,5 +1,6 @@
 package com.example.gimnasiopro.data.firestore
 
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.flow.Flow
@@ -10,18 +11,44 @@ import java.util.Date
 /**
  * Repositorio para estadísticas en Firestore.
  * Se guarda en clientes/{userId}/estadisticas/{fecha} o trainers/{userId}/estadisticas/{fecha}
+ *
+ * IMPORTANTE: Solo guarda estadísticas si el documento del usuario ya existe en Firestore.
+ * Esto evita crear documentos "virtuales" (vacíos) en la colección de clientes/trainers.
  */
 class EstadisticaFirestoreRepository(
     private val userId: String,
     private val tipoUsuario: String = "cliente"
 ) {
+    companion object {
+        private const val TAG = "EstadisticaFirestoreRepo"
+    }
 
     private val firestore = FirebaseFirestore.getInstance()
     private val coleccionBase = if (tipoUsuario == "trainer") "trainers" else "clientes"
-    private val estadisticasCollection = firestore
-        .collection(coleccionBase)
-        .document(userId)
-        .collection("estadisticas")
+
+    // Referencia al documento del usuario
+    private val userDocument = firestore.collection(coleccionBase).document(userId)
+
+    // Colección de estadísticas del usuario
+    private val estadisticasCollection = userDocument.collection("estadisticas")
+
+    /**
+     * Verifica si el documento del usuario existe en Firestore.
+     * Esto evita crear subcolecciones bajo documentos inexistentes.
+     */
+    private suspend fun verificarUsuarioExiste(): Boolean {
+        return try {
+            val doc = userDocument.get().await()
+            val exists = doc.exists()
+            if (!exists) {
+                Log.w(TAG, "⚠️ Usuario $userId no existe en $coleccionBase. No se guardarán estadísticas en Firestore.")
+            }
+            exists
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error al verificar usuario: ${e.message}")
+            false
+        }
+    }
 
     /**
      * Obtener estadística de un día específico
@@ -102,14 +129,22 @@ class EstadisticaFirestoreRepository(
     }
 
     /**
-     * Guardar o actualizar estadística de un día
+     * Guardar o actualizar estadística de un día.
+     * Solo guarda si el usuario existe en Firestore para evitar crear documentos virtuales.
      */
     suspend fun guardarEstadistica(estadistica: EstadisticaFirestore): Result<Unit> {
         return try {
+            // Verificar que el usuario existe antes de guardar
+            if (!verificarUsuarioExiste()) {
+                Log.w(TAG, "⚠️ No se guardará estadística porque el usuario no existe en Firestore")
+                return Result.failure(IllegalStateException("Usuario no registrado en Firestore"))
+            }
+
             estadisticasCollection
                 .document(estadistica.fecha)
                 .set(estadistica.toMap())
                 .await()
+            Log.d(TAG, "✅ Estadística guardada para fecha ${estadistica.fecha}")
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -117,7 +152,8 @@ class EstadisticaFirestoreRepository(
     }
 
     /**
-     * Actualizar estadística agregando datos de un entrenamiento
+     * Actualizar estadística agregando datos de un entrenamiento.
+     * Solo guarda si el usuario existe en Firestore para evitar crear documentos virtuales.
      */
     suspend fun agregarEntrenamientoAEstadistica(
         fecha: Date,
@@ -127,6 +163,12 @@ class EstadisticaFirestoreRepository(
         rutinaId: String?
     ): Result<Unit> {
         return try {
+            // IMPORTANTE: Verificar que el usuario existe antes de guardar
+            if (!verificarUsuarioExiste()) {
+                Log.w(TAG, "⚠️ No se guardará estadística porque el usuario $userId no existe en $coleccionBase")
+                return Result.failure(IllegalStateException("Usuario no registrado en Firestore"))
+            }
+
             val fechaStr = EstadisticaFirestore.formatFecha(fecha)
             val fechaTimestamp = EstadisticaFirestore.getInicioDia(fecha)
             val calendar = java.util.Calendar.getInstance().apply { time = fecha }
@@ -145,6 +187,7 @@ class EstadisticaFirestoreRepository(
                         "rutinasUsadas" to com.google.firebase.firestore.FieldValue.arrayUnion(rutinaId ?: "")
                     )
                 ).await()
+                Log.d(TAG, "✅ Estadística actualizada para $fechaStr en $coleccionBase/$userId")
             } else {
                 // Crear nueva estadística
                 val nuevaEstadistica = EstadisticaFirestore(
@@ -160,6 +203,7 @@ class EstadisticaFirestoreRepository(
                     rutinasUsadas = if (rutinaId != null) listOf(rutinaId) else emptyList()
                 )
                 estadisticasCollection.document(fechaStr).set(nuevaEstadistica.toMap()).await()
+                Log.d(TAG, "✅ Nueva estadística creada para $fechaStr en $coleccionBase/$userId")
             }
             
             Result.success(Unit)

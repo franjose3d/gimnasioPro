@@ -15,7 +15,7 @@ import com.example.gimnasiopro.data.Ejercicio
  * Adaptador para mostrar la lista de ejercicios con soporte para selección múltiple.
  * Soporta long press para eliminar ejercicios del dispositivo local.
  */
-class EjercicioAdapter(
+class EjercicioAdapter @JvmOverloads constructor(
     private val onEjercicioClick: (Ejercicio) -> Unit,
     private val onSelectionChanged: (Set<Ejercicio>) -> Unit,
     private val onEjercicioLongPress: ((Ejercicio) -> Unit)? = null,

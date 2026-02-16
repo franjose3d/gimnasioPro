@@ -194,6 +194,8 @@ class DetalleRutinaActivity : AppCompatActivity() {
 
     private fun navegarAEjercicios() {
         val intent = Intent(this, EjerciciosActivity::class.java)
+        // Pasar el número de rutina para que al guardar ejercicios se añadan directamente
+        intent.putExtra(EjerciciosActivity.EXTRA_NUMERO_RUTINA, numeroRutina)
         startActivity(intent)
     }
 

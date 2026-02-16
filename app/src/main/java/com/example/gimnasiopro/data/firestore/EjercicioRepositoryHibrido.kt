@@ -154,18 +154,23 @@ class EjercicioRepositoryHibrido(
      * Insertar nuevo ejercicio (local + Firestore).
      * @param ejercicio El ejercicio a insertar
      * @param creadoPor ID del usuario (trainer) que crea el ejercicio (opcional)
+     *                  Si es null, solo se guarda en local (sincronización desde Firebase)
      */
     suspend fun insertEjercicio(ejercicio: Ejercicio, creadoPor: String? = null): Long {
         // Insertar en local primero
         val localId = localRepository.insertEjercicio(ejercicio)
 
-        // Intentar insertar en Firestore
-        try {
-            val ejercicioFirestore = ejercicio.toFirestoreModel(creadoPor)
-            remoteRepository.crearEjercicio(ejercicioFirestore)
-        } catch (e: Exception) {
-            // Log pero no fallar si Firestore falla
-            android.util.Log.e("EjercicioRepoHibrido", "Error al guardar en Firestore", e)
+        // Solo subir a Firestore si es un trainer creando un ejercicio nuevo
+        // (creadoPor != null significa creación explícita desde UI de trainer)
+        if (creadoPor != null) {
+            try {
+                val ejercicioFirestore = ejercicio.toFirestoreModel(creadoPor)
+                // forzarCreacion = false para que verifique duplicados
+                remoteRepository.crearEjercicio(ejercicioFirestore, forzarCreacion = false)
+            } catch (e: Exception) {
+                // Log pero no fallar si Firestore falla
+                android.util.Log.e("EjercicioRepoHibrido", "Error al guardar en Firestore", e)
+            }
         }
 
         return localId
@@ -173,19 +178,14 @@ class EjercicioRepositoryHibrido(
 
     /**
      * Insertar múltiples ejercicios.
+     * Solo guarda en local (Room) - NO sube a Firestore.
+     * Este método se usa principalmente para sincronización desde Firestore al local,
+     * por lo que los ejercicios ya existen en la nube.
      */
     suspend fun insertAllEjercicios(ejercicios: List<Ejercicio>) {
         localRepository.insertAllEjercicios(ejercicios)
-
-        // Sincronizar con Firestore en background
-        try {
-            ejercicios.forEach { ejercicio ->
-                val ejercicioFirestore = ejercicio.toFirestoreModel()
-                remoteRepository.crearEjercicio(ejercicioFirestore)
-            }
-        } catch (e: Exception) {
-            // Log pero no fallar
-        }
+        // NO sincronizar con Firestore - esto causaba duplicados
+        // Los ejercicios ya vienen de Firestore o son predefinidos
     }
 
     /**

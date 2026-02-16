@@ -162,9 +162,15 @@ class EjercicioFirestoreRepository {
     }
 
     /**
-     * Crear un nuevo ejercicio en el grupo muscular correspondiente
+     * Crear un nuevo ejercicio en el grupo muscular correspondiente.
+     * IMPORTANTE: Verifica si ya existe un ejercicio con el mismo nombre antes de crearlo
+     * para evitar duplicados.
+     *
+     * @param ejercicio El ejercicio a crear
+     * @param forzarCreacion Si es true, no verifica duplicados (solo para trainers desde UI)
+     * @return ID del ejercicio creado, o ID del existente si ya estaba
      */
-    suspend fun crearEjercicio(ejercicio: EjercicioFirestore): Result<String> {
+    suspend fun crearEjercicio(ejercicio: EjercicioFirestore, forzarCreacion: Boolean = false): Result<String> {
         return try {
             // Asegurar que el grupo existe
             val grupoDoc = gruposCollection.document(ejercicio.grupoMuscular)
@@ -178,6 +184,22 @@ class EjercicioFirestoreRepository {
                 )).await()
             }
 
+            // Verificar si ya existe un ejercicio con el mismo nombre (evitar duplicados)
+            if (!forzarCreacion) {
+                val existentes = grupoDoc
+                    .collection("ejercicios")
+                    .whereEqualTo("nombre", ejercicio.nombre)
+                    .get()
+                    .await()
+
+                if (!existentes.isEmpty) {
+                    // Ya existe, devolver el ID del existente
+                    val existenteId = existentes.documents.first().id
+                    android.util.Log.d("EjercicioRepo", "Ejercicio '${ejercicio.nombre}' ya existe con ID: $existenteId")
+                    return Result.success(existenteId)
+                }
+            }
+
             // Crear el ejercicio en la subcolección
             val docRef = grupoDoc
                 .collection("ejercicios")
@@ -187,6 +209,7 @@ class EjercicioFirestoreRepository {
             // Actualizar el documento con su ID
             docRef.update("id", docRef.id).await()
 
+            android.util.Log.d("EjercicioRepo", "Ejercicio '${ejercicio.nombre}' creado con ID: ${docRef.id}")
             Result.success(docRef.id)
         } catch (e: Exception) {
             Result.failure(e)
@@ -342,41 +365,54 @@ class EjercicioFirestoreRepository {
         return try {
             var totalEliminados = 0
 
+            android.util.Log.d("EjercicioRepo", "🧹 Iniciando limpieza de duplicados...")
+
             gruposMusculares.forEach { (grupoNombre, _) ->
-                val snapshot = gruposCollection
-                    .document(grupoNombre)
-                    .collection("ejercicios")
-                    .get()
-                    .await()
+                try {
+                    val snapshot = gruposCollection
+                        .document(grupoNombre)
+                        .collection("ejercicios")
+                        .get()
+                        .await()
 
-                // Agrupar ejercicios por nombre (lowercase para comparación)
-                val ejerciciosPorNombre = mutableMapOf<String, MutableList<com.google.firebase.firestore.DocumentSnapshot>>()
+                    android.util.Log.d("EjercicioRepo", "Procesando grupo: $grupoNombre (${snapshot.size()} ejercicios)")
 
-                snapshot.documents.forEach { doc ->
-                    val nombre = doc.getString("nombre")?.lowercase()?.trim() ?: return@forEach
-                    if (ejerciciosPorNombre[nombre] == null) {
-                        ejerciciosPorNombre[nombre] = mutableListOf()
+                    // Agrupar ejercicios por nombre normalizado
+                    val ejerciciosPorNombre = mutableMapOf<String, MutableList<com.google.firebase.firestore.DocumentSnapshot>>()
+
+                    snapshot.documents.forEach { doc ->
+                        val nombre = doc.getString("nombre")?.lowercase()?.trim() ?: return@forEach
+                        if (ejerciciosPorNombre[nombre] == null) {
+                            ejerciciosPorNombre[nombre] = mutableListOf()
+                        }
+                        ejerciciosPorNombre[nombre]!!.add(doc)
                     }
-                    ejerciciosPorNombre[nombre]!!.add(doc)
-                }
 
-                // Eliminar duplicados (mantener solo el primero)
-                ejerciciosPorNombre.forEach { (nombre, docs) ->
-                    if (docs.size > 1) {
-                        android.util.Log.d("EjercicioRepo", "Encontrados ${docs.size} duplicados de '$nombre' en $grupoNombre")
-                        // Eliminar todos excepto el primero
-                        docs.drop(1).forEach { doc ->
-                            doc.reference.delete().await()
-                            totalEliminados++
+                    // Eliminar duplicados (mantener solo el primero)
+                    ejerciciosPorNombre.forEach { (nombre, docs) ->
+                        if (docs.size > 1) {
+                            android.util.Log.d("EjercicioRepo", "⚠️ Encontrados ${docs.size} duplicados de '$nombre' en $grupoNombre - eliminando ${docs.size - 1}")
+                            // Eliminar todos excepto el primero
+                            docs.drop(1).forEach { doc ->
+                                try {
+                                    doc.reference.delete().await()
+                                    totalEliminados++
+                                    android.util.Log.d("EjercicioRepo", "🗑️ Eliminado duplicado: $nombre (ID: ${doc.id})")
+                                } catch (e: Exception) {
+                                    android.util.Log.e("EjercicioRepo", "Error eliminando ${doc.id}: ${e.message}")
+                                }
+                            }
                         }
                     }
+                } catch (e: Exception) {
+                    android.util.Log.e("EjercicioRepo", "Error procesando grupo $grupoNombre: ${e.message}")
                 }
             }
 
-            android.util.Log.d("EjercicioRepo", "Eliminados $totalEliminados ejercicios duplicados")
+            android.util.Log.d("EjercicioRepo", "✅ Limpieza completada: $totalEliminados ejercicios duplicados eliminados")
             Result.success(totalEliminados)
         } catch (e: Exception) {
-            android.util.Log.e("EjercicioRepo", "Error eliminando duplicados: ${e.message}")
+            android.util.Log.e("EjercicioRepo", "❌ Error eliminando duplicados: ${e.message}")
             Result.failure(e)
         }
     }

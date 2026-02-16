@@ -1,6 +1,7 @@
 package com.example.gimnasiopro
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -9,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.gimnasiopro.data.EstadisticaRepository
 import com.example.gimnasiopro.data.RegistroEntrenamientoRepository
 import com.example.gimnasiopro.data.firestore.EjercicioRepositoryHibrido
+import com.example.gimnasiopro.data.firestore.EstadisticaRepositoryHibrido
 import kotlinx.coroutines.launch
 
 /**
@@ -17,7 +19,7 @@ import kotlinx.coroutines.launch
  */
 class ProgresoActivity : AppCompatActivity() {
 
-    private lateinit var estadisticaRepository: EstadisticaRepository
+    private lateinit var estadisticaRepository: EstadisticaRepositoryHibrido
     private lateinit var registroRepository: RegistroEntrenamientoRepository
     private lateinit var ejercicioRepository: EjercicioRepositoryHibrido
 
@@ -25,6 +27,8 @@ class ProgresoActivity : AppCompatActivity() {
     private lateinit var tvTiempoMes: TextView
     private lateinit var tvEntrenamientosMes: TextView
     private lateinit var tvRachaActual: TextView
+    private lateinit var tvPesoMovidoHoy: TextView
+    private lateinit var tvRecordPesoMovido: TextView
 
     // Progress bars y textos de porcentaje para grupos musculares
     private lateinit var progressPectorales: ProgressBar
@@ -52,7 +56,7 @@ class ProgresoActivity : AppCompatActivity() {
         setContentView(R.layout.activity_progreso)
 
         val app = application as GimnasioproApplication
-        estadisticaRepository = app.estadisticaRepository
+        estadisticaRepository = app.estadisticaRepositoryHibrido
         registroRepository = app.registroEntrenamientoRepository
         ejercicioRepository = app.ejercicioRepository
 
@@ -72,6 +76,8 @@ class ProgresoActivity : AppCompatActivity() {
         tvTiempoMes = findViewById(R.id.tvTiempoMes)
         tvEntrenamientosMes = findViewById(R.id.tvEntrenamientosMes)
         tvRachaActual = findViewById(R.id.tvRachaActual)
+        tvPesoMovidoHoy = findViewById(R.id.tvPesoMovidoHoy)
+        tvRecordPesoMovido = findViewById(R.id.tvRecordPesoMovido)
 
         // Progress bars
         progressPectorales = findViewById(R.id.progressPectorales)
@@ -113,6 +119,14 @@ class ProgresoActivity : AppCompatActivity() {
             // Cargar racha actual
             val racha = estadisticaRepository.getRachaActual()
             tvRachaActual.text = racha.toString()
+
+            // Cargar peso movido hoy (volumen = kg × repeticiones)
+            val pesoHoy = estadisticaRepository.getVolumenHoy()
+            tvPesoMovidoHoy.text = formatearPeso(pesoHoy)
+
+            // Cargar récord de peso movido
+            val recordPeso = estadisticaRepository.getRecordVolumen()
+            tvRecordPesoMovido.text = formatearPeso(recordPeso)
 
             // Cargar equilibrio muscular
             loadEquilibrioMuscular()
@@ -176,6 +190,14 @@ class ProgresoActivity : AppCompatActivity() {
         actualizarBarraProgreso(progressPiernas, tvPorcentajePiernas, porcentajePiernas)
         actualizarBarraProgreso(progressGluteos, tvPorcentajeGluteos, porcentajeGluteos)
         actualizarBarraProgreso(progressGemelos, tvPorcentajeGemelos, porcentajeGemelos)
+    }
+
+    private fun formatearPeso(pesoKg: Float): String {
+        return when {
+            pesoKg >= 1000 -> String.format(java.util.Locale.getDefault(), "%.1f t", pesoKg / 1000)
+            pesoKg > 0 -> String.format(java.util.Locale.getDefault(), "%.0f kg", pesoKg)
+            else -> "0 kg"
+        }
     }
 
     private fun calcularPorcentaje(cantidad: Int, total: Int): Int {

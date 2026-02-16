@@ -4,6 +4,7 @@ package com.example.gimnasiopro.data
  * Modelo que representa una serie de un ejercicio.
  */
 data class SerieEntrenamiento(
+    var repeticiones: Int = 10,
     var pesoKg: Float = 0f
 )
 
@@ -29,10 +30,10 @@ data class EjercicioEntrenamiento(
         get() = series.firstOrNull()?.pesoKg ?: 0f
         set(value) { series.firstOrNull()?.pesoKg = value }
 
-    // Número de series visibles (mínimo 3, máximo 6)
+    // Número de series visibles (mínimo 1, máximo 6)
     var seriesVisibles: Int = 3
         set(value) {
-            field = value.coerceIn(3, 6)
+            field = value.coerceIn(1, 6)
             // Asegurar que hay suficientes series
             while (series.size < field) {
                 series.add(SerieEntrenamiento())
@@ -40,9 +41,16 @@ data class EjercicioEntrenamiento(
         }
 
     /**
-     * Calcula el volumen total (suma de todos los pesos de las series).
+     * Calcula el volumen total (suma de peso × repeticiones de cada serie).
      */
     fun calcularVolumenTotal(): Float {
-        return series.take(seriesVisibles).sumOf { it.pesoKg.toDouble() }.toFloat()
+        return series.take(seriesVisibles).sumOf { (it.pesoKg * it.repeticiones).toDouble() }.toFloat()
+    }
+
+    /**
+     * Calcula el total de repeticiones de todas las series visibles.
+     */
+    fun calcularRepeticionesTotales(): Int {
+        return series.take(seriesVisibles).sumOf { it.repeticiones }
     }
 }

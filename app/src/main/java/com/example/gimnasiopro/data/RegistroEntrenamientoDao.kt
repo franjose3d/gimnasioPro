@@ -100,6 +100,28 @@ interface RegistroEntrenamientoDao {
     suspend fun getRepeticionesMaximasEjercicio(ejercicioId: Long): Int?
 
     /**
+     * Obtiene el primer registro de un ejercicio (para calcular progreso).
+     */
+    @Query("""
+        SELECT * FROM registros_entrenamiento 
+        WHERE ejercicioId = :ejercicioId AND completado = 1 
+        ORDER BY fechaEntrenamiento ASC 
+        LIMIT 1
+    """)
+    suspend fun getPrimerRegistroEjercicio(ejercicioId: Long): RegistroEntrenamiento?
+
+    /**
+     * Obtiene el último registro de un ejercicio (para calcular progreso).
+     */
+    @Query("""
+        SELECT * FROM registros_entrenamiento 
+        WHERE ejercicioId = :ejercicioId AND completado = 1 
+        ORDER BY fechaEntrenamiento DESC 
+        LIMIT 1
+    """)
+    suspend fun getUltimoRegistroEjercicio(ejercicioId: Long): RegistroEntrenamiento?
+
+    /**
      * Elimina todos los registros de entrenamiento.
      */
     @Query("DELETE FROM registros_entrenamiento")

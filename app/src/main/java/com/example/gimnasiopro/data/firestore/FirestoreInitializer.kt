@@ -24,13 +24,13 @@ class FirestoreInitializer(
     companion object {
         private const val KEY_EJERCICIOS_MIGRADOS = "ejercicios_migrados"
         private const val KEY_VERSION_MIGRACION = "version_migracion"
-        // Versión 5: Limpieza de duplicados
-        private const val CURRENT_VERSION = 5
+        // Versión 8: Limpieza forzada de duplicados en Firebase (mejorada)
+        private const val CURRENT_VERSION = 8
     }
 
     /**
      * Inicializar ejercicios en Firestore.
-     * Versión 5: Limpia ejercicios duplicados de la base de datos.
+     * Versión 6: Limpia ejercicios duplicados después de corregir bug de sincronización.
      */
     suspend fun inicializarEjercicios(): Result<Boolean> {
         return try {

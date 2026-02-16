@@ -13,12 +13,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gimnasiopro.components.EntrenamientoAdapter
 import com.example.gimnasiopro.data.EjercicioEntrenamiento
-import com.example.gimnasiopro.data.EstadisticaRepository
 import com.example.gimnasiopro.data.RegistroEntrenamiento
 import com.example.gimnasiopro.data.RegistroEntrenamientoRepository
 import com.example.gimnasiopro.data.RutinaRepository
 import com.example.gimnasiopro.data.SerieEntrenamiento
 import com.example.gimnasiopro.data.firestore.EjercicioRepositoryHibrido
+import com.example.gimnasiopro.data.firestore.EstadisticaRepositoryHibrido
 import kotlinx.coroutines.launch
 
 /**
@@ -34,7 +34,7 @@ class EntrenamientoActivity : AppCompatActivity() {
     private lateinit var ejercicioRepository: EjercicioRepositoryHibrido
     private lateinit var rutinaRepository: RutinaRepository
     private lateinit var registroRepository: RegistroEntrenamientoRepository
-    private lateinit var estadisticaRepository: EstadisticaRepository
+    private lateinit var estadisticaRepository: EstadisticaRepositoryHibrido
     private lateinit var adapter: EntrenamientoAdapter
 
     private lateinit var tvTituloEntrenamiento: TextView
@@ -60,7 +60,7 @@ class EntrenamientoActivity : AppCompatActivity() {
         ejercicioRepository = app.ejercicioRepository
         rutinaRepository = app.rutinaRepository
         registroRepository = app.registroEntrenamientoRepository
-        estadisticaRepository = app.estadisticaRepository
+        estadisticaRepository = app.estadisticaRepositoryHibrido
 
         setupViews()
         setupBackPressedCallback()
@@ -116,12 +116,15 @@ class EntrenamientoActivity : AppCompatActivity() {
                 }.map { ejercicio ->
                     val ultimoRegistro = ultimosRegistros[ejercicio.id]
                     val pesoAnterior = ultimoRegistro?.pesoKg ?: 0f
+                    // Calcular repeticiones promedio por serie (asumiendo 3 series por defecto)
+                    val repsTotalesAnteriores = ultimoRegistro?.repeticiones ?: 30
+                    val repsPorSerie = (repsTotalesAnteriores / 3).coerceAtLeast(1)
 
-                    // Crear series con el peso anterior
+                    // Crear series con el peso y repeticiones anteriores
                     val seriesIniciales = mutableListOf(
-                        SerieEntrenamiento(pesoAnterior),
-                        SerieEntrenamiento(pesoAnterior),
-                        SerieEntrenamiento(pesoAnterior)
+                        SerieEntrenamiento(repeticiones = repsPorSerie, pesoKg = pesoAnterior),
+                        SerieEntrenamiento(repeticiones = repsPorSerie, pesoKg = pesoAnterior),
+                        SerieEntrenamiento(repeticiones = repsPorSerie, pesoKg = pesoAnterior)
                     )
 
                     EjercicioEntrenamiento(
@@ -158,11 +161,22 @@ class EntrenamientoActivity : AppCompatActivity() {
             // Crear registros para cada ejercicio del entrenamiento
             val fechaEntrenamiento = tiempoFin
             val registros = ejerciciosEntrenamiento.map { ejercicioEntrenamiento ->
+                // Calcular peso promedio de las series visibles para estadísticas
+                val seriesVisibles = ejercicioEntrenamiento.series.take(ejercicioEntrenamiento.seriesVisibles)
+                val pesoPromedio = if (seriesVisibles.isNotEmpty()) {
+                    seriesVisibles.map { it.pesoKg }.average().toFloat()
+                } else {
+                    0f
+                }
+
+                // Calcular repeticiones totales de todas las series visibles
+                val repeticionesTotales = ejercicioEntrenamiento.calcularRepeticionesTotales()
+
                 RegistroEntrenamiento(
                     rutinaId = numeroRutina,
                     ejercicioId = ejercicioEntrenamiento.ejercicio.id,
-                    repeticiones = ejercicioEntrenamiento.repeticiones,
-                    pesoKg = ejercicioEntrenamiento.pesoKg,
+                    repeticiones = repeticionesTotales, // Total de repeticiones de todas las series
+                    pesoKg = pesoPromedio, // Peso promedio para estadísticas de progreso
                     completado = ejercicioEntrenamiento.completado,
                     fechaEntrenamiento = fechaEntrenamiento
                 )
@@ -173,9 +187,10 @@ class EntrenamientoActivity : AppCompatActivity() {
 
             // Calcular estadísticas del entrenamiento
             val ejerciciosCompletados = ejerciciosEntrenamiento.count { it.completado }
+            // Usar calcularVolumenTotal() que suma correctamente todas las series visibles
             val volumenTotal = ejerciciosEntrenamiento
                 .filter { it.completado }
-                .sumOf { (it.pesoKg * it.repeticiones).toDouble() }
+                .sumOf { it.calcularVolumenTotal().toDouble() }
                 .toFloat()
 
             // Registrar estadísticas del día

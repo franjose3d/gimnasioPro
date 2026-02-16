@@ -104,16 +104,38 @@ class RegistroEntrenamientoRepository(private val registroDao: RegistroEntrenami
      * Obtiene el progreso de peso en un ejercicio (comparando primer y último registro).
      */
     suspend fun calcularProgresoEjercicio(ejercicioId: Long): ProgresoEjercicio {
-        val historial = registroDao.getHistorialEjercicio(ejercicioId)
-        // Este método necesitaría ser llamado con collect para obtener datos
-        // Por ahora retornamos un progreso vacío, se implementará más adelante
+        // Obtener el primer y último registro completado del ejercicio
+        val primerRegistro = registroDao.getPrimerRegistroEjercicio(ejercicioId)
+        val ultimoRegistro = registroDao.getUltimoRegistroEjercicio(ejercicioId)
+
+        if (primerRegistro == null || ultimoRegistro == null) {
+            return ProgresoEjercicio(
+                ejercicioId = ejercicioId,
+                pesoInicial = 0f,
+                pesoActual = 0f,
+                repeticionesIniciales = 0,
+                repeticionesActuales = 0,
+                porcentajeMejora = 0f
+            )
+        }
+
+        val pesoInicial = primerRegistro.pesoKg
+        val pesoActual = ultimoRegistro.pesoKg
+
+        // Calcular porcentaje de mejora en peso
+        val porcentajeMejora = if (pesoInicial > 0f) {
+            ((pesoActual - pesoInicial) / pesoInicial) * 100f
+        } else {
+            0f
+        }
+
         return ProgresoEjercicio(
             ejercicioId = ejercicioId,
-            pesoInicial = 0f,
-            pesoActual = 0f,
-            repeticionesIniciales = 0,
-            repeticionesActuales = 0,
-            porcentajeMejora = 0f
+            pesoInicial = pesoInicial,
+            pesoActual = pesoActual,
+            repeticionesIniciales = primerRegistro.repeticiones,
+            repeticionesActuales = ultimoRegistro.repeticiones,
+            porcentajeMejora = porcentajeMejora
         )
     }
 }

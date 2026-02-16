@@ -59,7 +59,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Fila 1: Series 1 y 2 + botones -->
+            <!-- Fila 1: Series 1 y 2 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -76,16 +76,97 @@
                     android:orientation="vertical"
                     android:gravity="center"
                     android:background="@drawable/bg_card_trainer"
-                    android:padding="8dp"
+                    android:padding="6dp"
                     android:layout_marginEnd="6dp">
 
-                    <TextView
+                    <!-- Cabecera Serie con botones -/+ integrados -->
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_rep1_kg"
-                        android:textColor="@color/light_text"
-                        android:textSize="11sp" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="4dp">
 
+                        <ImageButton
+                            android:id="@+id/btnQuitarSerie1"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_minus"
+                            android:scaleType="centerInside"
+                            android:visibility="gone"
+                            android:contentDescription="@string/desc_quitar_serie" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_serie_1"
+                            android:textColor="@color/accent_blue"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp" />
+
+                        <ImageButton
+                            android:id="@+id/btnAgregarSerie1"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_plus"
+                            android:scaleType="centerInside"
+                            android:visibility="gone"
+                            android:contentDescription="@string/desc_agregar_serie" />
+                    </LinearLayout>
+
+                    <!-- Sección Rep -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginBottom="4dp">
+
+                        <ImageButton
+                            android:id="@+id/btnDecrementarRep1"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_minus"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@string/desc_decrementar" />
+
+                        <EditText
+                            android:id="@+id/etRep1"
+                            android:layout_width="36dp"
+                            android:layout_height="30dp"
+                            android:background="@android:color/transparent"
+                            android:gravity="center"
+                            android:inputType="number"
+                            android:text="@string/valor_diez"
+                            android:autofillHints="none"
+                            android:textColor="@color/text_on_background"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="R"
+                            android:textColor="@color/accent_blue"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <ImageButton
+                            android:id="@+id/btnIncrementarRep1"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_plus"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@string/desc_incrementar" />
+                    </LinearLayout>
+
+                    <!-- Sección Kg -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -94,8 +175,8 @@
 
                         <ImageButton
                             android:id="@+id/btnDecrementarKg1"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_minus"
                             android:scaleType="centerInside"
@@ -103,21 +184,29 @@
 
                         <EditText
                             android:id="@+id/etPeso1"
-                            android:layout_width="50dp"
-                            android:layout_height="36dp"
+                            android:layout_width="36dp"
+                            android:layout_height="30dp"
                             android:background="@android:color/transparent"
                             android:gravity="center"
                             android:inputType="numberDecimal"
                             android:text="@string/valor_cero"
                             android:autofillHints="none"
                             android:textColor="@color/text_on_background"
-                            android:textSize="16sp"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="K"
+                            android:textColor="@color/accent_blue"
+                            android:textSize="12sp"
                             android:textStyle="bold" />
 
                         <ImageButton
                             android:id="@+id/btnIncrementarKg1"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_plus"
                             android:scaleType="centerInside"
@@ -134,16 +223,96 @@
                     android:orientation="vertical"
                     android:gravity="center"
                     android:background="@drawable/bg_card_trainer"
-                    android:padding="8dp"
-                    android:layout_marginEnd="6dp">
+                    android:padding="6dp">
 
-                    <TextView
+                    <!-- Cabecera Serie con botones -/+ integrados -->
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_rep2_kg"
-                        android:textColor="@color/light_text"
-                        android:textSize="11sp" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="4dp">
 
+                        <ImageButton
+                            android:id="@+id/btnQuitarSerie2"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_minus"
+                            android:scaleType="centerInside"
+                            android:visibility="gone"
+                            android:contentDescription="@string/desc_quitar_serie" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_serie_2"
+                            android:textColor="@color/accent_blue"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp" />
+
+                        <ImageButton
+                            android:id="@+id/btnAgregarSerie2"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_plus"
+                            android:scaleType="centerInside"
+                            android:visibility="gone"
+                            android:contentDescription="@string/desc_agregar_serie" />
+                    </LinearLayout>
+
+                    <!-- Sección Rep -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginBottom="4dp">
+
+                        <ImageButton
+                            android:id="@+id/btnDecrementarRep2"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_minus"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@string/desc_decrementar" />
+
+                        <EditText
+                            android:id="@+id/etRep2"
+                            android:layout_width="36dp"
+                            android:layout_height="30dp"
+                            android:background="@android:color/transparent"
+                            android:gravity="center"
+                            android:inputType="number"
+                            android:text="@string/valor_diez"
+                            android:autofillHints="none"
+                            android:textColor="@color/text_on_background"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="R"
+                            android:textColor="@color/accent_blue"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <ImageButton
+                            android:id="@+id/btnIncrementarRep2"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_plus"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@string/desc_incrementar" />
+                    </LinearLayout>
+
+                    <!-- Sección Kg -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -152,8 +321,8 @@
 
                         <ImageButton
                             android:id="@+id/btnDecrementarKg2"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_minus"
                             android:scaleType="centerInside"
@@ -161,21 +330,29 @@
 
                         <EditText
                             android:id="@+id/etPeso2"
-                            android:layout_width="50dp"
-                            android:layout_height="36dp"
+                            android:layout_width="36dp"
+                            android:layout_height="30dp"
                             android:background="@android:color/transparent"
                             android:gravity="center"
                             android:inputType="numberDecimal"
                             android:text="@string/valor_cero"
                             android:autofillHints="none"
                             android:textColor="@color/text_on_background"
-                            android:textSize="16sp"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="K"
+                            android:textColor="@color/accent_blue"
+                            android:textSize="12sp"
                             android:textStyle="bold" />
 
                         <ImageButton
                             android:id="@+id/btnIncrementarKg2"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_plus"
                             android:scaleType="centerInside"
@@ -183,34 +360,6 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- Botones + / - para añadir/quitar series -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <ImageButton
-                        android:id="@+id/btnAgregarSerie"
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:background="@drawable/btn_rounded_green"
-                        android:src="@drawable/ic_plus"
-                        android:scaleType="centerInside"
-                        android:padding="6dp"
-                        android:contentDescription="@string/desc_agregar_serie" />
-
-                    <ImageButton
-                        android:id="@+id/btnQuitarSerie"
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:layout_marginTop="6dp"
-                        android:background="@drawable/btn_rounded_red"
-                        android:src="@drawable/ic_minus"
-                        android:scaleType="centerInside"
-                        android:padding="6dp"
-                        android:contentDescription="@string/desc_quitar_serie" />
-                </LinearLayout>
 
             </LinearLayout>
 
@@ -233,17 +382,98 @@
                     android:orientation="vertical"
                     android:gravity="center"
                     android:background="@drawable/bg_card_trainer"
-                    android:padding="8dp"
+                    android:padding="6dp"
                     android:layout_marginEnd="6dp"
                     android:visibility="gone">
 
-                    <TextView
+                    <!-- Cabecera Serie con botones -/+ integrados -->
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_rep3_kg"
-                        android:textColor="@color/light_text"
-                        android:textSize="11sp" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="4dp">
 
+                        <ImageButton
+                            android:id="@+id/btnQuitarSerie3"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_minus"
+                            android:scaleType="centerInside"
+                            android:visibility="gone"
+                            android:contentDescription="@string/desc_quitar_serie" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_serie_3"
+                            android:textColor="@color/accent_blue"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp" />
+
+                        <ImageButton
+                            android:id="@+id/btnAgregarSerie3"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_plus"
+                            android:scaleType="centerInside"
+                            android:visibility="gone"
+                            android:contentDescription="@string/desc_agregar_serie" />
+                    </LinearLayout>
+
+                    <!-- Sección Rep -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginBottom="4dp">
+
+                        <ImageButton
+                            android:id="@+id/btnDecrementarRep3"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_minus"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@string/desc_decrementar" />
+
+                        <EditText
+                            android:id="@+id/etRep3"
+                            android:layout_width="36dp"
+                            android:layout_height="30dp"
+                            android:background="@android:color/transparent"
+                            android:gravity="center"
+                            android:inputType="number"
+                            android:text="@string/valor_diez"
+                            android:autofillHints="none"
+                            android:textColor="@color/text_on_background"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="R"
+                            android:textColor="@color/accent_blue"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <ImageButton
+                            android:id="@+id/btnIncrementarRep3"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_plus"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@string/desc_incrementar" />
+                    </LinearLayout>
+
+                    <!-- Sección Kg -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -252,8 +482,8 @@
 
                         <ImageButton
                             android:id="@+id/btnDecrementarKg3"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_minus"
                             android:scaleType="centerInside"
@@ -261,21 +491,29 @@
 
                         <EditText
                             android:id="@+id/etPeso3"
-                            android:layout_width="50dp"
-                            android:layout_height="36dp"
+                            android:layout_width="36dp"
+                            android:layout_height="30dp"
                             android:background="@android:color/transparent"
                             android:gravity="center"
                             android:inputType="numberDecimal"
                             android:text="@string/valor_cero"
                             android:autofillHints="none"
                             android:textColor="@color/text_on_background"
-                            android:textSize="16sp"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="K"
+                            android:textColor="@color/accent_blue"
+                            android:textSize="12sp"
                             android:textStyle="bold" />
 
                         <ImageButton
                             android:id="@+id/btnIncrementarKg3"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_plus"
                             android:scaleType="centerInside"
@@ -292,17 +530,97 @@
                     android:orientation="vertical"
                     android:gravity="center"
                     android:background="@drawable/bg_card_trainer"
-                    android:padding="8dp"
-                    android:layout_marginEnd="6dp"
+                    android:padding="6dp"
                     android:visibility="gone">
 
-                    <TextView
+                    <!-- Cabecera Serie con botones -/+ integrados -->
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_rep4_kg"
-                        android:textColor="@color/light_text"
-                        android:textSize="11sp" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="4dp">
 
+                        <ImageButton
+                            android:id="@+id/btnQuitarSerie4"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_minus"
+                            android:scaleType="centerInside"
+                            android:visibility="gone"
+                            android:contentDescription="@string/desc_quitar_serie" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_serie_4"
+                            android:textColor="@color/accent_blue"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp" />
+
+                        <ImageButton
+                            android:id="@+id/btnAgregarSerie4"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_plus"
+                            android:scaleType="centerInside"
+                            android:visibility="gone"
+                            android:contentDescription="@string/desc_agregar_serie" />
+                    </LinearLayout>
+
+                    <!-- Sección Rep -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginBottom="4dp">
+
+                        <ImageButton
+                            android:id="@+id/btnDecrementarRep4"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_minus"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@string/desc_decrementar" />
+
+                        <EditText
+                            android:id="@+id/etRep4"
+                            android:layout_width="36dp"
+                            android:layout_height="30dp"
+                            android:background="@android:color/transparent"
+                            android:gravity="center"
+                            android:inputType="number"
+                            android:text="@string/valor_diez"
+                            android:autofillHints="none"
+                            android:textColor="@color/text_on_background"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="R"
+                            android:textColor="@color/accent_blue"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <ImageButton
+                            android:id="@+id/btnIncrementarRep4"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_plus"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@string/desc_incrementar" />
+                    </LinearLayout>
+
+                    <!-- Sección Kg -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -311,8 +629,8 @@
 
                         <ImageButton
                             android:id="@+id/btnDecrementarKg4"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_minus"
                             android:scaleType="centerInside"
@@ -320,21 +638,29 @@
 
                         <EditText
                             android:id="@+id/etPeso4"
-                            android:layout_width="50dp"
-                            android:layout_height="36dp"
+                            android:layout_width="36dp"
+                            android:layout_height="30dp"
                             android:background="@android:color/transparent"
                             android:gravity="center"
                             android:inputType="numberDecimal"
                             android:text="@string/valor_cero"
                             android:autofillHints="none"
                             android:textColor="@color/text_on_background"
-                            android:textSize="16sp"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="K"
+                            android:textColor="@color/accent_blue"
+                            android:textSize="12sp"
                             android:textStyle="bold" />
 
                         <ImageButton
                             android:id="@+id/btnIncrementarKg4"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_plus"
                             android:scaleType="centerInside"
@@ -342,10 +668,6 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- Espacio para alinear con los botones +/- -->
-                <View
-                    android:layout_width="36dp"
-                    android:layout_height="1dp" />
 
             </LinearLayout>
 
@@ -367,17 +689,98 @@
                     android:orientation="vertical"
                     android:gravity="center"
                     android:background="@drawable/bg_card_trainer"
-                    android:padding="8dp"
+                    android:padding="6dp"
                     android:layout_marginEnd="6dp"
                     android:visibility="gone">
 
-                    <TextView
+                    <!-- Cabecera Serie con botones -/+ integrados -->
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_rep5_kg"
-                        android:textColor="@color/light_text"
-                        android:textSize="11sp" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="4dp">
 
+                        <ImageButton
+                            android:id="@+id/btnQuitarSerie5"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_minus"
+                            android:scaleType="centerInside"
+                            android:visibility="gone"
+                            android:contentDescription="@string/desc_quitar_serie" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_serie_5"
+                            android:textColor="@color/accent_blue"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp" />
+
+                        <ImageButton
+                            android:id="@+id/btnAgregarSerie5"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_plus"
+                            android:scaleType="centerInside"
+                            android:visibility="gone"
+                            android:contentDescription="@string/desc_agregar_serie" />
+                    </LinearLayout>
+
+                    <!-- Sección Rep -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginBottom="4dp">
+
+                        <ImageButton
+                            android:id="@+id/btnDecrementarRep5"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_minus"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@string/desc_decrementar" />
+
+                        <EditText
+                            android:id="@+id/etRep5"
+                            android:layout_width="36dp"
+                            android:layout_height="30dp"
+                            android:background="@android:color/transparent"
+                            android:gravity="center"
+                            android:inputType="number"
+                            android:text="@string/valor_diez"
+                            android:autofillHints="none"
+                            android:textColor="@color/text_on_background"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="R"
+                            android:textColor="@color/accent_blue"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <ImageButton
+                            android:id="@+id/btnIncrementarRep5"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_plus"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@string/desc_incrementar" />
+                    </LinearLayout>
+
+                    <!-- Sección Kg -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -386,8 +789,8 @@
 
                         <ImageButton
                             android:id="@+id/btnDecrementarKg5"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_minus"
                             android:scaleType="centerInside"
@@ -395,21 +798,29 @@
 
                         <EditText
                             android:id="@+id/etPeso5"
-                            android:layout_width="50dp"
-                            android:layout_height="36dp"
+                            android:layout_width="36dp"
+                            android:layout_height="30dp"
                             android:background="@android:color/transparent"
                             android:gravity="center"
                             android:inputType="numberDecimal"
                             android:text="@string/valor_cero"
                             android:autofillHints="none"
                             android:textColor="@color/text_on_background"
-                            android:textSize="16sp"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="K"
+                            android:textColor="@color/accent_blue"
+                            android:textSize="12sp"
                             android:textStyle="bold" />
 
                         <ImageButton
                             android:id="@+id/btnIncrementarKg5"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_plus"
                             android:scaleType="centerInside"
@@ -426,17 +837,97 @@
                     android:orientation="vertical"
                     android:gravity="center"
                     android:background="@drawable/bg_card_trainer"
-                    android:padding="8dp"
-                    android:layout_marginEnd="6dp"
+                    android:padding="6dp"
                     android:visibility="gone">
 
-                    <TextView
+                    <!-- Cabecera Serie con botones -/+ integrados -->
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_rep6_kg"
-                        android:textColor="@color/light_text"
-                        android:textSize="11sp" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="4dp">
 
+                        <ImageButton
+                            android:id="@+id/btnQuitarSerie6"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_minus"
+                            android:scaleType="centerInside"
+                            android:visibility="gone"
+                            android:contentDescription="@string/desc_quitar_serie" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_serie_6"
+                            android:textColor="@color/accent_blue"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp" />
+
+                        <ImageButton
+                            android:id="@+id/btnAgregarSerie6"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_plus"
+                            android:scaleType="centerInside"
+                            android:visibility="gone"
+                            android:contentDescription="@string/desc_agregar_serie" />
+                    </LinearLayout>
+
+                    <!-- Sección Rep -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginBottom="4dp">
+
+                        <ImageButton
+                            android:id="@+id/btnDecrementarRep6"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_minus"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@string/desc_decrementar" />
+
+                        <EditText
+                            android:id="@+id/etRep6"
+                            android:layout_width="36dp"
+                            android:layout_height="30dp"
+                            android:background="@android:color/transparent"
+                            android:gravity="center"
+                            android:inputType="number"
+                            android:text="@string/valor_diez"
+                            android:autofillHints="none"
+                            android:textColor="@color/text_on_background"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="R"
+                            android:textColor="@color/accent_blue"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <ImageButton
+                            android:id="@+id/btnIncrementarRep6"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_plus"
+                            android:scaleType="centerInside"
+                            android:contentDescription="@string/desc_incrementar" />
+                    </LinearLayout>
+
+                    <!-- Sección Kg -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -445,8 +936,8 @@
 
                         <ImageButton
                             android:id="@+id/btnDecrementarKg6"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_minus"
                             android:scaleType="centerInside"
@@ -454,21 +945,29 @@
 
                         <EditText
                             android:id="@+id/etPeso6"
-                            android:layout_width="50dp"
-                            android:layout_height="36dp"
+                            android:layout_width="36dp"
+                            android:layout_height="30dp"
                             android:background="@android:color/transparent"
                             android:gravity="center"
                             android:inputType="numberDecimal"
                             android:text="@string/valor_cero"
                             android:autofillHints="none"
                             android:textColor="@color/text_on_background"
-                            android:textSize="16sp"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="K"
+                            android:textColor="@color/accent_blue"
+                            android:textSize="12sp"
                             android:textStyle="bold" />
 
                         <ImageButton
                             android:id="@+id/btnIncrementarKg6"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_plus"
                             android:scaleType="centerInside"
@@ -476,10 +975,6 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- Espacio para alinear con los botones +/- -->
-                <View
-                    android:layout_width="36dp"
-                    android:layout_height="1dp" />
 
             </LinearLayout>
 

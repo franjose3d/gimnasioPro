@@ -173,11 +173,49 @@ class EstadisticaRepository(private val estadisticaDao: EstadisticaEntrenamiento
     }
 
     /**
+     * Obtiene el volumen total (peso movido) de hoy.
+     */
+    suspend fun getVolumenHoy(): Float {
+        val calendar = Calendar.getInstance()
+        return estadisticaDao.getVolumenTotalDia(
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH) + 1,
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
+    }
+
+    /**
+     * Obtiene el récord de volumen máximo en un solo día.
+     */
+    suspend fun getRecordVolumen(): Float {
+        return estadisticaDao.getRecordVolumenDia()
+    }
+
+    /**
      * Obtiene el resumen mensual del año (para gráficos).
      */
     suspend fun getResumenAnual(): List<ResumenMensual> {
         val calendar = Calendar.getInstance()
         return estadisticaDao.getResumenAnual(calendar.get(Calendar.YEAR))
+    }
+
+    /**
+     * Inserta o actualiza una estadística (usado para sincronización desde Firestore).
+     */
+    suspend fun insertOrUpdateEstadistica(estadistica: EstadisticaEntrenamiento) {
+        val existente = estadisticaDao.getEstadisticaHoy(
+            estadistica.anio,
+            estadistica.mes,
+            estadistica.dia
+        )
+        if (existente != null) {
+            // Solo actualizar si los datos de Firestore son más recientes o completos
+            if (estadistica.numeroEntrenamientos >= existente.numeroEntrenamientos) {
+                estadisticaDao.updateEstadistica(estadistica.copy(id = existente.id))
+            }
+        } else {
+            estadisticaDao.insertEstadistica(estadistica)
+        }
     }
 
     // ==================== Utilidades de formato ====================

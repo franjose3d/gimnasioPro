@@ -12,11 +12,19 @@ import coil.request.ImageRequest
 
 class EjerciciosActivity : AppCompatActivity() {
 
+    companion object {
+        const val EXTRA_NUMERO_RUTINA = "extra_numero_rutina"
+    }
+
     private lateinit var imageLoader: ImageLoader
+    private var numeroRutina: Int = -1 // -1 significa que no viene de una rutina específica
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ejercicios)
+
+        // Obtener el número de rutina si viene de DetalleRutinaActivity
+        numeroRutina = intent.getIntExtra(EXTRA_NUMERO_RUTINA, -1)
 
         // Inicializar ImageLoader con soporte SVG
         imageLoader = ImageLoader.Builder(this)
@@ -98,6 +106,10 @@ class EjerciciosActivity : AppCompatActivity() {
     private fun navigateToEjercicios(grupoMuscular: String) {
         val intent = Intent(this, ListaEjerciciosActivity::class.java).apply {
             putExtra(ListaEjerciciosActivity.EXTRA_GRUPO_MUSCULAR, grupoMuscular)
+            // Propagar el número de rutina si viene de DetalleRutinaActivity
+            if (numeroRutina > 0) {
+                putExtra(ListaEjerciciosActivity.EXTRA_NUMERO_RUTINA, numeroRutina)
+            }
         }
         startActivity(intent)
     }

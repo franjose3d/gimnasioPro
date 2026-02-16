@@ -74,10 +74,16 @@ class GimnasioproApplication : Application() {
         RegistroEntrenamientoRepository(database.registroEntrenamientoDao())
     }
 
-    // Lazy initialization del repositorio de estadísticas
+    // Lazy initialization del repositorio de estadísticas (local)
     val estadisticaRepository: EstadisticaRepository by lazy {
         Log.d(TAG, "Inicializando repositorio de estadísticas...")
         EstadisticaRepository(database.estadisticaEntrenamientoDao())
+    }
+
+    // Repositorio híbrido de estadísticas (sincroniza local + Firestore)
+    val estadisticaRepositoryHibrido: com.example.gimnasiopro.data.firestore.EstadisticaRepositoryHibrido by lazy {
+        Log.d(TAG, "Inicializando repositorio híbrido de estadísticas...")
+        com.example.gimnasiopro.data.firestore.EstadisticaRepositoryHibrido(estadisticaRepository)
     }
 
     // Lazy initialization del repositorio de rutinas por día

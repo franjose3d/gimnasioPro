@@ -36,6 +36,7 @@ class ListaEjerciciosActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_GRUPO_MUSCULAR = "extra_grupo_muscular"
+        const val EXTRA_NUMERO_RUTINA = "extra_numero_rutina"
         private const val MAX_EJERCICIOS = 10
     }
 
@@ -53,6 +54,9 @@ class ListaEjerciciosActivity : AppCompatActivity() {
     private lateinit var layoutTrainerControls: LinearLayout
     private lateinit var btnCargarEjercicios: Button
     private lateinit var grupoMuscularActual: String
+
+    // Número de rutina si viene de DetalleRutinaActivity (-1 si no viene de una rutina específica)
+    private var numeroRutinaDestino: Int = -1
 
     // Panel colapsable
     private lateinit var btnExpandirOpciones: LinearLayout
@@ -83,6 +87,9 @@ class ListaEjerciciosActivity : AppCompatActivity() {
             finish()
             return
         }
+
+        // Obtener el número de rutina si viene de DetalleRutinaActivity
+        numeroRutinaDestino = intent.getIntExtra(EXTRA_NUMERO_RUTINA, -1)
 
         setupViews(grupoMuscularActual)
         setupBackPressedCallback()
@@ -605,8 +612,13 @@ class ListaEjerciciosActivity : AppCompatActivity() {
             return
         }
 
-        // Mostrar diálogo para seleccionar rutina
-        mostrarDialogoSeleccionRutina(selectedEjercicios.toList())
+        // Si viene de DetalleRutinaActivity, guardar directamente en esa rutina
+        if (numeroRutinaDestino > 0) {
+            guardarEjerciciosEnRutina(numeroRutinaDestino, selectedEjercicios.toList())
+        } else {
+            // Si no viene de una rutina específica, mostrar diálogo para seleccionar
+            mostrarDialogoSeleccionRutina(selectedEjercicios.toList())
+        }
     }
 
     private fun mostrarDialogoSeleccionRutina(ejercicios: List<Ejercicio>) {

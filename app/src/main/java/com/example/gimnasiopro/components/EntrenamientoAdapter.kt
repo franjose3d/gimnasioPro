@@ -31,7 +31,10 @@ class EntrenamientoAdapter(
     companion object {
         private const val KG_INCREMENT = 5f
         private const val MIN_KG = 0f
-        private const val MIN_SERIES = 3
+        private const val REP_INCREMENT = 1
+        private const val MIN_REP = 1
+        private const val DEFAULT_REP = 10
+        private const val MIN_SERIES = 1
         private const val MAX_SERIES = 6
     }
 
@@ -76,7 +79,15 @@ class EntrenamientoAdapter(
         private val etPeso5: EditText = itemView.findViewById(R.id.etPeso5)
         private val etPeso6: EditText = itemView.findViewById(R.id.etPeso6)
 
-        // Botones incrementar/decrementar
+        // EditTexts de repeticiones
+        private val etRep1: EditText = itemView.findViewById(R.id.etRep1)
+        private val etRep2: EditText = itemView.findViewById(R.id.etRep2)
+        private val etRep3: EditText = itemView.findViewById(R.id.etRep3)
+        private val etRep4: EditText = itemView.findViewById(R.id.etRep4)
+        private val etRep5: EditText = itemView.findViewById(R.id.etRep5)
+        private val etRep6: EditText = itemView.findViewById(R.id.etRep6)
+
+        // Botones incrementar/decrementar Kg
         private val btnIncrementarKg1: ImageButton = itemView.findViewById(R.id.btnIncrementarKg1)
         private val btnDecrementarKg1: ImageButton = itemView.findViewById(R.id.btnDecrementarKg1)
         private val btnIncrementarKg2: ImageButton = itemView.findViewById(R.id.btnIncrementarKg2)
@@ -90,9 +101,33 @@ class EntrenamientoAdapter(
         private val btnIncrementarKg6: ImageButton = itemView.findViewById(R.id.btnIncrementarKg6)
         private val btnDecrementarKg6: ImageButton = itemView.findViewById(R.id.btnDecrementarKg6)
 
-        // Botones agregar/quitar serie
-        private val btnAgregarSerie: ImageButton = itemView.findViewById(R.id.btnAgregarSerie)
-        private val btnQuitarSerie: ImageButton = itemView.findViewById(R.id.btnQuitarSerie)
+        // Botones incrementar/decrementar Rep
+        private val btnIncrementarRep1: ImageButton = itemView.findViewById(R.id.btnIncrementarRep1)
+        private val btnDecrementarRep1: ImageButton = itemView.findViewById(R.id.btnDecrementarRep1)
+        private val btnIncrementarRep2: ImageButton = itemView.findViewById(R.id.btnIncrementarRep2)
+        private val btnDecrementarRep2: ImageButton = itemView.findViewById(R.id.btnDecrementarRep2)
+        private val btnIncrementarRep3: ImageButton = itemView.findViewById(R.id.btnIncrementarRep3)
+        private val btnDecrementarRep3: ImageButton = itemView.findViewById(R.id.btnDecrementarRep3)
+        private val btnIncrementarRep4: ImageButton = itemView.findViewById(R.id.btnIncrementarRep4)
+        private val btnDecrementarRep4: ImageButton = itemView.findViewById(R.id.btnDecrementarRep4)
+        private val btnIncrementarRep5: ImageButton = itemView.findViewById(R.id.btnIncrementarRep5)
+        private val btnDecrementarRep5: ImageButton = itemView.findViewById(R.id.btnDecrementarRep5)
+        private val btnIncrementarRep6: ImageButton = itemView.findViewById(R.id.btnIncrementarRep6)
+        private val btnDecrementarRep6: ImageButton = itemView.findViewById(R.id.btnDecrementarRep6)
+
+        // Botones agregar/quitar serie integrados en cada serie
+        private val btnAgregarSerie1: ImageButton = itemView.findViewById(R.id.btnAgregarSerie1)
+        private val btnQuitarSerie1: ImageButton = itemView.findViewById(R.id.btnQuitarSerie1)
+        private val btnAgregarSerie2: ImageButton = itemView.findViewById(R.id.btnAgregarSerie2)
+        private val btnQuitarSerie2: ImageButton = itemView.findViewById(R.id.btnQuitarSerie2)
+        private val btnAgregarSerie3: ImageButton = itemView.findViewById(R.id.btnAgregarSerie3)
+        private val btnQuitarSerie3: ImageButton = itemView.findViewById(R.id.btnQuitarSerie3)
+        private val btnAgregarSerie4: ImageButton = itemView.findViewById(R.id.btnAgregarSerie4)
+        private val btnQuitarSerie4: ImageButton = itemView.findViewById(R.id.btnQuitarSerie4)
+        private val btnAgregarSerie5: ImageButton = itemView.findViewById(R.id.btnAgregarSerie5)
+        private val btnQuitarSerie5: ImageButton = itemView.findViewById(R.id.btnQuitarSerie5)
+        private val btnAgregarSerie6: ImageButton = itemView.findViewById(R.id.btnAgregarSerie6)
+        private val btnQuitarSerie6: ImageButton = itemView.findViewById(R.id.btnQuitarSerie6)
 
         fun bind(ejercicioEntrenamiento: EjercicioEntrenamiento) {
             tvNombreEjercicio.text = ejercicioEntrenamiento.ejercicio.nombre
@@ -116,32 +151,59 @@ class EntrenamientoAdapter(
             // Actualizar visibilidad de series
             actualizarVisibilidadSeries(ejercicioEntrenamiento)
 
-            // Configurar valores de peso para cada serie
+            // Configurar valores de peso y repeticiones para cada serie
             actualizarPesosSeries(ejercicioEntrenamiento)
+            actualizarRepeticionesSeries(ejercicioEntrenamiento)
 
-            // Configurar botones de cada serie
-            configurarBotonesSerie(0, ejercicioEntrenamiento, etPeso1, btnIncrementarKg1, btnDecrementarKg1)
-            configurarBotonesSerie(1, ejercicioEntrenamiento, etPeso2, btnIncrementarKg2, btnDecrementarKg2)
-            configurarBotonesSerie(2, ejercicioEntrenamiento, etPeso3, btnIncrementarKg3, btnDecrementarKg3)
-            configurarBotonesSerie(3, ejercicioEntrenamiento, etPeso4, btnIncrementarKg4, btnDecrementarKg4)
-            configurarBotonesSerie(4, ejercicioEntrenamiento, etPeso5, btnIncrementarKg5, btnDecrementarKg5)
-            configurarBotonesSerie(5, ejercicioEntrenamiento, etPeso6, btnIncrementarKg6, btnDecrementarKg6)
+            // Configurar botones de peso de cada serie
+            configurarBotonesSeriePeso(0, ejercicioEntrenamiento, etPeso1, btnIncrementarKg1, btnDecrementarKg1)
+            configurarBotonesSeriePeso(1, ejercicioEntrenamiento, etPeso2, btnIncrementarKg2, btnDecrementarKg2)
+            configurarBotonesSeriePeso(2, ejercicioEntrenamiento, etPeso3, btnIncrementarKg3, btnDecrementarKg3)
+            configurarBotonesSeriePeso(3, ejercicioEntrenamiento, etPeso4, btnIncrementarKg4, btnDecrementarKg4)
+            configurarBotonesSeriePeso(4, ejercicioEntrenamiento, etPeso5, btnIncrementarKg5, btnDecrementarKg5)
+            configurarBotonesSeriePeso(5, ejercicioEntrenamiento, etPeso6, btnIncrementarKg6, btnDecrementarKg6)
 
-            // Botón agregar serie
-            btnAgregarSerie.setOnClickListener {
+            // Configurar botones de repeticiones de cada serie
+            configurarBotonesSerieRep(0, ejercicioEntrenamiento, etRep1, btnIncrementarRep1, btnDecrementarRep1)
+            configurarBotonesSerieRep(1, ejercicioEntrenamiento, etRep2, btnIncrementarRep2, btnDecrementarRep2)
+            configurarBotonesSerieRep(2, ejercicioEntrenamiento, etRep3, btnIncrementarRep3, btnDecrementarRep3)
+            configurarBotonesSerieRep(3, ejercicioEntrenamiento, etRep4, btnIncrementarRep4, btnDecrementarRep4)
+            configurarBotonesSerieRep(4, ejercicioEntrenamiento, etRep5, btnIncrementarRep5, btnDecrementarRep5)
+            configurarBotonesSerieRep(5, ejercicioEntrenamiento, etRep6, btnIncrementarRep6, btnDecrementarRep6)
+
+            // Configurar botones de agregar/quitar serie integrados
+            configurarBotonesAgregarQuitarSerie(ejercicioEntrenamiento)
+        }
+
+        private fun configurarBotonesAgregarQuitarSerie(ejercicioEntrenamiento: EjercicioEntrenamiento) {
+            val agregarSerieListener = View.OnClickListener {
                 if (ejercicioEntrenamiento.seriesVisibles < MAX_SERIES) {
                     ejercicioEntrenamiento.seriesVisibles++
                     actualizarVisibilidadSeries(ejercicioEntrenamiento)
                 }
             }
 
-            // Botón quitar serie
-            btnQuitarSerie.setOnClickListener {
-                if (ejercicioEntrenamiento.seriesVisibles > MIN_SERIES) {
+            val quitarSerieListener = View.OnClickListener {
+                if (ejercicioEntrenamiento.seriesVisibles > 1) {
                     ejercicioEntrenamiento.seriesVisibles--
                     actualizarVisibilidadSeries(ejercicioEntrenamiento)
                 }
             }
+
+            // Configurar listeners para todos los botones
+            btnAgregarSerie1.setOnClickListener(agregarSerieListener)
+            btnAgregarSerie2.setOnClickListener(agregarSerieListener)
+            btnAgregarSerie3.setOnClickListener(agregarSerieListener)
+            btnAgregarSerie4.setOnClickListener(agregarSerieListener)
+            btnAgregarSerie5.setOnClickListener(agregarSerieListener)
+            btnAgregarSerie6.setOnClickListener(agregarSerieListener)
+
+            btnQuitarSerie1.setOnClickListener(quitarSerieListener)
+            btnQuitarSerie2.setOnClickListener(quitarSerieListener)
+            btnQuitarSerie3.setOnClickListener(quitarSerieListener)
+            btnQuitarSerie4.setOnClickListener(quitarSerieListener)
+            btnQuitarSerie5.setOnClickListener(quitarSerieListener)
+            btnQuitarSerie6.setOnClickListener(quitarSerieListener)
         }
 
         /**
@@ -160,7 +222,7 @@ class EntrenamientoAdapter(
             }
         }
 
-        private fun configurarBotonesSerie(
+        private fun configurarBotonesSeriePeso(
             indice: Int,
             ejercicioEntrenamiento: EjercicioEntrenamiento,
             etPeso: EditText,
@@ -192,6 +254,36 @@ class EntrenamientoAdapter(
             }
         }
 
+        private fun configurarBotonesSerieRep(
+            indice: Int,
+            ejercicioEntrenamiento: EjercicioEntrenamiento,
+            etRep: EditText,
+            btnIncrementar: ImageButton,
+            btnDecrementar: ImageButton
+        ) {
+            btnIncrementar.setOnClickListener {
+                if (indice < ejercicioEntrenamiento.series.size) {
+                    ejercicioEntrenamiento.series[indice].repeticiones += REP_INCREMENT
+                    actualizarRepEditText(etRep, ejercicioEntrenamiento.series[indice].repeticiones)
+                }
+            }
+
+            btnDecrementar.setOnClickListener {
+                if (indice < ejercicioEntrenamiento.series.size) {
+                    val serie = ejercicioEntrenamiento.series[indice]
+                    if (serie.repeticiones > MIN_REP) {
+                        serie.repeticiones -= REP_INCREMENT
+                    }
+                    actualizarRepEditText(etRep, serie.repeticiones)
+                }
+            }
+
+            // Click para edición manual de repeticiones
+            etRep.setOnClickListener {
+                mostrarDialogoRepeticiones(ejercicioEntrenamiento, indice, etRep)
+            }
+        }
+
         private fun actualizarPesosSeries(ejercicioEntrenamiento: EjercicioEntrenamiento) {
             val series = ejercicioEntrenamiento.series
             if (series.size > 0) actualizarPesoEditText(etPeso1, series[0].pesoKg)
@@ -202,18 +294,36 @@ class EntrenamientoAdapter(
             if (series.size > 5) actualizarPesoEditText(etPeso6, series[5].pesoKg)
         }
 
+        private fun actualizarRepeticionesSeries(ejercicioEntrenamiento: EjercicioEntrenamiento) {
+            val series = ejercicioEntrenamiento.series
+            if (series.size > 0) actualizarRepEditText(etRep1, series[0].repeticiones)
+            if (series.size > 1) actualizarRepEditText(etRep2, series[1].repeticiones)
+            if (series.size > 2) actualizarRepEditText(etRep3, series[2].repeticiones)
+            if (series.size > 3) actualizarRepEditText(etRep4, series[3].repeticiones)
+            if (series.size > 4) actualizarRepEditText(etRep5, series[4].repeticiones)
+            if (series.size > 5) actualizarRepEditText(etRep6, series[5].repeticiones)
+        }
+
         private fun actualizarPesoEditText(editText: EditText, peso: Float) {
             editText.setText(if (peso % 1 == 0f) peso.toInt().toString() else String.format(Locale.getDefault(), "%.1f", peso))
+        }
+
+        private fun actualizarRepEditText(editText: EditText, repeticiones: Int) {
+            editText.setText(repeticiones.toString())
         }
 
         private fun actualizarVisibilidadSeries(ejercicioEntrenamiento: EjercicioEntrenamiento) {
             val visibles = ejercicioEntrenamiento.seriesVisibles
 
+            // Series 1 y 2 (misma fila)
+            containerSerie1.visibility = View.VISIBLE
+            containerSerie2.visibility = if (visibles >= 2) View.VISIBLE else View.INVISIBLE
+
             // Fila 2: Series 3 y 4
             if (visibles >= 3) {
                 containerSeriesFila2.visibility = View.VISIBLE
                 containerSerie3.visibility = View.VISIBLE
-                containerSerie4.visibility = if (visibles >= 4) View.VISIBLE else View.GONE
+                containerSerie4.visibility = if (visibles >= 4) View.VISIBLE else View.INVISIBLE
             } else {
                 containerSeriesFila2.visibility = View.GONE
             }
@@ -222,16 +332,52 @@ class EntrenamientoAdapter(
             if (visibles >= 5) {
                 containerSeriesFila3.visibility = View.VISIBLE
                 containerSerie5.visibility = View.VISIBLE
-                containerSerie6.visibility = if (visibles >= 6) View.VISIBLE else View.GONE
+                containerSerie6.visibility = if (visibles >= 6) View.VISIBLE else View.INVISIBLE
             } else {
                 containerSeriesFila3.visibility = View.GONE
             }
 
-            // Actualizar estado de botones
-            btnAgregarSerie.isEnabled = visibles < MAX_SERIES
-            btnAgregarSerie.alpha = if (visibles < MAX_SERIES) 1f else 0.5f
-            btnQuitarSerie.isEnabled = visibles > MIN_SERIES
-            btnQuitarSerie.alpha = if (visibles > MIN_SERIES) 1f else 0.5f
+            // Ocultar todos los botones de agregar/quitar serie
+            btnAgregarSerie1.visibility = View.GONE
+            btnQuitarSerie1.visibility = View.GONE
+            btnAgregarSerie2.visibility = View.GONE
+            btnQuitarSerie2.visibility = View.GONE
+            btnAgregarSerie3.visibility = View.GONE
+            btnQuitarSerie3.visibility = View.GONE
+            btnAgregarSerie4.visibility = View.GONE
+            btnQuitarSerie4.visibility = View.GONE
+            btnAgregarSerie5.visibility = View.GONE
+            btnQuitarSerie5.visibility = View.GONE
+            btnAgregarSerie6.visibility = View.GONE
+            btnQuitarSerie6.visibility = View.GONE
+
+            // Mostrar solo los botones de la última serie visible
+            when (visibles) {
+                1 -> {
+                    btnAgregarSerie1.visibility = View.VISIBLE
+                    // No mostrar quitar porque solo hay 1 serie
+                }
+                2 -> {
+                    btnAgregarSerie2.visibility = View.VISIBLE
+                    btnQuitarSerie2.visibility = View.VISIBLE
+                }
+                3 -> {
+                    btnAgregarSerie3.visibility = View.VISIBLE
+                    btnQuitarSerie3.visibility = View.VISIBLE
+                }
+                4 -> {
+                    btnAgregarSerie4.visibility = View.VISIBLE
+                    btnQuitarSerie4.visibility = View.VISIBLE
+                }
+                5 -> {
+                    btnAgregarSerie5.visibility = View.VISIBLE
+                    btnQuitarSerie5.visibility = View.VISIBLE
+                }
+                6 -> {
+                    // No mostrar agregar porque es el máximo
+                    btnQuitarSerie6.visibility = View.VISIBLE
+                }
+            }
         }
 
         private fun mostrarDialogoPeso(ejercicioEntrenamiento: EjercicioEntrenamiento, indice: Int, etPeso: EditText) {
@@ -252,6 +398,29 @@ class EntrenamientoAdapter(
                     val valor = editText.text.toString().toFloatOrNull() ?: 0f
                     ejercicioEntrenamiento.series[indice].pesoKg = maxOf(valor, MIN_KG)
                     actualizarPesoEditText(etPeso, ejercicioEntrenamiento.series[indice].pesoKg)
+                }
+                .setNegativeButton(R.string.btn_cancelar, null)
+                .show()
+        }
+
+        private fun mostrarDialogoRepeticiones(ejercicioEntrenamiento: EjercicioEntrenamiento, indice: Int, etRep: EditText) {
+            if (indice >= ejercicioEntrenamiento.series.size) return
+
+            val context = itemView.context
+            val editText = EditText(context).apply {
+                inputType = InputType.TYPE_CLASS_NUMBER
+                setText(ejercicioEntrenamiento.series[indice].repeticiones.toString())
+                hint = context.getString(R.string.label_rep)
+                setPadding(50, 30, 50, 30)
+            }
+
+            AlertDialog.Builder(context)
+                .setTitle(R.string.label_rep)
+                .setView(editText)
+                .setPositiveButton(R.string.btn_guardar) { _, _ ->
+                    val valor = editText.text.toString().toIntOrNull() ?: DEFAULT_REP
+                    ejercicioEntrenamiento.series[indice].repeticiones = maxOf(valor, MIN_REP)
+                    actualizarRepEditText(etRep, ejercicioEntrenamiento.series[indice].repeticiones)
                 }
                 .setNegativeButton(R.string.btn_cancelar, null)
                 .show()

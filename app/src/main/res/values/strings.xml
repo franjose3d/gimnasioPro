@@ -122,6 +122,11 @@
     <string name="tiempo_inicial">0h 0min</string>
     <string name="valor_cero_entero">0</string>
     <string name="progreso_en_desarrollo">Más estadísticas detalladas próximamente</string>
+    <string name="peso_total_movido">Peso Total Movido</string>
+    <string name="peso_movido_hoy">Peso Movido Hoy</string>
+    <string name="record_peso_movido">Récord Personal</string>
+    <string name="kg_format">%,.0f kg</string>
+    <string name="valor_cero_kg">0 kg</string>
 
     <!-- Personal Trainer Screen -->
     <string name="titulo_personal_trainer">Personal Trainer</string>
@@ -151,6 +156,13 @@
     <string name="desc_decrementar">Decrementar</string>
     <string name="desc_agregar_serie">Agregar serie</string>
     <string name="desc_quitar_serie">Quitar serie</string>
+    <string name="label_serie_1">Serie 1</string>
+    <string name="label_serie_2">Serie 2</string>
+    <string name="label_serie_3">Serie 3</string>
+    <string name="label_serie_4">Serie 4</string>
+    <string name="label_serie_5">Serie 5</string>
+    <string name="label_serie_6">Serie 6</string>
+    <string name="valor_diez">10</string>
     <string name="entrenamiento_guardado">Entrenamiento guardado correctamente</string>
     <string name="confirmar_salir_entrenamiento">¿Estás seguro de que quieres salir? Se perderán los datos del entrenamiento.</string>
     <string name="titulo_ingresar_peso">Ingresar peso</string>

@@ -92,6 +92,18 @@ interface EstadisticaEntrenamientoDao {
     suspend fun getVolumenTotalMes(anio: Int, mes: Int): Float
 
     /**
+     * Obtiene el volumen total (peso movido) de un día específico.
+     */
+    @Query("SELECT COALESCE(SUM(volumenTotal), 0) FROM estadisticas_entrenamiento WHERE anio = :anio AND mes = :mes AND dia = :dia")
+    suspend fun getVolumenTotalDia(anio: Int, mes: Int, dia: Int): Float
+
+    /**
+     * Obtiene el récord de volumen máximo en un solo día.
+     */
+    @Query("SELECT COALESCE(MAX(volumenTotal), 0) FROM estadisticas_entrenamiento")
+    suspend fun getRecordVolumenDia(): Float
+
+    /**
      * Obtiene el resumen mensual de todo un año (para gráficos anuales).
      */
     @Query("""

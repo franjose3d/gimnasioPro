@@ -245,6 +245,99 @@
                 </androidx.cardview.widget.CardView>
             </LinearLayout>
 
+            <!-- Sección de Peso Total Movido -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/peso_total_movido"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/accent_blue"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Fila: Peso Hoy + Récord Personal -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="24dp"
+                android:baselineAligned="false">
+
+                <!-- Card de peso movido hoy -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    app:cardBackgroundColor="@color/card_background"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="4dp"
+                    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/peso_movido_hoy"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_light_gray"
+                            android:maxLines="2" />
+
+                        <TextView
+                            android:id="@+id/tvPesoMovidoHoy"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/valor_cero_kg"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/accent_blue"
+                            android:layout_marginTop="4dp" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Card de récord personal -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    app:cardBackgroundColor="@color/card_background"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="4dp"
+                    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/record_peso_movido"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_light_gray"
+                            android:maxLines="2" />
+
+                        <TextView
+                            android:id="@+id/tvRecordPesoMovido"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/valor_cero_kg"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/orange_accent"
+                            android:layout_marginTop="4dp" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
             <!-- Sección de Equilibrio Muscular -->
             <TextView
                 android:layout_width="wrap_content"
@@ -642,15 +735,6 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Mensaje de desarrollo -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/progreso_en_desarrollo"
-                android:textSize="14sp"
-                android:textColor="@color/text_light_gray"
-                android:textAlignment="center"
-                android:gravity="center" />
 
         </LinearLayout>
     </ScrollView>
