@@ -15,7 +15,7 @@ import com.example.gimnasiopro.data.Ejercicio
  * Adaptador para mostrar la lista de ejercicios con soporte para selección múltiple.
  * Soporta long press para eliminar ejercicios del dispositivo local.
  */
-class EjercicioAdapter @JvmOverloads constructor(
+class EjercicioAdapter(
     private val onEjercicioClick: (Ejercicio) -> Unit,
     private val onSelectionChanged: (Set<Ejercicio>) -> Unit,
     private val onEjercicioLongPress: ((Ejercicio) -> Unit)? = null,
@@ -54,7 +54,19 @@ class EjercicioAdapter @JvmOverloads constructor(
         onSelectionChanged(selectedEjercicios)
     }
 
-    private fun toggleSelection(ejercicio: Ejercicio): Boolean {
+    // Alias para compatibilidad
+    fun clearSelections() = clearSelection()
+
+    /**
+     * Obtiene los IDs de los ejercicios seleccionados.
+     */
+    fun getSelectedIds(): List<Long> = selectedEjercicios.map { it.id }
+
+    /**
+     * Alterna la selección de un ejercicio (público para uso externo).
+     * @return true si la operación fue exitosa
+     */
+    fun toggleSelection(ejercicio: Ejercicio): Boolean {
         if (selectedEjercicios.contains(ejercicio)) {
             selectedEjercicios.remove(ejercicio)
             onSelectionChanged(selectedEjercicios)

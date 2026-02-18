@@ -82,17 +82,17 @@ class DetalleRutinaActivity : AppCompatActivity() {
         // Configurar título
         tvTituloRutina.text = getString(R.string.rutina_1).replace("1", numeroRutina.toString())
 
-        // Configurar adaptador con selección habilitada
+        // Configurar adaptador con selección habilitada para esta rutina
         adapter = EjercicioAdapter(
-            onEjercicioClick = { ejercicio ->
-                // La selección se maneja en el adapter
+            onEjercicioClick = { _ ->
+                // La selección se maneja internamente en el adapter
             },
             onSelectionChanged = { selectedEjercicios ->
-                // Actualizar estado del botón borrar según selección
+                // Actualizar estado del botón borrar según la cantidad seleccionada
                 actualizarEstadoBotonBorrar(selectedEjercicios.size)
             },
-            onEjercicioLongPress = null, // No se usa long press aquí
-            maxSeleccion = 10 // Permitir seleccionar hasta 10 ejercicios
+            onEjercicioLongPress = null,
+            maxSeleccion = 10
         )
         rvEjerciciosRutina.layoutManager = LinearLayoutManager(this)
         rvEjerciciosRutina.adapter = adapter

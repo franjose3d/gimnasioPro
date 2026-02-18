@@ -42,6 +42,18 @@
             android:textSize="22sp"
             android:textStyle="bold"
             android:textColor="@color/accent_blue" />
+
+        <ImageButton
+            android:id="@+id/btnSearch"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_search"
+            android:contentDescription="@string/btn_buscar"
+            android:scaleType="centerInside"
+            android:clickable="true"
+            android:focusable="true"
+            app:tint="@color/accent_blue" />
     </LinearLayout>
 
     <ScrollView

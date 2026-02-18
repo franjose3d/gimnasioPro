@@ -34,6 +34,7 @@ class EjerciciosActivity : AppCompatActivity() {
             .build()
 
         setupBackButton()
+        setupSearchButton()
         loadSvgImages()
         setupButtons()
     }
@@ -41,6 +42,18 @@ class EjerciciosActivity : AppCompatActivity() {
     private fun setupBackButton() {
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener {
             finish()
+        }
+    }
+
+    private fun setupSearchButton() {
+        findViewById<ImageButton>(R.id.btnSearch).setOnClickListener {
+            val intent = Intent(this, BuscarEjerciciosActivity::class.java).apply {
+                // Propagar el número de rutina si viene de DetalleRutinaActivity
+                if (numeroRutina > 0) {
+                    putExtra(BuscarEjerciciosActivity.EXTRA_NUMERO_RUTINA, numeroRutina)
+                }
+            }
+            startActivity(intent)
         }
     }
 

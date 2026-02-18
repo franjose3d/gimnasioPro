@@ -2,6 +2,7 @@ package com.example.gimnasiopro.data.firestore
 
 import com.example.gimnasiopro.data.Ejercicio
 import com.example.gimnasiopro.data.EjercicioRepository
+import com.example.gimnasiopro.data.sync.SyncManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.first
@@ -37,9 +38,13 @@ class EjercicioRepositoryHibrido(
     /**
      * Obtener todos los ejercicios con sincronización híbrida.
      * Primero carga de Room, luego sincroniza con Firestore.
+     *
+     * IMPORTANTE: Respeta el SyncManager:
+     * - En modo entrenamiento: SOLO usa datos locales (Room)
+     * - En modo normal: Sincroniza con Firestore
      */
     private fun obtenerTodosEjercicios(): Flow<List<Ejercicio>> = flow {
-        // 1. Emitir datos locales primero (inmediato)
+        // 1. Emitir datos locales primero (inmediato - funciona offline)
         val ejerciciosLocales = localRepository.allEjercicios.first()
 
         // Si Room está vacío, no emitir lista vacía - esperar a Firebase
@@ -47,7 +52,16 @@ class EjercicioRepositoryHibrido(
             emit(ejerciciosLocales)
         }
 
-        // 2. Sincronizar con Firestore (crítico si Room está vacío)
+        // 2. Si estamos en modo entrenamiento, NO sincronizar con Firestore
+        if (SyncManager.isTrainingMode) {
+            // En modo entrenamiento solo usamos datos locales
+            if (ejerciciosLocales.isEmpty()) {
+                emit(emptyList())
+            }
+            return@flow
+        }
+
+        // 3. Sincronizar con Firestore (solo si no estamos en modo entrenamiento)
         try {
             val ejerciciosRemotos = remoteRepository.getAllEjercicios().first()
             

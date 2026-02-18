@@ -16,12 +16,16 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gimnasiopro.R
 import com.example.gimnasiopro.data.EjercicioEntrenamiento
+import com.example.gimnasiopro.data.SerieEntrenamiento
 import java.net.URLEncoder
 import java.util.Locale
 
 /**
  * Adapter para mostrar la lista de ejercicios durante el entrenamiento.
  * Permite modificar el peso de cada serie de cada ejercicio.
+ *
+ * IMPORTANTE: Usa setHasStableIds(true) para evitar que el RecyclerView
+ * pierda el estado de las vistas durante el scroll/reciclaje.
  */
 class EntrenamientoAdapter(
     private val ejercicios: MutableList<EjercicioEntrenamiento>,
@@ -38,6 +42,16 @@ class EntrenamientoAdapter(
         private const val MAX_SERIES = 6
     }
 
+    init {
+        // Evita que el RecyclerView recicle y pierda el estado
+        setHasStableIds(true)
+    }
+
+    override fun getItemId(position: Int): Long {
+        // Usar el ID único del ejercicio para identificar cada item
+        return ejercicios[position].ejercicio.id.toLong()
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EntrenamientoViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_ejercicio_entrenamiento, parent, false)
@@ -45,15 +59,43 @@ class EntrenamientoAdapter(
     }
 
     override fun onBindViewHolder(holder: EntrenamientoViewHolder, position: Int) {
-        holder.bind(ejercicios[position])
+        // IMPORTANTE: Antes de bind, guardar el estado actual si existe
+        holder.saveCurrentState()
+        holder.bind(ejercicios[position], position)
+    }
+
+    // IMPORTANTE: Guardar el estado antes de reciclar
+    override fun onViewRecycled(holder: EntrenamientoViewHolder) {
+        // Guardar el estado actual ANTES de reciclar
+        holder.saveCurrentState()
+        holder.cleanup()
+        super.onViewRecycled(holder)
+    }
+
+    // Indicar que no queremos reciclar items - cada posición tiene viewType único
+    override fun getItemViewType(position: Int): Int {
+        // Usar el ID del ejercicio para evitar reciclaje entre diferentes ejercicios
+        return ejercicios.getOrNull(position)?.ejercicio?.id?.toInt() ?: position
     }
 
     override fun getItemCount(): Int = ejercicios.size
 
     fun getEjercicios(): List<EjercicioEntrenamiento> = ejercicios.toList()
 
+    /**
+     * Obtiene el ejercicio actual de la posición - usado internamente para
+     * asegurar que siempre se modifica el ejercicio correcto
+     */
+    private fun getEjercicioAt(position: Int): EjercicioEntrenamiento? {
+        return if (position in 0 until ejercicios.size) ejercicios[position] else null
+    }
+
     inner class EntrenamientoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val tvNombreEjercicio: TextView = itemView.findViewById(R.id.tvNombreEjercicio)
+
+        // Referencia al ejercicio actual y posición - se actualiza en cada bind()
+        private var currentEjercicio: EjercicioEntrenamiento? = null
+        private var currentPosition: Int = -1
         private val checkboxCompletado: CheckBox = itemView.findViewById(R.id.checkboxCompletado)
         private val btnVerVideo: ImageButton = itemView.findViewById(R.id.btnVerVideo)
 
@@ -129,23 +171,34 @@ class EntrenamientoAdapter(
         private val btnAgregarSerie6: ImageButton = itemView.findViewById(R.id.btnAgregarSerie6)
         private val btnQuitarSerie6: ImageButton = itemView.findViewById(R.id.btnQuitarSerie6)
 
-        fun bind(ejercicioEntrenamiento: EjercicioEntrenamiento) {
+        fun bind(ejercicioEntrenamiento: EjercicioEntrenamiento, position: Int) {
+            // Guardar referencia al ejercicio actual y posición
+            currentEjercicio = ejercicioEntrenamiento
+            currentPosition = position
+
             tvNombreEjercicio.text = ejercicioEntrenamiento.ejercicio.nombre
+
+            // IMPORTANTE: Limpiar listener antes de cambiar el estado para evitar
+            // que se dispare accidentalmente durante el reciclaje/rebind
+            checkboxCompletado.setOnCheckedChangeListener(null)
 
             // Configurar estado del checkbox
             checkboxCompletado.isChecked = ejercicioEntrenamiento.completado
             actualizarEstiloCompletado(ejercicioEntrenamiento.completado)
 
-            // Listener del checkbox
+            // Listener del checkbox - se configura DESPUÉS de setear el valor
+            // Usa currentEjercicio para asegurar que modifica el ejercicio correcto
             checkboxCompletado.setOnCheckedChangeListener { _, isChecked ->
-                ejercicioEntrenamiento.completado = isChecked
-                actualizarEstiloCompletado(isChecked)
-                onEjercicioCompletado(adapterPosition, isChecked)
+                currentEjercicio?.let { ejercicio ->
+                    ejercicio.completado = isChecked
+                    actualizarEstiloCompletado(isChecked)
+                    onEjercicioCompletado(bindingAdapterPosition, isChecked)
+                }
             }
 
             // Botón para ver video en YouTube
             btnVerVideo.setOnClickListener {
-                abrirVideoYouTube(ejercicioEntrenamiento.ejercicio.nombre)
+                currentEjercicio?.let { abrirVideoYouTube(it.ejercicio.nombre) }
             }
 
             // Actualizar visibilidad de series
@@ -230,15 +283,18 @@ class EntrenamientoAdapter(
             btnDecrementar: ImageButton
         ) {
             btnIncrementar.setOnClickListener {
-                if (indice < ejercicioEntrenamiento.series.size) {
-                    ejercicioEntrenamiento.series[indice].pesoKg += KG_INCREMENT
-                    actualizarPesoEditText(etPeso, ejercicioEntrenamiento.series[indice].pesoKg)
+                // Usar currentEjercicio para asegurar que modificamos el ejercicio correcto
+                val ejercicio = currentEjercicio ?: return@setOnClickListener
+                if (indice < ejercicio.series.size) {
+                    ejercicio.series[indice].pesoKg += KG_INCREMENT
+                    actualizarPesoEditText(etPeso, ejercicio.series[indice].pesoKg)
                 }
             }
 
             btnDecrementar.setOnClickListener {
-                if (indice < ejercicioEntrenamiento.series.size) {
-                    val serie = ejercicioEntrenamiento.series[indice]
+                val ejercicio = currentEjercicio ?: return@setOnClickListener
+                if (indice < ejercicio.series.size) {
+                    val serie = ejercicio.series[indice]
                     if (serie.pesoKg >= KG_INCREMENT) {
                         serie.pesoKg -= KG_INCREMENT
                     } else {
@@ -250,7 +306,9 @@ class EntrenamientoAdapter(
 
             // Click para edición manual
             etPeso.setOnClickListener {
-                mostrarDialogoPeso(ejercicioEntrenamiento, indice, etPeso)
+                currentEjercicio?.let { ejercicio ->
+                    mostrarDialogoPeso(ejercicio, indice, etPeso)
+                }
             }
         }
 
@@ -262,15 +320,17 @@ class EntrenamientoAdapter(
             btnDecrementar: ImageButton
         ) {
             btnIncrementar.setOnClickListener {
-                if (indice < ejercicioEntrenamiento.series.size) {
-                    ejercicioEntrenamiento.series[indice].repeticiones += REP_INCREMENT
-                    actualizarRepEditText(etRep, ejercicioEntrenamiento.series[indice].repeticiones)
+                val ejercicio = currentEjercicio ?: return@setOnClickListener
+                if (indice < ejercicio.series.size) {
+                    ejercicio.series[indice].repeticiones += REP_INCREMENT
+                    actualizarRepEditText(etRep, ejercicio.series[indice].repeticiones)
                 }
             }
 
             btnDecrementar.setOnClickListener {
-                if (indice < ejercicioEntrenamiento.series.size) {
-                    val serie = ejercicioEntrenamiento.series[indice]
+                val ejercicio = currentEjercicio ?: return@setOnClickListener
+                if (indice < ejercicio.series.size) {
+                    val serie = ejercicio.series[indice]
                     if (serie.repeticiones > MIN_REP) {
                         serie.repeticiones -= REP_INCREMENT
                     }
@@ -280,7 +340,9 @@ class EntrenamientoAdapter(
 
             // Click para edición manual de repeticiones
             etRep.setOnClickListener {
-                mostrarDialogoRepeticiones(ejercicioEntrenamiento, indice, etRep)
+                currentEjercicio?.let { ejercicio ->
+                    mostrarDialogoRepeticiones(ejercicio, indice, etRep)
+                }
             }
         }
 
@@ -433,6 +495,48 @@ class EntrenamientoAdapter(
             } else {
                 tvNombreEjercicio.paintFlags = tvNombreEjercicio.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
                 itemView.alpha = 1.0f
+            }
+        }
+
+        /**
+         * Limpia todos los listeners para evitar memory leaks al reciclar la vista
+         */
+        fun cleanup() {
+            checkboxCompletado.setOnCheckedChangeListener(null)
+            btnVerVideo.setOnClickListener(null)
+            // No es necesario limpiar los botones de kg/rep porque se reconfiguran en bind()
+        }
+
+        /**
+         * IMPORTANTE: Guarda el estado actual de los EditTexts al modelo de datos.
+         * Esto se llama antes de reciclar o rebind para asegurar que no se pierdan datos.
+         */
+        fun saveCurrentState() {
+            val ejercicio = currentEjercicio ?: return
+            if (currentPosition < 0) return
+
+            try {
+                // Guardar pesos de cada serie desde los EditTexts
+                ejercicio.series.getOrNull(0)?.pesoKg = etPeso1.text.toString().toFloatOrNull() ?: ejercicio.series[0].pesoKg
+                ejercicio.series.getOrNull(1)?.pesoKg = etPeso2.text.toString().toFloatOrNull() ?: ejercicio.series.getOrElse(1) { SerieEntrenamiento() }.pesoKg
+                ejercicio.series.getOrNull(2)?.pesoKg = etPeso3.text.toString().toFloatOrNull() ?: ejercicio.series.getOrElse(2) { SerieEntrenamiento() }.pesoKg
+                ejercicio.series.getOrNull(3)?.pesoKg = etPeso4.text.toString().toFloatOrNull() ?: ejercicio.series.getOrElse(3) { SerieEntrenamiento() }.pesoKg
+                ejercicio.series.getOrNull(4)?.pesoKg = etPeso5.text.toString().toFloatOrNull() ?: ejercicio.series.getOrElse(4) { SerieEntrenamiento() }.pesoKg
+                ejercicio.series.getOrNull(5)?.pesoKg = etPeso6.text.toString().toFloatOrNull() ?: ejercicio.series.getOrElse(5) { SerieEntrenamiento() }.pesoKg
+
+                // Guardar repeticiones de cada serie
+                ejercicio.series.getOrNull(0)?.repeticiones = etRep1.text.toString().toIntOrNull() ?: ejercicio.series[0].repeticiones
+                ejercicio.series.getOrNull(1)?.repeticiones = etRep2.text.toString().toIntOrNull() ?: ejercicio.series.getOrElse(1) { SerieEntrenamiento() }.repeticiones
+                ejercicio.series.getOrNull(2)?.repeticiones = etRep3.text.toString().toIntOrNull() ?: ejercicio.series.getOrElse(2) { SerieEntrenamiento() }.repeticiones
+                ejercicio.series.getOrNull(3)?.repeticiones = etRep4.text.toString().toIntOrNull() ?: ejercicio.series.getOrElse(3) { SerieEntrenamiento() }.repeticiones
+                ejercicio.series.getOrNull(4)?.repeticiones = etRep5.text.toString().toIntOrNull() ?: ejercicio.series.getOrElse(4) { SerieEntrenamiento() }.repeticiones
+                ejercicio.series.getOrNull(5)?.repeticiones = etRep6.text.toString().toIntOrNull() ?: ejercicio.series.getOrElse(5) { SerieEntrenamiento() }.repeticiones
+
+                // Guardar estado del checkbox
+                ejercicio.completado = checkboxCompletado.isChecked
+            } catch (e: Exception) {
+                // En caso de error, no hacer nada para no corromper los datos
+                android.util.Log.e("EntrenamientoAdapter", "Error guardando estado: ${e.message}")
             }
         }
     }

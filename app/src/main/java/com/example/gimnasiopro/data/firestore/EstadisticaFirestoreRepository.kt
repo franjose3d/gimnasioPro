@@ -34,18 +34,37 @@ class EstadisticaFirestoreRepository(
 
     /**
      * Verifica si el documento del usuario existe en Firestore.
-     * Esto evita crear subcolecciones bajo documentos inexistentes.
+     * Si es cliente y no existe, intenta crearlo automáticamente.
      */
     private suspend fun verificarUsuarioExiste(): Boolean {
         return try {
+            Log.d(TAG, "🔍 Verificando si usuario $userId existe en $coleccionBase...")
             val doc = userDocument.get().await()
-            val exists = doc.exists()
-            if (!exists) {
-                Log.w(TAG, "⚠️ Usuario $userId no existe en $coleccionBase. No se guardarán estadísticas en Firestore.")
+
+            if (doc.exists()) {
+                Log.d(TAG, "✅ Usuario $userId EXISTE en $coleccionBase - estadísticas se guardarán")
+                return true
             }
-            exists
+
+            // Si es cliente y no existe, intentar crearlo
+            if (coleccionBase == "clientes") {
+                Log.w(TAG, "⚠️ Cliente $userId no existe, intentando crear documento básico...")
+                val datosBasicos = mapOf(
+                    "userId" to userId,
+                    "tipo" to "cliente",
+                    "activo" to true,
+                    "fechaCreacion" to com.google.firebase.Timestamp.now()
+                )
+                userDocument.set(datosBasicos, com.google.firebase.firestore.SetOptions.merge()).await()
+                Log.d(TAG, "✅ Documento básico de cliente creado: $coleccionBase/$userId")
+                return true
+            }
+
+            Log.w(TAG, "⚠️ Usuario $userId NO existe en $coleccionBase - estadísticas NO se guardarán en Firestore")
+            Log.w(TAG, "⚠️ El usuario debe estar registrado en la colección '$coleccionBase' primero")
+            false
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Error al verificar usuario: ${e.message}")
+            Log.e(TAG, "❌ Error al verificar si usuario existe: ${e.message}", e)
             false
         }
     }
@@ -208,6 +227,7 @@ class EstadisticaFirestoreRepository(
             
             Result.success(Unit)
         } catch (e: Exception) {
+            Log.e(TAG, "❌ Error guardando estadística en Firestore: ${e.message}", e)
             Result.failure(e)
         }
     }

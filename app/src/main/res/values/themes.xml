@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.GimnasioPro" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="Theme.GimnasioPro" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Customize your theme here -->
         <item name="colorPrimary">@color/electric_green_button</item>
         <item name="colorPrimaryDark">@color/dark_green_background</item>
         <item name="colorAccent">@color/electric_green_button</item>
+        <item name="colorOnPrimary">@color/text_on_button</item>
         <item name="android:windowBackground">@color/dark_green_background</item>
         <item name="android:statusBarColor">@color/dark_green_background</item>
         <item name="android:navigationBarColor">@color/dark_green_background</item>

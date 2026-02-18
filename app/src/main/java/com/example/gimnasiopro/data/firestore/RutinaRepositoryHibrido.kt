@@ -3,6 +3,7 @@ package com.example.gimnasiopro.data.firestore
 import android.util.Log
 import com.example.gimnasiopro.data.Rutina
 import com.example.gimnasiopro.data.RutinaRepository
+import com.example.gimnasiopro.data.sync.SyncManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
@@ -217,39 +218,67 @@ class RutinaRepositoryHibrido(
     /**
      * Sincronizar una rutina local con Firebase.
      * Guarda en clientes/{userId}/rutinas/ o trainers/{userId}/rutinas/
+     *
+     * IMPORTANTE: Respeta el SyncManager:
+     * - En modo entrenamiento: NO sincroniza (solo local)
+     * - En modo normal: Sincroniza inmediatamente
      */
     private suspend fun sincronizarRutinaConFirebase(rutina: Rutina) {
-        val userId = auth.currentUser?.uid ?: return
-        val tipoUsuario = obtenerTipoUsuario(userId)
-        val rutinasCollection = getRutinasCollection(userId, tipoUsuario)
+        // Verificar si la sincronización está habilitada
+        if (SyncManager.isTrainingMode) {
+            Log.d(TAG, "🏋️ Modo entrenamiento activo - sincronización de rutina ${rutina.numeroRutina} OMITIDA")
+            return
+        }
 
-        // Buscar si ya existe esta rutina en Firebase
-        val rutinaFirebaseId = buscarRutinaEnFirebase(userId, tipoUsuario, rutina.numeroRutina)
+        if (!SyncManager.isSyncEnabled) {
+            Log.d(TAG, "⏸️ Sincronización deshabilitada - rutina ${rutina.numeroRutina} guardada solo localmente")
+            return
+        }
 
-        val rutinaFirestore = RutinaFirestore(
-            rutinaId = rutinaFirebaseId ?: "",
-            nombre = rutina.nombre,
-            propietarioId = userId,
-            creadoPorId = userId,
-            creadoPorTipo = tipoUsuario,
-            compartidaConTrainer = true,
-            ejercicioIds = rutina.ejercicioIds.map { it.toString() },
-            activa = true,
-            fechaCreacion = Date(rutina.fechaCreacion),
-            fechaModificacion = Date(rutina.fechaModificacion)
-        )
+        val userId = auth.currentUser?.uid ?: run {
+            Log.e(TAG, "❌ No hay usuario autenticado para sincronizar rutina")
+            return
+        }
 
-        if (rutinaFirebaseId != null) {
-            // Actualizar existente
-            rutinasCollection.document(rutinaFirebaseId)
-                .update(rutinaFirestore.toMap().filterValues { it != null } as Map<String, Any>)
-                .await()
-            Log.d(TAG, "Rutina ${rutina.numeroRutina} actualizada en Firebase (${tipoUsuario}s/${userId}/rutinas)")
-        } else {
-            // Crear nueva
-            val docRef = rutinasCollection.add(rutinaFirestore.toMap()).await()
-            docRef.update("rutinaId", docRef.id).await()
-            Log.d(TAG, "Rutina ${rutina.numeroRutina} creada en Firebase: ${docRef.id} (${tipoUsuario}s/${userId}/rutinas)")
+        Log.d(TAG, "🔄 Sincronizando rutina ${rutina.numeroRutina} para usuario $userId...")
+
+        try {
+            val tipoUsuario = obtenerTipoUsuario(userId)
+            Log.d(TAG, "📋 Tipo de usuario detectado: $tipoUsuario")
+
+            val rutinasCollection = getRutinasCollection(userId, tipoUsuario)
+            Log.d(TAG, "📁 Colección destino: ${tipoUsuario}s/$userId/rutinas")
+
+            // Buscar si ya existe esta rutina en Firebase
+            val rutinaFirebaseId = buscarRutinaEnFirebase(userId, tipoUsuario, rutina.numeroRutina)
+
+            val rutinaFirestore = RutinaFirestore(
+                rutinaId = rutinaFirebaseId ?: "",
+                nombre = rutina.nombre,
+                propietarioId = userId,
+                creadoPorId = userId,
+                creadoPorTipo = tipoUsuario,
+                compartidaConTrainer = true,
+                ejercicioIds = rutina.ejercicioIds.map { it.toString() },
+                activa = true,
+                fechaCreacion = Date(rutina.fechaCreacion),
+                fechaModificacion = Date(rutina.fechaModificacion)
+            )
+
+            if (rutinaFirebaseId != null) {
+                // Actualizar existente
+                rutinasCollection.document(rutinaFirebaseId)
+                    .update(rutinaFirestore.toMap().filterValues { it != null } as Map<String, Any>)
+                    .await()
+                Log.d(TAG, "✅ Rutina ${rutina.numeroRutina} actualizada en Firebase (${tipoUsuario}s/$userId/rutinas)")
+            } else {
+                // Crear nueva
+                val docRef = rutinasCollection.add(rutinaFirestore.toMap()).await()
+                docRef.update("rutinaId", docRef.id).await()
+                Log.d(TAG, "✅ Rutina ${rutina.numeroRutina} creada en Firebase: ${docRef.id} (${tipoUsuario}s/$userId/rutinas)")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error sincronizando rutina ${rutina.numeroRutina} con Firebase: ${e.message}", e)
         }
     }
 

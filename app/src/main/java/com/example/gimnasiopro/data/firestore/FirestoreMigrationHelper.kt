@@ -37,7 +37,8 @@ class FirestoreMigrationHelper(
     suspend fun migrarRutinasUsuario(userId: String): Result<Int> {
         return try {
             val rutinas = rutinaRepository.getAllRutinas().first()
-            val rutinaFirestoreRepo = RutinaFirestoreRepository(userId, "cliente")
+            val tipoUsuario = UserHelper.getTipoUsuario(userId)
+            val rutinaFirestoreRepo = RutinaFirestoreRepository(userId, tipoUsuario)
 
             var count = 0
             rutinas.forEach { rutina ->
@@ -93,9 +94,10 @@ class FirestoreMigrationHelper(
             val fechaInicio = System.currentTimeMillis() - (10L * 365 * 24 * 60 * 60 * 1000)
             val fechaFin = System.currentTimeMillis()
             val registros = registroEntrenamientoRepository.getRegistrosEntreFechas(fechaInicio, fechaFin)
+            val tipoUsuario = UserHelper.getTipoUsuario(userId)
             val entrenamientoFirestoreRepo = EntrenamientoFirestoreRepository(userId)
-            val estadisticaFirestoreRepo = EstadisticaFirestoreRepository(userId)
-            
+            val estadisticaFirestoreRepo = EstadisticaFirestoreRepository(userId, tipoUsuario)
+
             // Agrupar registros por fecha de entrenamiento
             val entrenamientosPorFecha = registros.groupBy { 
                 java.util.Date(it.fechaEntrenamiento)
@@ -164,8 +166,9 @@ class FirestoreMigrationHelper(
             val calendar = java.util.Calendar.getInstance()
             val anioActual = calendar.get(java.util.Calendar.YEAR)
             val estadisticas = estadisticaRepository.getEstadisticasAnioActual().first()
-            val estadisticaFirestoreRepo = EstadisticaFirestoreRepository(userId)
-            
+            val tipoUsuario = UserHelper.getTipoUsuario(userId)
+            val estadisticaFirestoreRepo = EstadisticaFirestoreRepository(userId, tipoUsuario)
+
             var count = 0
             estadisticas.forEach { estadistica ->
                 val fecha = java.util.Date(estadistica.fecha)

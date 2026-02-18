@@ -19,6 +19,7 @@ import com.example.gimnasiopro.data.RutinaRepository
 import com.example.gimnasiopro.data.SerieEntrenamiento
 import com.example.gimnasiopro.data.firestore.EjercicioRepositoryHibrido
 import com.example.gimnasiopro.data.firestore.EstadisticaRepositoryHibrido
+import com.example.gimnasiopro.data.sync.SyncManager
 import kotlinx.coroutines.launch
 
 /**
@@ -56,6 +57,11 @@ class EntrenamientoActivity : AppCompatActivity() {
         // Registrar tiempo de inicio
         tiempoInicio = System.currentTimeMillis()
 
+        // IMPORTANTE: Activar modo entrenamiento para trabajar solo con Room
+        // Durante el entrenamiento NO se sincroniza con Firebase
+        // Solo se sincronizará al pulsar "Finalizar entrenamiento"
+        SyncManager.startTrainingMode()
+
         val app = application as GimnasioproApplication
         ejercicioRepository = app.ejercicioRepository
         rutinaRepository = app.rutinaRepository
@@ -84,6 +90,37 @@ class EntrenamientoActivity : AppCompatActivity() {
         adapter = EntrenamientoAdapter(ejerciciosEntrenamiento)
         rvEjerciciosEntrenamiento.layoutManager = LinearLayoutManager(this)
         rvEjerciciosEntrenamiento.adapter = adapter
+
+        // IMPORTANTE: Desactivar reciclaje para evitar pérdida de datos durante scroll
+        // Durante un entrenamiento es crítico mantener todos los datos en memoria
+        rvEjerciciosEntrenamiento.setItemViewCacheSize(100) // Cache muy grande
+        rvEjerciciosEntrenamiento.isNestedScrollingEnabled = false
+
+        // Desactivar completamente el reciclaje
+        rvEjerciciosEntrenamiento.setRecycledViewPool(RecyclerView.RecycledViewPool().apply {
+            setMaxRecycledViews(0, 0) // No reciclar nada
+        })
+
+        (rvEjerciciosEntrenamiento.layoutManager as LinearLayoutManager).apply {
+            // Mantener todas las vistas en memoria
+            initialPrefetchItemCount = 50
+        }
+
+        // Desactivar animaciones para evitar problemas de estado
+        rvEjerciciosEntrenamiento.itemAnimator = null
+
+        // IMPORTANTE: Guardar estado automáticamente al hacer scroll
+        // Esto asegura que no se pierdan datos cuando las vistas se reciclan
+        rvEjerciciosEntrenamiento.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                // Guardar estado cuando el scroll comienza o termina
+                if (newState == RecyclerView.SCROLL_STATE_IDLE ||
+                    newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                    forceAdapterStateSave()
+                }
+            }
+        })
 
         // Configurar botón finalizar
         btnFinalizarEntrenamiento.setOnClickListener {
@@ -142,18 +179,44 @@ class EntrenamientoActivity : AppCompatActivity() {
     }
 
     private fun confirmarSalir() {
+        // Guardar estado antes de mostrar el diálogo
+        forceAdapterStateSave()
+
         AlertDialog.Builder(this)
             .setTitle(R.string.btn_volver)
             .setMessage(R.string.confirmar_salir_entrenamiento)
             .setPositiveButton(R.string.btn_volver) { _, _ ->
+                // Resetear SyncManager al salir sin guardar
+                SyncManager.reset()
                 finish()
             }
             .setNegativeButton(R.string.btn_cancelar, null)
             .show()
     }
 
+    /**
+     * Fuerza a todas las vistas visibles del RecyclerView a guardar su estado actual.
+     * Esto es crítico para no perder datos antes de finalizar o salir.
+     */
+    private fun forceAdapterStateSave() {
+        val layoutManager = rvEjerciciosEntrenamiento.layoutManager as? LinearLayoutManager ?: return
+
+        // Iterar por todas las vistas visibles y forzar guardado
+        for (i in 0 until layoutManager.childCount) {
+            val child = layoutManager.getChildAt(i) ?: continue
+            val holder = rvEjerciciosEntrenamiento.getChildViewHolder(child)
+            if (holder is EntrenamientoAdapter.EntrenamientoViewHolder) {
+                holder.saveCurrentState()
+            }
+        }
+    }
+
     private fun finalizarEntrenamiento() {
         lifecycleScope.launch {
+            // IMPORTANTE: Forzar guardado del estado actual del adapter
+            // Esto captura cualquier valor que esté en los EditText pero no se haya guardado
+            forceAdapterStateSave()
+
             // Calcular tiempo de entrenamiento
             val tiempoFin = System.currentTimeMillis()
             val tiempoEntrenamientoMs = tiempoFin - tiempoInicio
@@ -182,10 +245,10 @@ class EntrenamientoActivity : AppCompatActivity() {
                 )
             }
 
-            // Guardar todos los registros
+            // 1. Guardar todos los registros en Room (local)
             registroRepository.guardarRegistros(registros)
 
-            // Calcular estadísticas del entrenamiento
+            // 2. Calcular estadísticas del entrenamiento
             val ejerciciosCompletados = ejerciciosEntrenamiento.count { it.completado }
             // Usar calcularVolumenTotal() que suma correctamente todas las series visibles
             val volumenTotal = ejerciciosEntrenamiento
@@ -193,13 +256,20 @@ class EntrenamientoActivity : AppCompatActivity() {
                 .sumOf { it.calcularVolumenTotal().toDouble() }
                 .toFloat()
 
-            // Registrar estadísticas del día
+            // 3. IMPORTANTE: Desactivar modo entrenamiento ANTES de registrar estadísticas
+            // Esto permite que se sincronice con Firebase
+            SyncManager.endTrainingMode()
+
+            // 4. Registrar estadísticas del día (ahora SÍ sincronizará con Firebase)
             estadisticaRepository.registrarEntrenamiento(
                 tiempoMs = tiempoEntrenamientoMs,
                 ejerciciosCompletados = ejerciciosCompletados,
                 volumenTotal = volumenTotal,
                 rutinaId = numeroRutina
             )
+
+            // 5. Marcar sincronización como completada
+            SyncManager.syncCompleted()
 
             Toast.makeText(this@EntrenamientoActivity, R.string.entrenamiento_guardado, Toast.LENGTH_SHORT).show()
             finish()

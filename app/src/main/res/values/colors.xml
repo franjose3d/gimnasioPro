@@ -63,4 +63,5 @@
     <color name="rutina_asignada">@color/accent_blue</color>
     <color name="rutina_vacia">@color/accent_green</color>
     <color name="red_delete">#FFFF5252</color>
+    <color name="hint_text">#80FFFFFF</color>
 </resources>

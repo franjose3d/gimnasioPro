@@ -90,6 +90,13 @@
     <string name="selecciona_rutina">Seleccionar rutina</string>
     <string name="ejercicios_guardados">Ejercicios guardados correctamente</string>
 
+    <!-- Búsqueda de ejercicios -->
+    <string name="btn_buscar">Buscar ejercicios</string>
+    <string name="titulo_buscar_ejercicios">Buscar Ejercicios</string>
+    <string name="hint_buscar_ejercicio">Escribe el nombre del ejercicio…</string>
+    <string name="sin_resultados_busqueda">No se encontraron ejercicios</string>
+    <string name="resultados_busqueda">Resultados de búsqueda</string>
+
     <!-- Detalle de Rutina -->
     <string name="titulo_detalle_rutina">Rutina</string>
     <string name="btn_volver">Volver</string>

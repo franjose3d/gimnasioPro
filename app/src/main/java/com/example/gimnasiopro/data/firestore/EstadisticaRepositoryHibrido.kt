@@ -3,6 +3,7 @@ package com.example.gimnasiopro.data.firestore
 import android.util.Log
 import com.example.gimnasiopro.data.EstadisticaEntrenamiento
 import com.example.gimnasiopro.data.EstadisticaRepository
+import com.example.gimnasiopro.data.sync.SyncManager
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -26,48 +27,76 @@ class EstadisticaRepositoryHibrido(
 
     // Cache del tipo de usuario para no verificar cada vez
     private var tipoUsuarioCache: String? = null
+    private var lastUserId: String? = null // Para invalidar cache si cambia el usuario
+
+    /**
+     * Invalida el cache del tipo de usuario.
+     * Útil si se crea el documento del usuario después de la primera verificación.
+     */
+    fun invalidarCache() {
+        tipoUsuarioCache = null
+        lastUserId = null
+        Log.d(TAG, "🗑️ Cache de tipo de usuario invalidado")
+    }
 
     /**
      * Determina si el usuario está registrado como trainer o cliente.
-     * Retorna null si no existe en ninguna colección.
+     * Usa UserHelper que automáticamente crea el documento de cliente si no existe.
      */
     private suspend fun determinarTipoUsuario(userId: String): String? {
+        // Verificar si el userId cambió para invalidar cache
+        if (lastUserId != null && lastUserId != userId) {
+            Log.d(TAG, "🔄 Usuario cambió de $lastUserId a $userId - invalidando cache")
+            tipoUsuarioCache = null
+        }
+        lastUserId = userId
+
         // Usar cache si ya se determinó
-        tipoUsuarioCache?.let { return it }
+        tipoUsuarioCache?.let {
+            Log.d(TAG, "📋 Usando tipo de usuario cacheado: $it para userId: $userId")
+            return it
+        }
+
+        Log.d(TAG, "🔍 Determinando tipo de usuario para: $userId usando UserHelper")
 
         try {
-            // Verificar primero si es trainer
-            val trainerDoc = firestore.collection("trainers").document(userId).get().await()
-            if (trainerDoc.exists()) {
-                tipoUsuarioCache = "trainer"
-                Log.d(TAG, "✅ Usuario $userId identificado como TRAINER")
-                return "trainer"
-            }
-
-            // Verificar si es cliente
-            val clienteDoc = firestore.collection("clientes").document(userId).get().await()
-            if (clienteDoc.exists()) {
-                tipoUsuarioCache = "cliente"
-                Log.d(TAG, "✅ Usuario $userId identificado como CLIENTE")
-                return "cliente"
-            }
-
-            Log.w(TAG, "⚠️ Usuario $userId no encontrado en trainers ni clientes")
-            return null
+            // UserHelper.getTipoUsuario CREA el documento de cliente si no existe
+            val tipo = UserHelper.getTipoUsuario(userId)
+            tipoUsuarioCache = tipo
+            Log.d(TAG, "✅ Tipo de usuario determinado: $tipo para userId: $userId")
+            return tipo
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Error al determinar tipo de usuario: ${e.message}")
+            Log.e(TAG, "❌ Error al determinar tipo de usuario: ${e.message}", e)
             return null
         }
     }
 
     private suspend fun getFirestoreRepository(): EstadisticaFirestoreRepository? {
-        val userId = auth.currentUser?.uid ?: return null
-        val tipoUsuario = determinarTipoUsuario(userId) ?: return null
+        val userId = auth.currentUser?.uid
+        if (userId == null) {
+            Log.w(TAG, "⚠️ No hay usuario autenticado en Firebase Auth")
+            return null
+        }
+
+        Log.d(TAG, "🔐 Usuario autenticado: $userId")
+
+        val tipoUsuario = determinarTipoUsuario(userId)
+        if (tipoUsuario == null) {
+            Log.w(TAG, "⚠️ No se pudo determinar tipo de usuario para: $userId")
+            return null
+        }
+
+        Log.d(TAG, "✅ Creando EstadisticaFirestoreRepository para $tipoUsuario: $userId")
         return EstadisticaFirestoreRepository(userId, tipoUsuario)
     }
 
     /**
-     * Registra un entrenamiento guardando en local Y en Firestore
+     * Registra un entrenamiento guardando en local Y en Firestore.
+     *
+     * IMPORTANTE: Respeta el SyncManager:
+     * - SIEMPRE guarda en local (Room) primero
+     * - Solo sincroniza con Firestore si SyncManager lo permite
+     * - En modo entrenamiento, solo guarda localmente
      */
     suspend fun registrarEntrenamiento(
         tiempoMs: Long,
@@ -77,7 +106,7 @@ class EstadisticaRepositoryHibrido(
     ) {
         Log.d(TAG, "📊 Registrando entrenamiento: tiempo=${tiempoMs}ms, ejercicios=$ejerciciosCompletados, volumen=$volumenTotal, rutina=$rutinaId")
 
-        // 1. Siempre guardar en local primero (cache inmediato)
+        // 1. SIEMPRE guardar en local primero (cache inmediato - funciona offline)
         try {
             localRepository.registrarEntrenamiento(tiempoMs, ejerciciosCompletados, volumenTotal, rutinaId)
             Log.d(TAG, "✅ Estadística guardada localmente")
@@ -85,10 +114,42 @@ class EstadisticaRepositoryHibrido(
             Log.e(TAG, "❌ Error al guardar estadística local: ${e.message}", e)
         }
 
-        // 2. Intentar sincronizar con Firestore
+        // 2. Solo sincronizar con Firestore si está habilitado
+        if (SyncManager.isTrainingMode) {
+            Log.d(TAG, "🏋️ Modo entrenamiento - sincronización con Firestore OMITIDA (se hará al finalizar)")
+            return
+        }
+
+        // Verificar si es PENDING_SYNC o NORMAL para sincronizar
+        val syncEnabled = SyncManager.isSyncEnabled
+        Log.d(TAG, "🔄 Estado SyncManager: syncEnabled=$syncEnabled, isTrainingMode=${SyncManager.isTrainingMode}")
+
+        if (!syncEnabled) {
+            Log.d(TAG, "⏸️ Sincronización deshabilitada - estadística guardada solo localmente")
+            return
+        }
+
+        // 3. Intentar sincronizar con Firestore
+        Log.d(TAG, "☁️ Iniciando sincronización con Firestore...")
+        sincronizarConFirestore(tiempoMs, ejerciciosCompletados, volumenTotal, rutinaId)
+    }
+
+    /**
+     * Sincroniza estadísticas con Firestore.
+     * Este método puede ser llamado directamente para forzar sincronización.
+     */
+    suspend fun sincronizarConFirestore(
+        tiempoMs: Long,
+        ejerciciosCompletados: Int,
+        volumenTotal: Float,
+        rutinaId: Int
+    ) {
+        Log.d(TAG, "☁️ sincronizarConFirestore iniciado - tiempo=$tiempoMs, ejercicios=$ejerciciosCompletados, volumen=$volumenTotal, rutina=$rutinaId")
+
         try {
             val firestoreRepo = getFirestoreRepository()
             if (firestoreRepo != null) {
+                Log.d(TAG, "📤 Enviando estadísticas a Firestore...")
                 val resultado = firestoreRepo.agregarEntrenamientoAEstadistica(
                     fecha = Date(),
                     tiempoMs = tiempoMs,
@@ -97,14 +158,21 @@ class EstadisticaRepositoryHibrido(
                     rutinaId = rutinaId.toString()
                 )
                 resultado.fold(
-                    onSuccess = { Log.d(TAG, "✅ Estadística sincronizada con Firestore") },
-                    onFailure = { Log.e(TAG, "❌ Error al sincronizar con Firestore: ${it.message}") }
+                    onSuccess = {
+                        Log.d(TAG, "✅ Estadística sincronizada con Firestore EXITOSAMENTE")
+                        SyncManager.syncCompleted()
+                    },
+                    onFailure = { error ->
+                        Log.e(TAG, "❌ Error al sincronizar con Firestore: ${error.message}")
+                        Log.e(TAG, "❌ Tipo de error: ${error::class.simpleName}")
+                    }
                 )
             } else {
-                Log.w(TAG, "⚠️ Usuario no autenticado, estadística solo guardada localmente")
+                Log.w(TAG, "⚠️ getFirestoreRepository() devolvió null - estadística NO guardada en Firebase")
+                Log.w(TAG, "⚠️ Posibles causas: usuario no autenticado o no registrado en trainers/clientes")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Error al sincronizar estadística con Firestore: ${e.message}")
+            Log.e(TAG, "❌ Excepción al sincronizar estadística con Firestore: ${e.message}", e)
             // No lanzar excepción, los datos están guardados localmente
         }
     }

@@ -97,6 +97,14 @@
             android:label="Mi Perfil"
             android:theme="@style/Theme.GimnasioPro" />
 
+        <!-- Búsqueda de ejercicios -->
+        <activity
+            android:name=".BuscarEjerciciosActivity"
+            android:exported="false"
+            android:label="@string/titulo_buscar_ejercicios"
+            android:theme="@style/Theme.GimnasioPro"
+            android:windowSoftInputMode="stateVisible|adjustResize" />
+
     </application>
 
 </manifest>
