@@ -229,9 +229,13 @@ class PerfilActivity : AppCompatActivity() {
     }
 
     private fun guardarDatosTrainer(nombre: String, telefono: String) {
+        val telefonoNorm = telefono.replace(Regex("[^0-9]"), "").let { digitos ->
+            if (digitos.startsWith("34") && digitos.length > 9) digitos.removePrefix("34") else digitos
+        }
         val datosTrainer = mapOf(
             "nombre" to nombre,
             "telefono" to telefono,
+            "telefonoNormalizado" to telefonoNorm,
             "dni" to etDni.text.toString().trim(),
             "poblacion" to etPoblacion.text.toString().trim(),
             "municipio" to etMunicipio.text.toString().trim(),
@@ -246,9 +250,13 @@ class PerfilActivity : AppCompatActivity() {
     }
 
     private fun guardarDatosCliente(nombre: String, telefono: String) {
+        val telefonoNorm = telefono.replace(Regex("[^0-9]"), "").let { digitos ->
+            if (digitos.startsWith("34") && digitos.length > 9) digitos.removePrefix("34") else digitos
+        }
         val datosCliente = mapOf(
             "nombre" to nombre,
             "telefono" to telefono,
+            "telefonoNormalizado" to telefonoNorm,
             "peso" to (etPeso.text.toString().toDoubleOrNull() ?: 0.0),
             "altura" to (etAltura.text.toString().toDoubleOrNull() ?: 0.0),
             "edad" to (etEdad.text.toString().toIntOrNull() ?: 0),

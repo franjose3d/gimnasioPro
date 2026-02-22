@@ -64,4 +64,6 @@
     <color name="rutina_vacia">@color/accent_green</color>
     <color name="red_delete">#FFFF5252</color>
     <color name="hint_text">#80FFFFFF</color>
+    <color name="accent_color">@color/accent_purple</color>
+    <color name="divider_color">#3F3F5A</color>
 </resources>

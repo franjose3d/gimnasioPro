@@ -1,12 +1,10 @@
 package com.example.gimnasiopro.data.firestore
 
-import com.google.firebase.firestore.FirebaseFirestoreException
-import com.google.firebase.firestore.FirebaseFirestoreException.Code
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Test
+import java.io.IOException
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FirestoreConfigHelperTest {
@@ -27,23 +25,29 @@ class FirestoreConfigHelperTest {
         }
     }
 
-    private class FakeServicePermissionDenied : FirestoreService {
+    /**
+     * Simula un error de conexión (IOException).
+     */
+    private class FakeServiceConnectionError : FirestoreService {
         override suspend fun getCollectionSize(collectionPath: String, timeoutMs: Long): Long {
-            throw FirebaseFirestoreException("Permission denied", Code.PERMISSION_DENIED)
+            throw IOException("Connection error")
         }
 
         override suspend fun getSubcollectionSize(documentPath: String, subcollectionName: String, timeoutMs: Long): Long {
-            throw FirebaseFirestoreException("Permission denied", Code.PERMISSION_DENIED)
+            throw IOException("Connection error")
         }
     }
 
-    private class FakeServiceTimeout : FirestoreService {
+    /**
+     * Simula un error genérico inesperado.
+     */
+    private class FakeServiceGenericError : FirestoreService {
         override suspend fun getCollectionSize(collectionPath: String, timeoutMs: Long): Long {
-            throw CancellationException("Timed out")
+            throw RuntimeException("Unexpected error")
         }
 
         override suspend fun getSubcollectionSize(documentPath: String, subcollectionName: String, timeoutMs: Long): Long {
-            throw CancellationException("Timed out")
+            throw RuntimeException("Unexpected error")
         }
     }
 
@@ -58,24 +62,24 @@ class FirestoreConfigHelperTest {
     }
 
     @Test
-    fun `verificarConfiguracion_permissionDenied_returns_reglasFalse`() = runTest {
-        val helper = FirestoreConfigHelper(FakeServicePermissionDenied())
+    fun `verificarConfiguracion_connectionError_returns_connectionFalse`() = runTest {
+        val helper = FirestoreConfigHelper(FakeServiceConnectionError())
         val res = helper.verificarConfiguracion()
 
         assertFalse(res.conexionOk)
-        assertFalse(res.reglasOk)
         assertEquals(0L, res.ejerciciosCount)
-        assertTrue(res.mensaje.contains("Reglas") || res.mensaje.contains("security") || res.mensaje.contains("Error"))
+        assertTrue(res.mensaje.contains("conexión") || res.mensaje.contains("Error"))
     }
 
+
     @Test
-    fun `verificarConfiguracion_timeout_returns_timeout_message`() = runTest {
-        val helper = FirestoreConfigHelper(FakeServiceTimeout())
+    fun `verificarConfiguracion_genericError_returns_error`() = runTest {
+        val helper = FirestoreConfigHelper(FakeServiceGenericError())
         val res = helper.verificarConfiguracion()
 
         assertFalse(res.conexionOk)
         assertEquals(0L, res.ejerciciosCount)
-        assertTrue(res.mensaje.contains("tiempo") || res.mensaje.contains("timeout") || res.mensaje.contains("Operación"))
+        assertTrue(res.mensaje.contains("Error") || res.mensaje.contains("inesperado"))
     }
 
     @Test

@@ -105,6 +105,42 @@
             android:theme="@style/Theme.GimnasioPro"
             android:windowSoftInputMode="stateVisible|adjustResize" />
 
+        <!-- Buscar Trainer (para clientes) -->
+        <activity
+            android:name=".BuscarTrainerActivity"
+            android:exported="false"
+            android:label="Buscar Trainer"
+            android:theme="@style/Theme.GimnasioPro" />
+
+        <!-- Lista de Clientes (para trainers) -->
+        <activity
+            android:name=".ListaClientesActivity"
+            android:exported="false"
+            android:label="Mis Clientes"
+            android:theme="@style/Theme.GimnasioPro" />
+
+        <!-- Contacta Activity -->
+        <activity
+            android:name=".ContactaActivity"
+            android:exported="false"
+            android:label="Contacta"
+            android:theme="@style/Theme.GimnasioPro" />
+
+        <!-- Conversacion Activity -->
+        <activity
+            android:name=".ConversacionActivity"
+            android:exported="false"
+            android:label="Conversación"
+            android:theme="@style/Theme.GimnasioPro"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Notificaciones Activity -->
+        <activity
+            android:name=".NotificacionesActivity"
+            android:exported="false"
+            android:label="Notificaciones"
+            android:theme="@style/Theme.GimnasioPro" />
+
     </application>
 
 </manifest>

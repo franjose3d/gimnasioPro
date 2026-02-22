@@ -323,7 +323,7 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Card Regístrate -->
+            <!-- Card Contacta -->
             <LinearLayout
                 android:id="@+id/cardRegistrate"
                 android:layout_width="0dp"
@@ -338,7 +338,7 @@
                 <ImageView
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:src="@drawable/ic_register"
+                    android:src="@drawable/ic_chat"
                     android:background="@drawable/bg_icon_circle"
                     android:padding="8dp"
                     android:layout_marginBottom="12dp" />

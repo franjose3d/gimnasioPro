@@ -11,14 +11,14 @@
     <!-- Main Screen New Design -->
     <string name="greeting_hello">HOLA,</string>
     <string name="greeting_motivation">¡A DARLE!</string>
-    <string name="default_user_name">USUARIO</string>
+    <string name="default_user_name">REGÍSTRATE</string>
     <string name="racha_title">Racha de %1$d Días</string>
     <string name="racha_message">¡No pares ahora!</string>
     <string name="subtitle_biblioteca">BIBLIOTECA</string>
     <string name="subtitle_mis_planes">MIS PLANES</string>
     <string name="gym_subtitle">Sede Central • Abierto</string>
-    <string name="btn_registrate">REGÍSTRATE</string>
-    <string name="subtitle_crear_cuenta">INICIAR SESIÓN</string>
+    <string name="btn_registrate">CONTACTA</string>
+    <string name="subtitle_crear_cuenta">CONECTAR</string>
     <string name="desc_notifications">Notificaciones</string>
     <string name="desc_user_photo">Foto de perfil</string>
 
@@ -225,5 +225,10 @@
     <string name="error_cargar_ejercicios_firebase">Error al cargar ejercicios</string>
     <string name="debe_registrarse">Debes registrarte para acceder a más ejercicios</string>
     <string name="no_hay_mas_ejercicios">Ya tienes todos los ejercicios disponibles</string>
+
+    <!-- Notificaciones y Contacto -->
+    <string name="titulo_notificaciones">Notificaciones</string>
+    <string name="sin_notificaciones">No tienes notificaciones</string>
+    <string name="aviso_mensajes_temporales">Los mensajes se eliminan automáticamente después de 7 días</string>
 
 </resources>

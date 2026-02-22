@@ -1,79 +1,61 @@
 {
   "indexes": [
     {
-      "collectionGroup": "ejercicios",
+      "collectionGroup": "notificaciones",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "grupoMuscular",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "nombre",
-          "order": "ASCENDING"
-        }
+        { "fieldPath": "destinatarioId", "order": "ASCENDING" },
+        { "fieldPath": "fechaCreacion", "order": "DESCENDING" }
       ]
     },
     {
-      "collectionGroup": "entrenamientos",
+      "collectionGroup": "notificaciones",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "fechaEntrenamiento",
-          "order": "DESCENDING"
-        }
+        { "fieldPath": "destinatarioId", "order": "ASCENDING" },
+        { "fieldPath": "leida", "order": "ASCENDING" },
+        { "fieldPath": "fechaCreacion", "order": "DESCENDING" }
       ]
     },
     {
-      "collectionGroup": "entrenamientos",
+      "collectionGroup": "notificaciones",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "fechaEntrenamiento",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "fechaEntrenamiento",
-          "order": "DESCENDING"
-        }
+        { "fieldPath": "remitenteId", "order": "ASCENDING" },
+        { "fieldPath": "destinatarioId", "order": "ASCENDING" },
+        { "fieldPath": "tipo", "order": "ASCENDING" }
       ]
     },
     {
-      "collectionGroup": "estadisticas",
+      "collectionGroup": "conexiones",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "anio",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "mes",
-          "order": "ASCENDING"
-        }
+        { "fieldPath": "trainerId", "order": "ASCENDING" },
+        { "fieldPath": "estado", "order": "ASCENDING" }
       ]
     },
     {
-      "collectionGroup": "estadisticas",
+      "collectionGroup": "conexiones",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "fechaTimestamp",
-          "order": "ASCENDING"
-        }
+        { "fieldPath": "clienteId", "order": "ASCENDING" },
+        { "fieldPath": "estado", "order": "ASCENDING" }
       ]
     },
     {
-      "collectionGroup": "estadisticas",
+      "collectionGroup": "conexiones",
       "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "fechaTimestamp",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "fechaTimestamp",
-          "order": "DESCENDING"
-        }
+        { "fieldPath": "clienteId", "order": "ASCENDING" },
+        { "fieldPath": "trainerId", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "mensajes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "conversacionId", "order": "ASCENDING" },
+        { "fieldPath": "fechaEnvio", "order": "ASCENDING" }
       ]
     }
   ],

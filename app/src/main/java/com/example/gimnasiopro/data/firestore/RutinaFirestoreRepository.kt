@@ -64,33 +64,29 @@ class RutinaFirestoreRepository(
             .collection("clientes")
             .document(otroUserId)
             .collection("rutinas")
-            .whereEqualTo("compartidaConTrainer", true)
             .get()
             .await()
 
         val rutinas = snapshot.documents
             .mapNotNull { doc -> RutinaFirestore.fromDocument(doc) }
-            .filter { it.trainerId == null || it.trainerId == userId }
             .sortedByDescending { it.fechaCreacion }
         emit(rutinas)
     }
 
     /**
      * Obtener rutinas de un cliente que el trainer puede ver.
-     * Solo las que tienen compartidaConTrainer = true y trainerId coincide.
+     * El trainer con conexión activa puede ver TODAS las rutinas del cliente.
      */
     fun getRutinasDeClienteParaTrainer(clienteId: String, trainerId: String): Flow<List<RutinaFirestore>> = flow {
         val snapshot = firestore
             .collection("clientes")
             .document(clienteId)
             .collection("rutinas")
-            .whereEqualTo("compartidaConTrainer", true)
             .get()
             .await()
 
         val rutinas = snapshot.documents
             .mapNotNull { doc -> RutinaFirestore.fromDocument(doc) }
-            .filter { it.trainerId == null || it.trainerId == trainerId }
             .sortedByDescending { it.fechaCreacion }
         emit(rutinas)
     }
@@ -146,26 +142,40 @@ class RutinaFirestoreRepository(
 
     /**
      * Crear una nueva rutina para el usuario actual
+     *
+     * SISTEMA DE IDs FIJOS:
+     * - Usa el numeroRutina para generar un ID fijo "rutina_{numeroRutina}"
+     * - Si la rutina ya existe, se sobreescribe (evita duplicaciones)
      */
     suspend fun crearRutina(rutina: RutinaFirestore): Result<String> {
         if (userId.isEmpty()) {
             return Result.failure(IllegalStateException("userId no puede estar vacío"))
         }
 
+        // Validar número de rutina
+        if (rutina.numeroRutina !in 1..RutinaFirestore.MAX_RUTINAS) {
+            return Result.failure(IllegalArgumentException("Número de rutina debe estar entre 1 y ${RutinaFirestore.MAX_RUTINAS}"))
+        }
+
         return try {
+            // Generar ID fijo
+            val documentId = RutinaFirestore.generarDocumentId(rutina.numeroRutina)
+
             val rutinaCompleta = rutina.copy(
+                rutinaId = documentId,
                 propietarioId = userId,
                 creadoPorId = userId,
                 creadoPorTipo = tipoUsuario,
                 fechaCreacion = java.util.Date(),
                 fechaModificacion = java.util.Date()
             )
-            val docRef = rutinasCollection.add(rutinaCompleta.toMap()).await()
 
-            // Actualizar con el ID generado
-            docRef.update("rutinaId", docRef.id).await()
+            // Usar set() con ID fijo en lugar de add()
+            rutinasCollection.document(documentId)
+                .set(rutinaCompleta.toMap())
+                .await()
 
-            Result.success(docRef.id)
+            Result.success(documentId)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -173,15 +183,29 @@ class RutinaFirestoreRepository(
 
     /**
      * Crear una nueva rutina (con parámetros legacy para compatibilidad)
+     *
+     * SISTEMA DE IDs FIJOS:
+     * - Usa el numeroRutina para generar un ID fijo "rutina_{numeroRutina}"
+     * - Si la rutina ya existe, se sobreescribe (evita duplicaciones)
      */
     suspend fun crearRutina(
         rutina: RutinaFirestore,
         userId: String,
         tipoUsuario: String
     ): Result<String> {
+        // Validar número de rutina
+        if (rutina.numeroRutina !in 1..RutinaFirestore.MAX_RUTINAS) {
+            return Result.failure(IllegalArgumentException("Número de rutina debe estar entre 1 y ${RutinaFirestore.MAX_RUTINAS}"))
+        }
+
         return try {
             val coleccion = if (tipoUsuario == "trainer") "trainers" else "clientes"
+
+            // Generar ID fijo
+            val documentId = RutinaFirestore.generarDocumentId(rutina.numeroRutina)
+
             val rutinaCompleta = rutina.copy(
+                rutinaId = documentId,
                 propietarioId = userId,
                 creadoPorId = userId,
                 creadoPorTipo = tipoUsuario,
@@ -189,17 +213,16 @@ class RutinaFirestoreRepository(
                 fechaModificacion = java.util.Date()
             )
 
-            val docRef = firestore
+            // Usar set() con ID fijo en lugar de add()
+            firestore
                 .collection(coleccion)
                 .document(userId)
                 .collection("rutinas")
-                .add(rutinaCompleta.toMap())
+                .document(documentId)
+                .set(rutinaCompleta.toMap())
                 .await()
 
-            // Actualizar con el ID generado
-            docRef.update("rutinaId", docRef.id).await()
-
-            Result.success(docRef.id)
+            Result.success(documentId)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -207,6 +230,10 @@ class RutinaFirestoreRepository(
 
     /**
      * Crear rutina como trainer para un cliente (se guarda en la colección del cliente)
+     *
+     * SISTEMA DE IDs FIJOS:
+     * - Usa el numeroRutina para generar un ID fijo
+     * - Si la rutina ya existe, se sobreescribe
      */
     suspend fun crearRutinaParaCliente(
         rutina: RutinaFirestore,
@@ -214,7 +241,16 @@ class RutinaFirestoreRepository(
         clienteId: String
     ): Result<String> {
         return try {
+            // Validar número de rutina
+            if (rutina.numeroRutina !in 1..RutinaFirestore.MAX_RUTINAS) {
+                return Result.failure(IllegalArgumentException("Número de rutina debe estar entre 1 y ${RutinaFirestore.MAX_RUTINAS}"))
+            }
+
+            // Generar ID fijo
+            val documentId = RutinaFirestore.generarDocumentId(rutina.numeroRutina)
+
             val rutinaCompleta = rutina.copy(
+                rutinaId = documentId,
                 propietarioId = clienteId,      // El cliente es el dueño
                 creadoPorId = trainerId,        // El trainer la creó
                 creadoPorTipo = "trainer",
@@ -224,16 +260,16 @@ class RutinaFirestoreRepository(
                 fechaModificacion = java.util.Date()
             )
 
-            // Guardar en la subcolección del cliente
-            val docRef = firestore
+            // Guardar usando ID fijo (set() en lugar de add())
+            firestore
                 .collection("clientes")
                 .document(clienteId)
                 .collection("rutinas")
-                .add(rutinaCompleta.toMap())
+                .document(documentId)
+                .set(rutinaCompleta.toMap())
                 .await()
 
-            docRef.update("rutinaId", docRef.id).await()
-            Result.success(docRef.id)
+            Result.success(documentId)
         } catch (e: Exception) {
             Result.failure(e)
         }

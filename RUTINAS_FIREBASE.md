@@ -6,23 +6,42 @@ Se ha implementado un sistema híbrido para rutinas que combina:
 - **Room (local)**: Para funcionamiento offline y rendimiento
 - **Firebase (remoto)**: Para sincronización con trainers y backup
 
+## Sistema de IDs Fijos (Anti-duplicación)
+
+**IMPORTANTE**: Para evitar duplicaciones de rutinas, se usa un sistema de IDs fijos:
+
+- Cada rutina tiene un `numeroRutina` (1-20) que es **INMUTABLE**
+- El ID del documento en Firebase es siempre `rutina_{numeroRutina}`
+- Cuando se actualiza una rutina, se **sobreescribe** el mismo documento (no se crea uno nuevo)
+- Se usa `set()` en lugar de `add()` para garantizar que nunca se dupliquen
+
+**Ejemplo**: Si el usuario tiene "Rutina 3" con ejercicios de pecho:
+- Documento: `clientes/{userId}/rutinas/rutina_3`
+- Si cambia el nombre a "Pecho Avanzado", el documento sigue siendo `rutina_3`
+- Si añade ejercicios, se actualiza el mismo documento
+
 ## Estructura en Firebase
 
 ```
 Firebase/
-├── rutinas/
-│     └── [rutinaId]/
-│           ├── rutinaId: "auto-generado"
-│           ├── nombre: "Rutina 1"
-│           ├── propietarioId: "userId"          ← Dueño de la rutina
-│           ├── creadoPorId: "userId"            ← Quién la creó
-│           ├── creadoPorTipo: "cliente|trainer"
-│           ├── compartidaConTrainer: true       ← Si el trainer puede verla
-│           ├── trainerId: "trainerId"           ← Trainer asignado (opcional)
-│           ├── ejercicioIds: ["1", "5", "12"]   ← IDs de ejercicios
-│           ├── activa: true
-│           ├── fechaCreacion: Timestamp
-│           └── fechaModificacion: Timestamp
+├── clientes/{userId}/
+│     └── rutinas/
+│           └── rutina_1/                    ← ID FIJO (nunca cambia)
+│                 ├── numeroRutina: 1        ← Número inmutable (1-20)
+│                 ├── nombre: "Mi Rutina"    ← Puede cambiar libremente
+│                 ├── propietarioId: "userId"
+│                 ├── creadoPorId: "userId"
+│                 ├── creadoPorTipo: "cliente|trainer"
+│                 ├── compartidaConTrainer: true
+│                 ├── trainerId: "trainerId"
+│                 ├── ejercicioIds: ["1", "5", "12"]
+│                 ├── activa: true
+│                 ├── fechaCreacion: Timestamp
+│                 └── fechaModificacion: Timestamp
+│
+├── trainers/{userId}/
+│     └── rutinas/
+│           └── rutina_1/                    ← Misma estructura
 │
 ├── conexiones/
 │     └── [conexionId]/
@@ -84,8 +103,8 @@ rutinaRepo.descargarRutinasDeFirebase()
 // Para trainers: ver rutinas de un cliente
 rutinaRepo.getRutinasDeCliente(clienteId, trainerId)
 
-// Para trainers: crear rutina para cliente
-rutinaRepo.crearRutinaParaCliente(trainerId, clienteId, nombre, ejercicioIds)
+// Para trainers: crear rutina para cliente (con numeroRutina)
+rutinaRepo.crearRutinaParaCliente(trainerId, clienteId, numeroRutina, nombre, ejercicioIds)
 ```
 
 ## Próximos pasos sugeridos

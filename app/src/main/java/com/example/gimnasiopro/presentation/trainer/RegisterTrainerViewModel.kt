@@ -46,6 +46,7 @@ class RegisterTrainerViewModel(
         telefono: String,
         sobreMi: String,
         fotoUrl: String,
+        certificadoUrl: String,
         tarifa: Double,
         emailVerificado: Boolean = false
     ) {
@@ -63,6 +64,7 @@ class RegisterTrainerViewModel(
                     telefono = telefono,
                     sobreMi = sobreMi,
                     fotoUrl = fotoUrl,
+                    certificadoUrl = certificadoUrl,
                     tarifa = tarifa,
                     verificado = false,  // Siempre false, admin debe aprobar
                     emailVerificado = emailVerificado,

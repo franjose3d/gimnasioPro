@@ -29,6 +29,7 @@ object UserHelper {
         val tipo: String, // "cliente" o "trainer"
         val nombre: String?,
         val email: String?,
+        val telefono: String?,
         val documento: DocumentSnapshot?
     )
 
@@ -58,6 +59,7 @@ object UserHelper {
                     tipo = "cliente",
                     nombre = clienteDoc.getString("nombre"),
                     email = clienteDoc.getString("email"),
+                    telefono = clienteDoc.getString("telefono"),
                     documento = clienteDoc
                 )
             } else {
@@ -77,6 +79,7 @@ object UserHelper {
                     tipo = "trainer",
                     nombre = trainerDoc.getString("nombre"),
                     email = trainerDoc.getString("email"),
+                    telefono = trainerDoc.getString("telefono"),
                     documento = trainerDoc
                 )
             } else {
@@ -122,14 +125,25 @@ object UserHelper {
         return try {
             val currentUser = auth.currentUser
             val email = currentUser?.email ?: ""
+            val telefono = currentUser?.phoneNumber ?: ""
+            val nombre = currentUser?.displayName ?: ""
 
-            val datosBasicos = mapOf(
+            val datosBasicos = mutableMapOf<String, Any>(
                 "userId" to userId,
                 "email" to email,
                 "tipo" to "cliente",
                 "activo" to true,
                 "fechaCreacion" to com.google.firebase.Timestamp.now()
             )
+            if (telefono.isNotEmpty()) {
+                datosBasicos["telefono"] = telefono
+                // Normalizar teléfono para búsquedas eficientes
+                val telefonoNorm = telefono.replace(Regex("[^0-9]"), "").let { digitos ->
+                    if (digitos.startsWith("34") && digitos.length > 9) digitos.removePrefix("34") else digitos
+                }
+                datosBasicos["telefonoNormalizado"] = telefonoNorm
+            }
+            if (nombre.isNotEmpty()) datosBasicos["nombre"] = nombre
 
             firestore.collection("clientes")
                 .document(userId)
@@ -159,5 +173,207 @@ object UserHelper {
         val coleccion = getColeccionUsuario(userInfo.tipo)
         return Pair(userInfo.tipo, firestore.collection(coleccion).document(userId))
     }
-}
 
+    /**
+     * Busca un usuario por email en clientes y trainers.
+     * Devuelve el userId si lo encuentra, null si no.
+     *
+     * OPTIMIZADO: Usa solo queries indexadas (whereEqualTo + limit).
+     * NO recorre todos los documentos → ahorra lecturas en capa gratuita.
+     * El email se busca en formato lowercase (debe guardarse normalizado).
+     */
+    suspend fun getUserIdByEmail(email: String): String? {
+        Log.d(TAG, "🔍 Buscando usuario por email: $email")
+
+        val emailLimpio = email.trim().lowercase()
+        if (emailLimpio.isEmpty()) {
+            Log.w(TAG, "⚠️ Email vacío, no se puede buscar")
+            return null
+        }
+
+        // Query directa con whereEqualTo (1 lectura por colección máx.)
+        // Buscamos con email normalizado y con el formato original
+        val variantes = setOf(emailLimpio, email.trim())
+
+        for (coleccion in listOf("clientes", "trainers")) {
+            for (emailVariante in variantes) {
+                try {
+                    val query = firestore.collection(coleccion)
+                        .whereEqualTo("email", emailVariante)
+                        .limit(1)
+                        .get()
+                        .await()
+
+                    if (!query.isEmpty) {
+                        val userId = query.documents.first().id
+                        Log.d(TAG, "✅ Encontrado en $coleccion por email '$emailVariante': $userId")
+                        return userId
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ Error query $coleccion email '$emailVariante': ${e.message}")
+                }
+            }
+        }
+
+        Log.w(TAG, "⚠️ Usuario con email '$emailLimpio' NO encontrado en ninguna colección")
+        return null
+    }
+
+    /**
+     * Busca un usuario por teléfono en clientes y trainers.
+     * Devuelve el userId si lo encuentra, null si no.
+     *
+     * OPTIMIZADO: Usa queries indexadas (whereEqualTo + limit).
+     * NO recorre todos los documentos → ahorra lecturas en capa gratuita.
+     * Busca por campo 'telefonoNormalizado' (solo dígitos sin prefijo)
+     * y por campo 'telefono' con variantes comunes.
+     */
+    suspend fun getUserIdByPhone(telefono: String): String? {
+        Log.d(TAG, "🔍 Buscando usuario por teléfono: '$telefono'")
+
+        if (telefono.isBlank()) {
+            Log.w(TAG, "⚠️ Teléfono vacío, no se puede buscar")
+            return null
+        }
+
+        // Extraer solo dígitos para normalizar
+        val soloDigitos = telefono.replace(Regex("[^0-9]"), "")
+
+        // Determinar el número sin prefijo de país
+        val sinPrefijo = if (soloDigitos.startsWith("34") && soloDigitos.length > 9) {
+            soloDigitos.removePrefix("34")
+        } else {
+            soloDigitos
+        }
+        Log.d(TAG, "🔍 Teléfono normalizado (sin prefijo): '$sinPrefijo'")
+
+        // Generar variantes mínimas (máx 4-5 para no gastar lecturas)
+        val variantes = mutableSetOf<String>()
+        variantes.add(sinPrefijo)                    // Solo dígitos sin prefijo
+        variantes.add("+34$sinPrefijo")              // Formato internacional
+        variantes.add("34$sinPrefijo")               // Con prefijo sin +
+        variantes.add(telefono.trim())               // Original
+
+        // Buscar primero por campo normalizado (1 lectura por colección)
+        for (coleccion in listOf("clientes", "trainers")) {
+            try {
+                val query = firestore.collection(coleccion)
+                    .whereEqualTo("telefonoNormalizado", sinPrefijo)
+                    .limit(1)
+                    .get()
+                    .await()
+
+                if (!query.isEmpty) {
+                    val userId = query.documents.first().id
+                    Log.d(TAG, "✅ Encontrado en $coleccion por telefonoNormalizado '$sinPrefijo': $userId")
+                    return userId
+                }
+            } catch (e: Exception) {
+                Log.d(TAG, "⚠️ Campo telefonoNormalizado no disponible en $coleccion, buscando por variantes")
+            }
+        }
+
+        // Buscar por variantes del campo 'telefono' (respaldo)
+        for (variante in variantes) {
+            for (coleccion in listOf("clientes", "trainers")) {
+                try {
+                    val query = firestore.collection(coleccion)
+                        .whereEqualTo("telefono", variante)
+                        .limit(1)
+                        .get()
+                        .await()
+
+                    if (!query.isEmpty) {
+                        val userId = query.documents.first().id
+                        Log.d(TAG, "✅ Encontrado en $coleccion por tel '$variante': $userId")
+                        return userId
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ Error query $coleccion tel '$variante': ${e.message}")
+                }
+            }
+        }
+
+
+        Log.w(TAG, "⚠️ Usuario con teléfono '$telefono' NO encontrado (sinPrefijo='$sinPrefijo')")
+        return null
+    }
+
+    /**
+     * Busca un usuario por email O teléfono.
+     * Intenta primero por email si contiene @, sino por teléfono.
+     * Devuelve el userId si lo encuentra, null si no.
+     */
+    suspend fun getUserIdByEmailOrPhone(valor: String): String? {
+        val valorLimpio = valor.trim()
+
+        return if (valorLimpio.contains("@")) {
+            // Es un email
+            getUserIdByEmail(valorLimpio)
+        } else {
+            // Es un teléfono
+            getUserIdByPhone(valorLimpio)
+        }
+    }
+
+    /**
+     * Obtiene lista de trainers disponibles (activos y que aceptan solicitudes).
+     *
+     * OPTIMIZADO: Usa query con whereEqualTo para filtrar en Firestore
+     * en lugar de descargar todos y filtrar en código.
+     * Si no hay campo 'activo', Firestore los excluye, así que hacemos
+     * una sola query sin filtro y filtramos localmente solo los pocos resultados.
+     */
+    suspend fun getTrainersDisponibles(): List<UserInfo> {
+        Log.d(TAG, "🔍 Buscando trainers disponibles...")
+
+        return try {
+            // Query con filtro: solo trainers activos
+            // Nota: trainers sin campo 'activo' no aparecerán,
+            // pero es mejor que descargar toda la colección
+            val trainersQuery = firestore.collection("trainers")
+                .whereEqualTo("activo", true)
+                .get()
+                .await()
+
+            val trainers = trainersQuery.documents.mapNotNull { doc ->
+
+                // Verificar si acepta solicitudes (por defecto sí)
+                val aceptaSolicitudes = doc.getBoolean("aceptaSolicitudes") ?: true
+                if (!aceptaSolicitudes) return@mapNotNull null
+
+                UserInfo(
+                    userId = doc.id,
+                    tipo = "trainer",
+                    nombre = doc.getString("nombre"),
+                    email = doc.getString("email"),
+                    telefono = doc.getString("telefono"),
+                    documento = doc
+                )
+            }
+
+            Log.d(TAG, "✅ Encontrados ${trainers.size} trainers disponibles")
+            trainers
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error buscando trainers: ${e.message}")
+            emptyList()
+        }
+    }
+
+    /**
+     * Actualiza la preferencia de aceptar solicitudes de un trainer.
+     */
+    suspend fun actualizarAceptaSolicitudes(trainerId: String, acepta: Boolean): Boolean {
+        return try {
+            firestore.collection("trainers")
+                .document(trainerId)
+                .update("aceptaSolicitudes", acepta)
+                .await()
+            Log.d(TAG, "✅ Preferencia aceptaSolicitudes actualizada: $acepta")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error actualizando preferencia: ${e.message}")
+            false
+        }
+    }
+}

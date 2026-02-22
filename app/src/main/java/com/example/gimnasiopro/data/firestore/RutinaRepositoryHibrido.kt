@@ -219,6 +219,11 @@ class RutinaRepositoryHibrido(
      * Sincronizar una rutina local con Firebase.
      * Guarda en clientes/{userId}/rutinas/ o trainers/{userId}/rutinas/
      *
+     * SISTEMA DE IDs FIJOS:
+     * - Cada rutina usa un ID fijo: "rutina_{numeroRutina}"
+     * - Esto evita duplicaciones: siempre se sobreescribe el mismo documento
+     * - El numeroRutina (1-20) es inmutable
+     *
      * IMPORTANTE: Respeta el SyncManager:
      * - En modo entrenamiento: NO sincroniza (solo local)
      * - En modo normal: Sincroniza inmediatamente
@@ -240,6 +245,12 @@ class RutinaRepositoryHibrido(
             return
         }
 
+        // Validar número de rutina en rango permitido
+        if (rutina.numeroRutina !in 1..RutinaFirestore.MAX_RUTINAS) {
+            Log.e(TAG, "❌ Número de rutina ${rutina.numeroRutina} fuera de rango (1-${RutinaFirestore.MAX_RUTINAS})")
+            return
+        }
+
         Log.d(TAG, "🔄 Sincronizando rutina ${rutina.numeroRutina} para usuario $userId...")
 
         try {
@@ -247,13 +258,14 @@ class RutinaRepositoryHibrido(
             Log.d(TAG, "📋 Tipo de usuario detectado: $tipoUsuario")
 
             val rutinasCollection = getRutinasCollection(userId, tipoUsuario)
-            Log.d(TAG, "📁 Colección destino: ${tipoUsuario}s/$userId/rutinas")
 
-            // Buscar si ya existe esta rutina en Firebase
-            val rutinaFirebaseId = buscarRutinaEnFirebase(userId, tipoUsuario, rutina.numeroRutina)
+            // Usar ID fijo basado en el número de rutina
+            val documentId = RutinaFirestore.generarDocumentId(rutina.numeroRutina)
+            Log.d(TAG, "📁 Documento destino: ${tipoUsuario}s/$userId/rutinas/$documentId")
 
             val rutinaFirestore = RutinaFirestore(
-                rutinaId = rutinaFirebaseId ?: "",
+                rutinaId = documentId,
+                numeroRutina = rutina.numeroRutina,
                 nombre = rutina.nombre,
                 propietarioId = userId,
                 creadoPorId = userId,
@@ -265,34 +277,24 @@ class RutinaRepositoryHibrido(
                 fechaModificacion = Date(rutina.fechaModificacion)
             )
 
-            if (rutinaFirebaseId != null) {
-                // Actualizar existente
-                rutinasCollection.document(rutinaFirebaseId)
-                    .update(rutinaFirestore.toMap().filterValues { it != null } as Map<String, Any>)
-                    .await()
-                Log.d(TAG, "✅ Rutina ${rutina.numeroRutina} actualizada en Firebase (${tipoUsuario}s/$userId/rutinas)")
-            } else {
-                // Crear nueva
-                val docRef = rutinasCollection.add(rutinaFirestore.toMap()).await()
-                docRef.update("rutinaId", docRef.id).await()
-                Log.d(TAG, "✅ Rutina ${rutina.numeroRutina} creada en Firebase: ${docRef.id} (${tipoUsuario}s/$userId/rutinas)")
-            }
+            // Usar set() con el ID fijo - esto crea o sobreescribe, NUNCA duplica
+            rutinasCollection.document(documentId)
+                .set(rutinaFirestore.toMap())
+                .await()
+
+            Log.d(TAG, "✅ Rutina ${rutina.numeroRutina} guardada en Firebase: ${tipoUsuario}s/$userId/rutinas/$documentId")
         } catch (e: Exception) {
             Log.e(TAG, "❌ Error sincronizando rutina ${rutina.numeroRutina} con Firebase: ${e.message}", e)
         }
     }
 
     /**
-     * Buscar si una rutina ya existe en Firebase por número.
+     * @deprecated Ya no es necesario buscar - usamos IDs fijos
+     * Se mantiene solo por compatibilidad con código existente
      */
     private suspend fun buscarRutinaEnFirebase(userId: String, tipoUsuario: String, numeroRutina: Int): String? {
-        val rutinasCollection = getRutinasCollection(userId, tipoUsuario)
-        val snapshot = rutinasCollection
-            .whereEqualTo("nombre", "Rutina $numeroRutina")
-            .get()
-            .await()
-
-        return snapshot.documents.firstOrNull()?.id
+        // Ahora simplemente retornamos el ID fijo
+        return RutinaFirestore.generarDocumentId(numeroRutina)
     }
 
     /**
@@ -353,12 +355,10 @@ class RutinaRepositoryHibrido(
             snapshot.documents.forEach { doc ->
                 val rutinaFirestore = RutinaFirestore.fromDocument(doc) ?: return@forEach
 
-                // Extraer número de rutina del nombre (ej: "Rutina 1" -> 1)
-                val numeroRutina = rutinaFirestore.nombre
-                    .replace("Rutina ", "")
-                    .toIntOrNull() ?: return@forEach
 
-                if (numeroRutina in 1..10) {
+                val numeroRutina = rutinaFirestore.numeroRutina
+
+                if (numeroRutina in 1..RutinaFirestore.MAX_RUTINAS) {
                     val rutinaLocal = Rutina(
                         numeroRutina = numeroRutina,
                         nombre = rutinaFirestore.nombre,
@@ -397,9 +397,9 @@ class RutinaRepositoryHibrido(
             }
 
             // Las rutinas del cliente están en clientes/{clienteId}/rutinas/
+            // El trainer puede ver TODAS las rutinas del cliente (no solo las compartidas)
             val rutinasCollection = getRutinasCollection(clienteId, "cliente")
             val snapshot = rutinasCollection
-                .whereEqualTo("compartidaConTrainer", true)
                 .get()
                 .await()
 
@@ -416,10 +416,15 @@ class RutinaRepositoryHibrido(
     /**
      * Crear una rutina para un cliente (como trainer).
      * Se guarda en: clientes/{clienteId}/rutinas/
+     *
+     * SISTEMA DE IDs FIJOS:
+     * - Usa el numeroRutina para generar un ID fijo
+     * - Si la rutina ya existe, se sobreescribe
      */
     suspend fun crearRutinaParaCliente(
         trainerId: String,
         clienteId: String,
+        numeroRutina: Int,
         nombre: String,
         ejercicioIds: List<String>
     ): Result<String> {
@@ -430,7 +435,17 @@ class RutinaRepositoryHibrido(
                 return Result.failure(SecurityException("No tienes permiso para crear rutinas para este cliente"))
             }
 
+            // Validar número de rutina
+            if (numeroRutina !in 1..RutinaFirestore.MAX_RUTINAS) {
+                return Result.failure(IllegalArgumentException("Número de rutina debe estar entre 1 y ${RutinaFirestore.MAX_RUTINAS}"))
+            }
+
+            // Generar ID fijo
+            val documentId = RutinaFirestore.generarDocumentId(numeroRutina)
+
             val rutina = RutinaFirestore(
+                rutinaId = documentId,
+                numeroRutina = numeroRutina,
                 nombre = nombre,
                 propietarioId = clienteId,
                 creadoPorId = trainerId,
@@ -443,14 +458,198 @@ class RutinaRepositoryHibrido(
                 fechaModificacion = Date()
             )
 
-            // Guardar en la colección del cliente: clientes/{clienteId}/rutinas/
+            // Guardar en la colección del cliente usando ID fijo (set() en lugar de add())
             val rutinasCollection = getRutinasCollection(clienteId, "cliente")
-            val docRef = rutinasCollection.add(rutina.toMap()).await()
-            docRef.update("rutinaId", docRef.id).await()
+            rutinasCollection.document(documentId)
+                .set(rutina.toMap())
+                .await()
 
-            Log.d(TAG, "Rutina creada para cliente $clienteId por trainer $trainerId: ${docRef.id}")
-            Result.success(docRef.id)
+            Log.d(TAG, "✅ Rutina $numeroRutina creada para cliente $clienteId por trainer $trainerId: $documentId")
+            Result.success(documentId)
         } catch (e: Exception) {
+            Log.e(TAG, "❌ Error creando rutina para cliente: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Obtener una rutina específica de un cliente (para modo trainer).
+     * Lee directamente de Firestore: clientes/{clienteId}/rutinas/{documentId}
+     * NO toca Room local.
+     */
+    suspend fun getRutinaDeClientePorNumero(
+        clienteId: String,
+        trainerId: String,
+        numeroRutina: Int
+    ): RutinaFirestore? {
+        return try {
+            val tienePermiso = verificarPermisoTrainer(trainerId, clienteId)
+            if (!tienePermiso) return null
+
+            val documentId = RutinaFirestore.generarDocumentId(numeroRutina)
+            val doc = firestore.collection("clientes")
+                .document(clienteId)
+                .collection("rutinas")
+                .document(documentId)
+                .get()
+                .await()
+
+            RutinaFirestore.fromDocument(doc)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error obteniendo rutina $numeroRutina del cliente $clienteId: ${e.message}")
+            null
+        }
+    }
+
+    /**
+     * Limpiar ejercicios de una rutina de un cliente (como trainer).
+     * Opera SOLO contra Firestore del cliente, NO toca Room local del trainer.
+     */
+    suspend fun limpiarEjerciciosDeRutinaCliente(
+        clienteId: String,
+        trainerId: String,
+        numeroRutina: Int
+    ): Result<Unit> {
+        return try {
+            val tienePermiso = verificarPermisoTrainer(trainerId, clienteId)
+            if (!tienePermiso) {
+                return Result.failure(SecurityException("No tienes permiso para modificar las rutinas de este cliente"))
+            }
+
+            val documentId = RutinaFirestore.generarDocumentId(numeroRutina)
+            firestore.collection("clientes")
+                .document(clienteId)
+                .collection("rutinas")
+                .document(documentId)
+                .update(
+                    mapOf(
+                        "ejercicioIds" to emptyList<String>(),
+                        "fechaModificacion" to com.google.firebase.Timestamp.now()
+                    )
+                )
+                .await()
+
+            Log.d(TAG, "✅ Rutina $numeroRutina del cliente $clienteId limpiada por trainer $trainerId")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error limpiando rutina del cliente: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Eliminar ejercicios específicos de una rutina de un cliente (como trainer).
+     * Opera SOLO contra Firestore del cliente, NO toca Room local del trainer.
+     */
+    suspend fun eliminarEjerciciosDeRutinaCliente(
+        clienteId: String,
+        trainerId: String,
+        numeroRutina: Int,
+        ejercicioIdsAEliminar: List<Long>
+    ): Result<Int> {
+        return try {
+            val tienePermiso = verificarPermisoTrainer(trainerId, clienteId)
+            if (!tienePermiso) {
+                return Result.failure(SecurityException("No tienes permiso para modificar las rutinas de este cliente"))
+            }
+
+            // Obtener la rutina actual del cliente
+            val rutina = getRutinaDeClientePorNumero(clienteId, trainerId, numeroRutina)
+                ?: return Result.failure(IllegalStateException("Rutina no encontrada"))
+
+            // Filtrar los ejercicios que quedan
+            val idsAEliminarStr = ejercicioIdsAEliminar.map { it.toString() }.toSet()
+            val nuevosEjercicioIds = rutina.ejercicioIds.filterNot { it in idsAEliminarStr }
+            val eliminados = rutina.ejercicioIds.size - nuevosEjercicioIds.size
+
+            // Actualizar en Firestore
+            val documentId = RutinaFirestore.generarDocumentId(numeroRutina)
+            firestore.collection("clientes")
+                .document(clienteId)
+                .collection("rutinas")
+                .document(documentId)
+                .update(
+                    mapOf(
+                        "ejercicioIds" to nuevosEjercicioIds,
+                        "fechaModificacion" to com.google.firebase.Timestamp.now()
+                    )
+                )
+                .await()
+
+            Log.d(TAG, "✅ $eliminados ejercicios eliminados de rutina $numeroRutina del cliente $clienteId")
+            Result.success(eliminados)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error eliminando ejercicios de rutina del cliente: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Agregar ejercicios a una rutina de un cliente (como trainer).
+     * Opera SOLO contra Firestore del cliente, NO toca Room local del trainer.
+     */
+    suspend fun agregarEjerciciosARutinaCliente(
+        clienteId: String,
+        trainerId: String,
+        numeroRutina: Int,
+        nuevosEjercicioIds: List<String>
+    ): Result<Unit> {
+        return try {
+            val tienePermiso = verificarPermisoTrainer(trainerId, clienteId)
+            if (!tienePermiso) {
+                return Result.failure(SecurityException("No tienes permiso para modificar las rutinas de este cliente"))
+            }
+
+            // Obtener la rutina actual del cliente (puede no existir aún)
+            val rutina = getRutinaDeClientePorNumero(clienteId, trainerId, numeroRutina)
+            val ejerciciosActuales = rutina?.ejercicioIds ?: emptyList()
+
+            // Agregar nuevos ejercicios (evitando duplicados)
+            val todosLosIds = ejerciciosActuales.toMutableList()
+            nuevosEjercicioIds.forEach { id ->
+                if (id !in todosLosIds) {
+                    todosLosIds.add(id)
+                }
+            }
+
+            val documentId = RutinaFirestore.generarDocumentId(numeroRutina)
+            val rutinasCollection = getRutinasCollection(clienteId, "cliente")
+
+            if (rutina != null) {
+                // Actualizar rutina existente
+                rutinasCollection.document(documentId)
+                    .update(
+                        mapOf(
+                            "ejercicioIds" to todosLosIds,
+                            "fechaModificacion" to com.google.firebase.Timestamp.now()
+                        )
+                    )
+                    .await()
+            } else {
+                // Crear nueva rutina para el cliente
+                val nuevaRutina = RutinaFirestore(
+                    rutinaId = documentId,
+                    numeroRutina = numeroRutina,
+                    nombre = "Rutina $numeroRutina",
+                    propietarioId = clienteId,
+                    creadoPorId = trainerId,
+                    creadoPorTipo = "trainer",
+                    trainerId = trainerId,
+                    compartidaConTrainer = true,
+                    ejercicioIds = todosLosIds,
+                    activa = true,
+                    fechaCreacion = Date(),
+                    fechaModificacion = Date()
+                )
+                rutinasCollection.document(documentId)
+                    .set(nuevaRutina.toMap())
+                    .await()
+            }
+
+            Log.d(TAG, "✅ ${nuevosEjercicioIds.size} ejercicios agregados a rutina $numeroRutina del cliente $clienteId")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error agregando ejercicios a rutina del cliente: ${e.message}")
             Result.failure(e)
         }
     }

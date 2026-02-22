@@ -49,12 +49,16 @@ class EstadisticaFirestoreRepository(
             // Si es cliente y no existe, intentar crearlo
             if (coleccionBase == "clientes") {
                 Log.w(TAG, "⚠️ Cliente $userId no existe, intentando crear documento básico...")
-                val datosBasicos = mapOf(
+                val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                val datosBasicos = mutableMapOf<String, Any>(
                     "userId" to userId,
                     "tipo" to "cliente",
                     "activo" to true,
                     "fechaCreacion" to com.google.firebase.Timestamp.now()
                 )
+                currentUser?.email?.takeIf { it.isNotEmpty() }?.let { datosBasicos["email"] = it }
+                currentUser?.phoneNumber?.takeIf { it.isNotEmpty() }?.let { datosBasicos["telefono"] = it }
+                currentUser?.displayName?.takeIf { it.isNotEmpty() }?.let { datosBasicos["nombre"] = it }
                 userDocument.set(datosBasicos, com.google.firebase.firestore.SetOptions.merge()).await()
                 Log.d(TAG, "✅ Documento básico de cliente creado: $coleccionBase/$userId")
                 return true

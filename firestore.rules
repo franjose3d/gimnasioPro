@@ -2,93 +2,181 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
+    // ==================== FUNCIÓN AUXILIAR ====================
+    // Verifica si el autenticado actual es trainer conectado con el cliente
+    // Usa la subcolección misClientes que se mantiene sincronizada
+    function isTrainerDelCliente(clienteId) {
+      return exists(/databases/$(database)/documents/trainers/$(request.auth.uid)/misClientes/$(clienteId));
+    }
+
     // ==================== EJERCICIOS (Global) ====================
-    // Los ejercicios son globales, todos los usuarios autenticados pueden leerlos
+    // Los ejercicios son globales, cualquier cliente o trainer autenticado puede leerlos
     // Solo pueden crear/editar ejercicios que ellos mismos crearon
     match /ejercicios/{ejercicioId} {
-      // Cualquier usuario autenticado puede leer ejercicios
+      // Cualquier cliente o trainer autenticado puede leer ejercicios
       allow read: if request.auth != null;
       
-      // Crear ejercicio: solo usuarios autenticados, debe incluir creadoPor
-      allow create: if request.auth != null && 
+      // Crear ejercicio: solo trainers autenticados, debe incluir creadoPor
+      allow create: if request.auth != null &&
                        request.resource.data.creadoPor == request.auth.uid;
       
-      // Actualizar: solo el creador o si es predefinido (admin)
-      allow update: if request.auth != null && 
-                       (resource.data.creadoPor == request.auth.uid || 
-                        resource.data.esPredefinido == true);
-      
+      // Actualizar: SOLO el creador puede editar
+      allow update: if request.auth != null &&
+                       resource.data.creadoPor == request.auth.uid;
+
       // Eliminar: solo el creador
       allow delete: if request.auth != null && 
                        resource.data.creadoPor == request.auth.uid;
     }
     
-    // ==================== USUARIOS ====================
-    // Cada usuario solo puede acceder a sus propios datos
-    match /users/{userId} {
-      // Solo el propio usuario puede leer/escribir sus datos
-      allow read, write: if request.auth != null && userId == request.auth.uid;
-      
-      // ==================== RUTINAS ====================
-      match /rutinas/{rutinaId} {
-        allow read, write: if request.auth != null && userId == request.auth.uid;
-      }
-      
-      // ==================== CALENDARIO ====================
-      match /calendario/{diaSemana} {
-        allow read, write: if request.auth != null && userId == request.auth.uid;
-      }
-      
-      // ==================== ENTRENAMIENTOS ====================
-      match /entrenamientos/{entrenamientoId} {
-        allow read, write: if request.auth != null && userId == request.auth.uid;
-      }
-      
-      // ==================== ESTADÍSTICAS ====================
-      match /estadisticas/{fecha} {
-        allow read, write: if request.auth != null && userId == request.auth.uid;
-      }
-    }
-    
     // ==================== TRAINERS ====================
     // Los trainers pueden tener rutinas para sus clientes
     match /trainers/{trainerId} {
+      // Lectura: cualquier autenticado puede ver perfil básico de trainers (para buscar)
+      // Esto es necesario para que clientes puedan buscar trainers
       allow read: if request.auth != null;
       allow write: if request.auth != null && trainerId == request.auth.uid;
       
       match /rutinas/{rutinaId} {
-        allow read: if request.auth != null;
-        allow write: if request.auth != null && trainerId == request.auth.uid;
+        // Solo el trainer propietario puede ver/modificar sus rutinas
+        allow read, write: if request.auth != null && trainerId == request.auth.uid;
       }
 
       match /estadisticas/{estadisticaId} {
-        allow read: if request.auth != null;
-        allow write: if request.auth != null && trainerId == request.auth.uid;
+        // Solo el trainer propietario puede ver/modificar sus estadísticas
+        allow read, write: if request.auth != null && trainerId == request.auth.uid;
+      }
+
+      match /entrenamientos/{entrenamientoId} {
+        // Solo el trainer propietario puede ver/modificar sus entrenamientos
+        allow read, write: if request.auth != null && trainerId == request.auth.uid;
+      }
+
+      match /calendario/{diaSemana} {
+        // Solo el trainer propietario puede ver/modificar su calendario
+        allow read, write: if request.auth != null && trainerId == request.auth.uid;
+      }
+
+      // Subcolección misClientes: lista de clientes conectados al trainer
+      match /misClientes/{clienteDoc} {
+        // El trainer puede leer/escribir su propia lista de clientes
+        allow read, write: if request.auth != null && trainerId == request.auth.uid;
+        // El cliente referenciado también puede escribir (cuando acepta invitación)
+        allow write: if request.auth != null && clienteDoc == request.auth.uid;
       }
     }
 
     // ==================== CLIENTES ====================
     // Los clientes tienen sus propios datos, rutinas y estadísticas
     match /clientes/{clienteId} {
-      // El cliente puede leer/escribir sus propios datos
-      // Los trainers también pueden leer datos del cliente (para gestión)
+      // Lectura: el propio cliente, su trainer conectado,
+      // o cualquier autenticado haciendo búsqueda por email/teléfono
+      // (necesario para que trainers puedan invitar clientes por email/teléfono)
       allow read: if request.auth != null;
       // Solo el cliente puede crear/modificar su documento
       allow create, update: if request.auth != null && clienteId == request.auth.uid;
+      allow delete: if request.auth != null && clienteId == request.auth.uid;
 
       // Rutinas del cliente
       match /rutinas/{rutinaId} {
         // El cliente puede leer/escribir sus propias rutinas
         // Los trainers conectados también pueden gestionar rutinas
-        allow read, write: if request.auth != null;
+        allow read, write: if request.auth != null &&
+                              (clienteId == request.auth.uid || isTrainerDelCliente(clienteId));
       }
 
       // Estadísticas del cliente
       match /estadisticas/{estadisticaId} {
         // El cliente puede leer/escribir sus estadísticas
         // Los trainers conectados pueden ver estadísticas
-        allow read, write: if request.auth != null;
+        allow read: if request.auth != null &&
+                       (clienteId == request.auth.uid || isTrainerDelCliente(clienteId));
+        // Solo el cliente puede escribir sus estadísticas
+        allow write: if request.auth != null && clienteId == request.auth.uid;
       }
+
+      // Entrenamientos del cliente
+      match /entrenamientos/{entrenamientoId} {
+        allow read, write: if request.auth != null &&
+                              (clienteId == request.auth.uid || isTrainerDelCliente(clienteId));
+      }
+
+      // Calendario del cliente
+      match /calendario/{diaSemana} {
+        allow read, write: if request.auth != null &&
+                              (clienteId == request.auth.uid || isTrainerDelCliente(clienteId));
+      }
+
+      // Trainer asignado al cliente
+      match /miTrainer/{trainerDoc} {
+        // El cliente puede leer/escribir su trainer asignado
+        allow read, write: if request.auth != null && clienteId == request.auth.uid;
+        // El trainer referenciado también puede escribir (cuando se conecta)
+        allow write: if request.auth != null && trainerDoc == request.auth.uid;
+      }
+    }
+
+    // ==================== NOTIFICACIONES ====================
+    // Las notificaciones permiten comunicación entre trainers y clientes
+    match /notificaciones/{notificacionId} {
+      // El destinatario o el remitente puede leer sus notificaciones
+      allow read: if request.auth != null &&
+                     (resource.data.destinatarioId == request.auth.uid ||
+                      resource.data.remitenteId == request.auth.uid);
+
+      // Cualquier cliente o trainer autenticado puede crear notificaciones
+      allow create: if request.auth != null &&
+                       request.resource.data.remitenteId == request.auth.uid;
+
+      // El destinatario puede marcar como leída (update)
+      // Tanto destinatario como remitente pueden eliminar (delete)
+      allow update: if request.auth != null &&
+                       (resource.data.destinatarioId == request.auth.uid ||
+                        resource.data.remitenteId == request.auth.uid);
+      allow delete: if request.auth != null &&
+                       (resource.data.destinatarioId == request.auth.uid ||
+                        resource.data.remitenteId == request.auth.uid);
+    }
+
+    // ==================== CONEXIONES (Trainer-Cliente) ====================
+    // Gestiona las relaciones entre trainers y clientes
+    match /conexiones/{conexionId} {
+      // Ambas partes pueden leer la conexión
+      allow read: if request.auth != null &&
+                     (resource.data.trainerId == request.auth.uid ||
+                      resource.data.clienteId == request.auth.uid);
+
+      // Cualquier cliente o trainer autenticado puede crear una conexión (solicitud)
+      allow create: if request.auth != null &&
+                       (request.resource.data.trainerId == request.auth.uid ||
+                        request.resource.data.clienteId == request.auth.uid);
+
+      // Ambas partes pueden actualizar la conexión
+      allow update: if request.auth != null &&
+                       (resource.data.trainerId == request.auth.uid ||
+                        resource.data.clienteId == request.auth.uid);
+
+      // Ambas partes pueden eliminar la conexión
+      allow delete: if request.auth != null &&
+                       (resource.data.trainerId == request.auth.uid ||
+                        resource.data.clienteId == request.auth.uid);
+    }
+
+    // ==================== MENSAJES ====================
+    // Chat entre clientes y trainers conectados
+    match /mensajes/{mensajeId} {
+      // Remitente o destinatario puede leer
+      allow read: if request.auth != null &&
+                     (resource.data.remitenteId == request.auth.uid ||
+                      resource.data.destinatarioId == request.auth.uid);
+
+      // Cualquier cliente o trainer autenticado puede enviar mensaje
+      allow create: if request.auth != null &&
+                       request.resource.data.remitenteId == request.auth.uid;
+
+      // Solo el remitente puede editar/eliminar
+      allow update, delete: if request.auth != null &&
+                               resource.data.remitenteId == request.auth.uid;
     }
   }
 }

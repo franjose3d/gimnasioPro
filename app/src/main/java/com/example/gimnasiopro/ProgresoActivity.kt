@@ -5,19 +5,32 @@ import android.util.Log
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.gimnasiopro.data.EstadisticaRepository
 import com.example.gimnasiopro.data.RegistroEntrenamientoRepository
 import com.example.gimnasiopro.data.firestore.EjercicioRepositoryHibrido
+import com.example.gimnasiopro.data.firestore.EstadisticaFirestore
+import com.example.gimnasiopro.data.firestore.EstadisticaFirestoreRepository
 import com.example.gimnasiopro.data.firestore.EstadisticaRepositoryHibrido
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.util.Calendar
+import java.util.Date
 
 /**
  * Activity que muestra el progreso del usuario en sus entrenamientos.
  * Muestra estadísticas de tiempo de hoy, mes, racha actual y equilibrio muscular.
+ *
+ * Soporta MODO TRAINER: el trainer ve las estadísticas del cliente
+ * directamente desde Firestore (acceso directo, sin duplicar datos).
  */
 class ProgresoActivity : AppCompatActivity() {
+
+    companion object {
+        private const val TAG = "ProgresoActivity"
+    }
 
     private lateinit var estadisticaRepository: EstadisticaRepositoryHibrido
     private lateinit var registroRepository: RegistroEntrenamientoRepository
@@ -51,9 +64,19 @@ class ProgresoActivity : AppCompatActivity() {
     private lateinit var tvPorcentajeGluteos: TextView
     private lateinit var tvPorcentajeGemelos: TextView
 
+    // Modo trainer: acceder a estadísticas del cliente desde Firestore
+    private var modoTrainer = false
+    private var clienteId: String? = null
+    private var clienteNombre: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_progreso)
+
+        // Detectar modo trainer
+        modoTrainer = intent.getBooleanExtra("MODO_TRAINER", false)
+        clienteId = intent.getStringExtra("CLIENTE_ID")
+        clienteNombre = intent.getStringExtra("CLIENTE_NOMBRE")
 
         val app = application as GimnasioproApplication
         estadisticaRepository = app.estadisticaRepositoryHibrido
@@ -62,12 +85,28 @@ class ProgresoActivity : AppCompatActivity() {
 
         setupBackButton()
         setupViews()
-        loadStats()
+
+        if (modoTrainer && clienteId != null) {
+            Log.d(TAG, "📊 Modo TRAINER: viendo progreso de $clienteNombre ($clienteId)")
+            loadStatsFromFirestore()
+        } else {
+            loadStats()
+        }
     }
 
     private fun setupBackButton() {
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener {
             finish()
+        }
+
+        // Si estamos en modo trainer, mostrar nombre del cliente en el título
+        if (modoTrainer && clienteNombre != null) {
+            try {
+                val tvTitulo = findViewById<TextView>(R.id.tvTituloProgreso)
+                tvTitulo?.text = "Progreso de $clienteNombre"
+            } catch (_: Exception) {
+                // Si no existe el TextView del título, no hacer nada
+            }
         }
     }
 
@@ -131,6 +170,117 @@ class ProgresoActivity : AppCompatActivity() {
             // Cargar equilibrio muscular
             loadEquilibrioMuscular()
         }
+    }
+
+    /**
+     * Cargar estadísticas del cliente directamente desde Firestore (modo trainer).
+     * El trainer accede al espacio Firestore del cliente sin duplicar datos.
+     */
+    private fun loadStatsFromFirestore() {
+        lifecycleScope.launch {
+            try {
+                val firestoreRepo = EstadisticaFirestoreRepository(clienteId!!, "cliente")
+                val calendar = Calendar.getInstance()
+                val anio = calendar.get(Calendar.YEAR)
+                val mes = calendar.get(Calendar.MONTH) + 1
+
+                // Obtener estadísticas del mes actual del cliente
+                val estadisticasMes = firestoreRepo.getEstadisticasPorMes(anio, mes).first()
+
+                // Estadística de hoy
+                val hoy = EstadisticaFirestore.formatFecha(Date())
+                val estadisticaHoy = estadisticasMes.find { it.fecha == hoy }
+
+                // Tiempo de hoy
+                val tiempoHoyMs = estadisticaHoy?.tiempoEntrenamientoMs ?: 0L
+                tvTiempoHoy.text = EstadisticaRepository.formatearTiempo(tiempoHoyMs)
+
+                // Tiempo total del mes
+                val tiempoMesMs = estadisticasMes.sumOf { it.tiempoEntrenamientoMs }
+                tvTiempoMes.text = EstadisticaRepository.formatearTiempo(tiempoMesMs)
+
+                // Entrenamientos del mes
+                val entrenamientosMes = estadisticasMes.sumOf { it.numeroEntrenamientos }
+                tvEntrenamientosMes.text = entrenamientosMes.toString()
+
+                // Racha actual (contar días consecutivos hacia atrás)
+                val racha = calcularRachaDesdeFirestore(estadisticasMes)
+                tvRachaActual.text = racha.toString()
+
+                // Peso movido hoy
+                val pesoHoy = estadisticaHoy?.volumenTotal ?: 0f
+                tvPesoMovidoHoy.text = formatearPeso(pesoHoy)
+
+                // Récord de peso movido
+                val recordPeso = estadisticasMes.maxOfOrNull { it.volumenTotal } ?: 0f
+                tvRecordPesoMovido.text = formatearPeso(recordPeso)
+
+                // Equilibrio muscular (simplificado para modo trainer)
+                resetEquilibrioMuscular()
+
+                Log.d(TAG, "✅ Estadísticas del cliente cargadas: ${estadisticasMes.size} días con datos")
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Error cargando estadísticas del cliente: ${e.message}", e)
+                Toast.makeText(this@ProgresoActivity, "Error al cargar estadísticas: ${e.message}", Toast.LENGTH_SHORT).show()
+                // Poner valores por defecto
+                tvTiempoHoy.text = EstadisticaRepository.formatearTiempo(0)
+                tvTiempoMes.text = EstadisticaRepository.formatearTiempo(0)
+                tvEntrenamientosMes.text = "0"
+                tvRachaActual.text = "0"
+                tvPesoMovidoHoy.text = formatearPeso(0f)
+                tvRecordPesoMovido.text = formatearPeso(0f)
+                resetEquilibrioMuscular()
+            }
+        }
+    }
+
+    /**
+     * Calcula la racha de días consecutivos entrenando desde las estadísticas de Firestore.
+     */
+    private fun calcularRachaDesdeFirestore(estadisticas: List<EstadisticaFirestore>): Int {
+        if (estadisticas.isEmpty()) return 0
+
+        // Ordenar por fecha descendente
+        val diasConEntrenamiento = estadisticas
+            .filter { it.numeroEntrenamientos > 0 }
+            .sortedByDescending { it.fechaTimestamp }
+
+        if (diasConEntrenamiento.isEmpty()) return 0
+
+        val calendar = Calendar.getInstance()
+        var racha = 0
+        var diaEsperado = Calendar.getInstance()
+
+        for (estadistica in diasConEntrenamiento) {
+            calendar.time = estadistica.fechaTimestamp
+            val mismoDia = calendar.get(Calendar.YEAR) == diaEsperado.get(Calendar.YEAR) &&
+                    calendar.get(Calendar.DAY_OF_YEAR) == diaEsperado.get(Calendar.DAY_OF_YEAR)
+
+            if (mismoDia || racha == 0) {
+                racha++
+                diaEsperado.time = estadistica.fechaTimestamp
+                diaEsperado.add(Calendar.DAY_OF_YEAR, -1)
+            } else {
+                break
+            }
+        }
+
+        return racha
+    }
+
+    /**
+     * Resetea todas las barras de equilibrio muscular a 0.
+     */
+    private fun resetEquilibrioMuscular() {
+        actualizarBarraProgreso(progressPectorales, tvPorcentajePectorales, 0)
+        actualizarBarraProgreso(progressEspalda, tvPorcentajeEspalda, 0)
+        actualizarBarraProgreso(progressHombros, tvPorcentajeHombros, 0)
+        actualizarBarraProgreso(progressBiceps, tvPorcentajeBiceps, 0)
+        actualizarBarraProgreso(progressTriceps, tvPorcentajeTriceps, 0)
+        actualizarBarraProgreso(progressAbdominales, tvPorcentajeAbdominales, 0)
+        actualizarBarraProgreso(progressPiernas, tvPorcentajePiernas, 0)
+        actualizarBarraProgreso(progressGluteos, tvPorcentajeGluteos, 0)
+        actualizarBarraProgreso(progressGemelos, tvPorcentajeGemelos, 0)
     }
 
     private suspend fun loadEquilibrioMuscular() {
@@ -213,7 +363,11 @@ class ProgresoActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         // Recargar estadísticas al volver a la pantalla
-        loadStats()
+        if (modoTrainer && clienteId != null) {
+            loadStatsFromFirestore()
+        } else {
+            loadStats()
+        }
     }
 }
 

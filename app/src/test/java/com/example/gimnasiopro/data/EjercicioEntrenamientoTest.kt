@@ -91,7 +91,8 @@ class EjercicioEntrenamientoTest {
 
         val volumen = entrenamiento.calcularVolumenTotal()
 
-        assertEquals(150f, volumen, 0.001f)
+        // Volumen = peso × repeticiones(10 por defecto) × 3 series = 50*10 + 50*10 + 50*10 = 1500
+        assertEquals(1500f, volumen, 0.001f)
     }
 
     @Test
@@ -108,16 +109,17 @@ class EjercicioEntrenamientoTest {
 
         val volumen = entrenamiento.calcularVolumenTotal()
 
-        assertEquals(75f, volumen, 0.001f)
+        // Volumen = (22.5*10) + (25*10) + (27.5*10) = 225 + 250 + 275 = 750
+        assertEquals(750f, volumen, 0.001f)
     }
 
     @Test
-    fun `series visibles se limita entre 3 y 6`() {
+    fun `series visibles se limita entre 1 y 6`() {
         val ejercicio = crearEjercicioBase()
         val entrenamiento = EjercicioEntrenamiento(ejercicio = ejercicio)
 
-        entrenamiento.seriesVisibles = 1
-        assertEquals(3, entrenamiento.seriesVisibles)
+        entrenamiento.seriesVisibles = 0
+        assertEquals(1, entrenamiento.seriesVisibles)
 
         entrenamiento.seriesVisibles = 10
         assertEquals(6, entrenamiento.seriesVisibles)

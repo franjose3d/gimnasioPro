@@ -2,6 +2,7 @@ package com.example.gimnasiopro
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
@@ -17,6 +18,7 @@ import com.example.gimnasiopro.components.EjercicioAdapter
 import com.example.gimnasiopro.data.Ejercicio
 import com.example.gimnasiopro.data.firestore.EjercicioRepositoryHibrido
 import com.example.gimnasiopro.data.firestore.RutinaRepositoryHibrido
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -27,6 +29,7 @@ class DetalleRutinaActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_NUMERO_RUTINA = "extra_numero_rutina"
+        private const val TAG = "DetalleRutinaActivity"
     }
 
     private lateinit var ejercicioRepository: EjercicioRepositoryHibrido
@@ -44,12 +47,26 @@ class DetalleRutinaActivity : AppCompatActivity() {
 
     private var numeroRutina: Int = 1
 
+    // Modo trainer: acceso directo a Firestore del cliente
+    private var modoTrainer = false
+    private var clienteId: String? = null
+    private var clienteNombre: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detalle_rutina)
 
         // Obtener el número de rutina del intent
         numeroRutina = intent.getIntExtra(EXTRA_NUMERO_RUTINA, 1)
+
+        // Detectar modo trainer
+        modoTrainer = intent.getBooleanExtra(RutinasActivity.EXTRA_MODO_TRAINER, false)
+        clienteId = intent.getStringExtra(RutinasActivity.EXTRA_CLIENTE_ID)
+        clienteNombre = intent.getStringExtra(RutinasActivity.EXTRA_CLIENTE_NOMBRE)
+
+        if (modoTrainer && clienteId != null) {
+            Log.d(TAG, "📋 Modo TRAINER: viendo rutina $numeroRutina del cliente $clienteNombre ($clienteId)")
+        }
 
         // Obtener los repositorios desde la Application
         val app = application as GimnasioproApplication
@@ -80,7 +97,11 @@ class DetalleRutinaActivity : AppCompatActivity() {
         val btnLimpiarRutina = findViewById<ImageButton>(R.id.btnLimpiarRutina)
 
         // Configurar título
-        tvTituloRutina.text = getString(R.string.rutina_1).replace("1", numeroRutina.toString())
+        if (modoTrainer && clienteNombre != null) {
+            tvTituloRutina.text = "Rutina $numeroRutina de $clienteNombre"
+        } else {
+            tvTituloRutina.text = getString(R.string.rutina_1).replace("1", numeroRutina.toString())
+        }
 
         // Configurar adaptador con selección habilitada para esta rutina
         adapter = EjercicioAdapter(
@@ -119,11 +140,29 @@ class DetalleRutinaActivity : AppCompatActivity() {
             iniciarEntrenamiento()
         }
 
+        // En modo trainer, deshabilitar el botón de iniciar entrenamiento
+        if (modoTrainer) {
+            btnIniciarRutina.visibility = View.GONE
+        }
+
         // Inicializar botón borrar como deshabilitado
         actualizarEstadoBotonBorrar(0)
     }
 
     private fun loadRutinaEjercicios() {
+        if (modoTrainer && clienteId != null) {
+            // Modo trainer: cargar desde Firestore del cliente directamente
+            loadRutinaEjerciciosDesdeFirestore()
+        } else {
+            // Modo normal: observar cambios desde Room local
+            loadRutinaEjerciciosDesdeRoom()
+        }
+    }
+
+    /**
+     * Cargar rutina desde Room local (modo normal del usuario).
+     */
+    private fun loadRutinaEjerciciosDesdeRoom() {
         lifecycleScope.launch {
             // Observar cambios en la rutina
             rutinaRepository.getRutinaByIdFlow(numeroRutina).collectLatest { rutina ->
@@ -135,6 +174,44 @@ class DetalleRutinaActivity : AppCompatActivity() {
                     cargarEjercicios(ejercicioIds)
                 }
             }
+        }
+    }
+
+    /**
+     * Cargar rutina desde Firestore del cliente (modo trainer).
+     * NO toca Room local del trainer.
+     */
+    private fun loadRutinaEjerciciosDesdeFirestore() {
+        lifecycleScope.launch {
+            try {
+                val trainerId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+                val rutina = rutinaRepository.getRutinaDeClientePorNumero(clienteId!!, trainerId, numeroRutina)
+
+                if (rutina == null || rutina.ejercicioIds.isEmpty()) {
+                    mostrarRutinaVacia()
+                } else {
+                    // Convertir IDs de String a Long para el repositorio de ejercicios
+                    val ejercicioIds = rutina.ejercicioIds.mapNotNull { it.toLongOrNull() }
+                    if (ejercicioIds.isEmpty()) {
+                        mostrarRutinaVacia()
+                    } else {
+                        cargarEjercicios(ejercicioIds)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Error cargando rutina del cliente desde Firestore: ${e.message}", e)
+                mostrarRutinaVacia()
+                Toast.makeText(this@DetalleRutinaActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    /**
+     * Recargar datos desde Firestore (para modo trainer, después de operaciones de escritura).
+     */
+    private fun recargarDatosFirestore() {
+        if (modoTrainer && clienteId != null) {
+            loadRutinaEjerciciosDesdeFirestore()
         }
     }
 
@@ -181,14 +258,29 @@ class DetalleRutinaActivity : AppCompatActivity() {
 
     private fun limpiarRutina() {
         lifecycleScope.launch {
-            rutinaRepository.limpiarEjerciciosDeRutina(numeroRutina).fold(
-                onSuccess = {
-                    Toast.makeText(this@DetalleRutinaActivity, R.string.rutina_limpiada, Toast.LENGTH_SHORT).show()
-                },
-                onFailure = { error ->
-                    Toast.makeText(this@DetalleRutinaActivity, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
-                }
-            )
+            if (modoTrainer && clienteId != null) {
+                // Modo trainer: limpiar en Firestore del cliente
+                val trainerId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+                rutinaRepository.limpiarEjerciciosDeRutinaCliente(clienteId!!, trainerId, numeroRutina).fold(
+                    onSuccess = {
+                        Toast.makeText(this@DetalleRutinaActivity, R.string.rutina_limpiada, Toast.LENGTH_SHORT).show()
+                        recargarDatosFirestore()
+                    },
+                    onFailure = { error ->
+                        Toast.makeText(this@DetalleRutinaActivity, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            } else {
+                // Modo normal: limpiar en Room + Firebase propio
+                rutinaRepository.limpiarEjerciciosDeRutina(numeroRutina).fold(
+                    onSuccess = {
+                        Toast.makeText(this@DetalleRutinaActivity, R.string.rutina_limpiada, Toast.LENGTH_SHORT).show()
+                    },
+                    onFailure = { error ->
+                        Toast.makeText(this@DetalleRutinaActivity, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            }
         }
     }
 
@@ -196,6 +288,14 @@ class DetalleRutinaActivity : AppCompatActivity() {
         val intent = Intent(this, EjerciciosActivity::class.java)
         // Pasar el número de rutina para que al guardar ejercicios se añadan directamente
         intent.putExtra(EjerciciosActivity.EXTRA_NUMERO_RUTINA, numeroRutina)
+
+        // Propagar modo trainer para que toda la cadena de navegación lo respete
+        if (modoTrainer && clienteId != null) {
+            intent.putExtra(RutinasActivity.EXTRA_MODO_TRAINER, true)
+            intent.putExtra(RutinasActivity.EXTRA_CLIENTE_ID, clienteId)
+            intent.putExtra(RutinasActivity.EXTRA_CLIENTE_NOMBRE, clienteNombre)
+        }
+
         startActivity(intent)
     }
 
@@ -225,15 +325,36 @@ class DetalleRutinaActivity : AppCompatActivity() {
     private fun eliminarEjerciciosSeleccionados(ejercicios: Set<Ejercicio>) {
         lifecycleScope.launch {
             val ids = ejercicios.map { it.id }
-            val eliminados = rutinaRepository.eliminarEjerciciosDeRutina(numeroRutina, ids)
 
-            adapter.clearSelection()
+            if (modoTrainer && clienteId != null) {
+                // Modo trainer: eliminar en Firestore del cliente
+                val trainerId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+                rutinaRepository.eliminarEjerciciosDeRutinaCliente(clienteId!!, trainerId, numeroRutina, ids).fold(
+                    onSuccess = { eliminados ->
+                        adapter.clearSelection()
+                        Toast.makeText(
+                            this@DetalleRutinaActivity,
+                            getString(R.string.ejercicios_eliminados, eliminados),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        recargarDatosFirestore()
+                    },
+                    onFailure = { error ->
+                        Toast.makeText(this@DetalleRutinaActivity, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            } else {
+                // Modo normal: eliminar en Room + Firebase propio
+                val eliminados = rutinaRepository.eliminarEjerciciosDeRutina(numeroRutina, ids)
 
-            Toast.makeText(
-                this@DetalleRutinaActivity,
-                getString(R.string.ejercicios_eliminados, eliminados),
-                Toast.LENGTH_SHORT
-            ).show()
+                adapter.clearSelection()
+
+                Toast.makeText(
+                    this@DetalleRutinaActivity,
+                    getString(R.string.ejercicios_eliminados, eliminados),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 

@@ -26,7 +26,11 @@ data class Cliente(
     val nivel: String = "",            // "Principiante", "Intermedio", "Avanzado"
     val fotoUrl: String = "",          // URL de la foto de perfil
     val trainerId: String? = null,     // ID del trainer asignado (opcional)
-    val activo: Boolean = true         // Si está activo o dado de baja
+    val activo: Boolean = true,        // Si está activo o dado de baja
+
+    // PREFERENCIAS DE CONEXIÓN
+    val aceptaSolicitudes: Boolean = true,  // Si acepta solicitudes de trainers
+    val gruposIds: List<String> = emptyList() // IDs de grupos de entrenamiento
 ) : User(
     userId = userId,
     email = email,
@@ -40,11 +44,16 @@ data class Cliente(
      * Convertir a Map para guardar en clientes/ (colección específica)
      */
     fun toClienteMap(): Map<String, Any> {
+        // Normalizar teléfono: solo dígitos sin prefijo de país
+        val telefonoNorm = telefono.replace(Regex("[^0-9]"), "").let { digitos ->
+            if (digitos.startsWith("34") && digitos.length > 9) digitos.removePrefix("34") else digitos
+        }
         return hashMapOf(
             "userId" to userId,
             "email" to email,
             "nombre" to nombre,
             "telefono" to telefono,
+            "telefonoNormalizado" to telefonoNorm,
             "peso" to peso,
             "altura" to altura,
             "edad" to edad,
@@ -55,7 +64,9 @@ data class Cliente(
             "trainerId" to (trainerId ?: ""),
             "activo" to activo,
             "emailVerificado" to emailVerificado,
-            "fechaRegistro" to fechaRegistro
+            "fechaRegistro" to fechaRegistro,
+            "aceptaSolicitudes" to aceptaSolicitudes,
+            "gruposIds" to gruposIds
         )
     }
 
@@ -79,7 +90,9 @@ data class Cliente(
                 trainerId = map["trainerId"] as? String,
                 activo = map["activo"] as? Boolean ?: true,
                 emailVerificado = map["emailVerificado"] as? Boolean ?: false,
-                fechaRegistro = (map["fechaRegistro"] as? Number)?.toLong() ?: System.currentTimeMillis()
+                fechaRegistro = (map["fechaRegistro"] as? Number)?.toLong() ?: System.currentTimeMillis(),
+                aceptaSolicitudes = map["aceptaSolicitudes"] as? Boolean ?: true,
+                gruposIds = @Suppress("UNCHECKED_CAST") (map["gruposIds"] as? List<String>) ?: emptyList()
             )
         }
     }

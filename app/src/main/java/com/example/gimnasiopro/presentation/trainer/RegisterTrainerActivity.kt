@@ -17,6 +17,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.gimnasiopro.R
 import com.example.gimnasiopro.presentation.auth.VerificarEmailActivity
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.storage.FirebaseStorage
+import java.util.UUID
 
 /**
  * Activity SIMPLIFICADA para registro de trainers.
@@ -34,6 +36,7 @@ class RegisterTrainerActivity : AppCompatActivity() {
 
     // Firebase
     private lateinit var auth: FirebaseAuth
+    private lateinit var storage: FirebaseStorage
     private lateinit var viewModel: RegisterTrainerViewModel
 
     // Views - Autenticación
@@ -52,6 +55,11 @@ class RegisterTrainerActivity : AppCompatActivity() {
     private lateinit var ivFotoPerfil: ImageView
     private lateinit var btnSeleccionarFoto: Button
 
+    // Views - Certificado
+    private lateinit var ivCertificadoIcon: ImageView
+    private lateinit var btnSeleccionarCertificado: Button
+    private lateinit var tvCertificadoNombre: android.widget.TextView
+
     // Views - UI
     private lateinit var btnRegistrar: Button
     private lateinit var progressBar: ProgressBar
@@ -59,8 +67,12 @@ class RegisterTrainerActivity : AppCompatActivity() {
     // Foto
     private var fotoUri: Uri? = null
 
+    // Certificado
+    private var certificadoUri: Uri? = null
+
     companion object {
         private const val PICK_IMAGE_REQUEST = 1001
+        private const val PICK_CERTIFICADO_REQUEST = 1002
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,6 +80,7 @@ class RegisterTrainerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_register_trainer)
 
         auth = FirebaseAuth.getInstance()
+        storage = FirebaseStorage.getInstance()
         viewModel = ViewModelProvider(this)[RegisterTrainerViewModel::class.java]
 
         initViews()
@@ -92,6 +105,11 @@ class RegisterTrainerActivity : AppCompatActivity() {
         ivFotoPerfil = findViewById(R.id.ivfotoPerfil)
         btnSeleccionarFoto = findViewById(R.id.btnseleccionarFoto)
 
+        // Certificado
+        ivCertificadoIcon = findViewById(R.id.ivCertificadoIcon)
+        btnSeleccionarCertificado = findViewById(R.id.btnSeleccionarCertificado)
+        tvCertificadoNombre = findViewById(R.id.tvCertificadoNombre)
+
         // UI
         btnRegistrar = findViewById(R.id.btnregistrar)
         progressBar = findViewById(R.id.progressBar)
@@ -105,6 +123,15 @@ class RegisterTrainerActivity : AppCompatActivity() {
         btnSeleccionarFoto.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             startActivityForResult(intent, PICK_IMAGE_REQUEST)
+        }
+
+        btnSeleccionarCertificado.setOnClickListener {
+            val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                type = "*/*"
+                putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/*", "application/pdf"))
+                addCategory(Intent.CATEGORY_OPENABLE)
+            }
+            startActivityForResult(Intent.createChooser(intent, "Seleccionar certificado"), PICK_CERTIFICADO_REQUEST)
         }
     }
 
@@ -251,10 +278,8 @@ class RegisterTrainerActivity : AppCompatActivity() {
                         ).show()
                     }
 
-                // Guardar trainer en Firestore
-                val fotoUrl = fotoUri?.toString() ?: ""
-
-                viewModel.registerTrainer(
+                // Subir archivos a Firebase Storage y luego guardar trainer
+                subirArchivosYGuardarTrainer(
                     userId = userId,
                     email = email,
                     nombre = nombre,
@@ -263,9 +288,7 @@ class RegisterTrainerActivity : AppCompatActivity() {
                     municipio = municipio,
                     telefono = telefono,
                     sobreMi = sobreMi,
-                    fotoUrl = fotoUrl,
-                    tarifa = tarifa,
-                    emailVerificado = false
+                    tarifa = tarifa
                 )
             }
             .addOnFailureListener { e ->
@@ -282,6 +305,123 @@ class RegisterTrainerActivity : AppCompatActivity() {
 
                 Toast.makeText(this, "❌ $mensaje", Toast.LENGTH_LONG).show()
             }
+    }
+
+    /**
+     * SUBIR ARCHIVOS A FIREBASE STORAGE Y GUARDAR TRAINER
+     */
+    private fun subirArchivosYGuardarTrainer(
+        userId: String,
+        email: String,
+        nombre: String,
+        dni: String,
+        poblacion: String,
+        municipio: String,
+        telefono: String,
+        sobreMi: String,
+        tarifa: Double
+    ) {
+        var fotoUrlFinal = ""
+        var certificadoUrlFinal = ""
+        var archivosSubidos = 0
+        val totalArchivos = listOfNotNull(fotoUri, certificadoUri).size
+
+        // Si no hay archivos para subir, guardar directamente
+        if (totalArchivos == 0) {
+            guardarTrainerEnFirestore(
+                userId, email, nombre, dni, poblacion, municipio,
+                telefono, sobreMi, fotoUrlFinal, certificadoUrlFinal, tarifa
+            )
+            return
+        }
+
+        val verificarYGuardar = {
+            archivosSubidos++
+            if (archivosSubidos >= totalArchivos) {
+                guardarTrainerEnFirestore(
+                    userId, email, nombre, dni, poblacion, municipio,
+                    telefono, sobreMi, fotoUrlFinal, certificadoUrlFinal, tarifa
+                )
+            }
+        }
+
+        // Subir foto de perfil
+        fotoUri?.let { uri ->
+            val fotoRef = storage.reference.child("trainers/$userId/foto_perfil_${UUID.randomUUID()}")
+            fotoRef.putFile(uri)
+                .addOnSuccessListener {
+                    fotoRef.downloadUrl.addOnSuccessListener { downloadUrl ->
+                        fotoUrlFinal = downloadUrl.toString()
+                        verificarYGuardar()
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(this, "⚠️ No se pudo subir la foto: ${e.message}", Toast.LENGTH_SHORT).show()
+                    verificarYGuardar()
+                }
+        }
+
+        // Subir certificado
+        certificadoUri?.let { uri ->
+            val extension = obtenerExtensionArchivo(uri)
+            val certificadoRef = storage.reference.child("trainers/$userId/certificado_${UUID.randomUUID()}.$extension")
+            certificadoRef.putFile(uri)
+                .addOnSuccessListener {
+                    certificadoRef.downloadUrl.addOnSuccessListener { downloadUrl ->
+                        certificadoUrlFinal = downloadUrl.toString()
+                        verificarYGuardar()
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(this, "⚠️ No se pudo subir el certificado: ${e.message}", Toast.LENGTH_SHORT).show()
+                    verificarYGuardar()
+                }
+        }
+    }
+
+    /**
+     * GUARDAR TRAINER EN FIRESTORE
+     */
+    private fun guardarTrainerEnFirestore(
+        userId: String,
+        email: String,
+        nombre: String,
+        dni: String,
+        poblacion: String,
+        municipio: String,
+        telefono: String,
+        sobreMi: String,
+        fotoUrl: String,
+        certificadoUrl: String,
+        tarifa: Double
+    ) {
+        viewModel.registerTrainer(
+            userId = userId,
+            email = email,
+            nombre = nombre,
+            dni = dni,
+            poblacion = poblacion,
+            municipio = municipio,
+            telefono = telefono,
+            sobreMi = sobreMi,
+            fotoUrl = fotoUrl,
+            certificadoUrl = certificadoUrl,
+            tarifa = tarifa,
+            emailVerificado = false
+        )
+    }
+
+    /**
+     * Obtener extensión del archivo
+     */
+    private fun obtenerExtensionArchivo(uri: Uri): String {
+        val mimeType = contentResolver.getType(uri)
+        return when {
+            mimeType?.contains("pdf") == true -> "pdf"
+            mimeType?.contains("jpeg") == true || mimeType?.contains("jpg") == true -> "jpg"
+            mimeType?.contains("png") == true -> "png"
+            else -> "file"
+        }
     }
 
     /**
@@ -363,18 +503,48 @@ class RegisterTrainerActivity : AppCompatActivity() {
     }
 
     /**
-     * RESULTADO SELECCIONAR FOTO
+     * RESULTADO SELECCIONAR FOTO O CERTIFICADO
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
-            data?.data?.let { uri ->
-                fotoUri = uri
-                ivFotoPerfil.setImageURI(uri)
-                Toast.makeText(this, "✅ Foto seleccionada", Toast.LENGTH_SHORT).show()
+        if (resultCode == Activity.RESULT_OK) {
+            when (requestCode) {
+                PICK_IMAGE_REQUEST -> {
+                    data?.data?.let { uri ->
+                        fotoUri = uri
+                        ivFotoPerfil.setImageURI(uri)
+                        Toast.makeText(this, "✅ Foto seleccionada", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                PICK_CERTIFICADO_REQUEST -> {
+                    data?.data?.let { uri ->
+                        certificadoUri = uri
+                        // Obtener nombre del archivo
+                        val nombreArchivo = obtenerNombreArchivo(uri)
+                        tvCertificadoNombre.text = "📄 $nombreArchivo"
+                        ivCertificadoIcon.setImageResource(android.R.drawable.ic_menu_agenda)
+                        Toast.makeText(this, "✅ Certificado seleccionado", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         }
+    }
+
+    /**
+     * Obtener nombre del archivo desde URI
+     */
+    private fun obtenerNombreArchivo(uri: Uri): String {
+        var nombre = "Archivo seleccionado"
+        contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val nombreIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                if (nombreIndex >= 0) {
+                    nombre = cursor.getString(nombreIndex)
+                }
+            }
+        }
+        return nombre
     }
 
     /**

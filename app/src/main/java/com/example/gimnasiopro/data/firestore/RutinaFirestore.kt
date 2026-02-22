@@ -7,21 +7,28 @@ import java.util.Date
 /**
  * Modelo de Rutina para Firestore.
  *
+ * SISTEMA DE IDs FIJOS:
+ * - Cada rutina tiene un numeroRutina (1-20) que es INMUTABLE
+ * - El ID del documento en Firebase es siempre "rutina_{numeroRutina}"
+ * - Esto evita duplicaciones: cuando se actualiza una rutina, se sobreescribe el mismo documento
+ *
  * Estructura en Firebase:
- * rutinas/
- *   └── [rutinaId]/
- *         ├── nombre: "Mi Rutina"
- *         ├── propietarioId: "userId"          ← Dueño de la rutina
- *         ├── creadoPorId: "userId"            ← Quién la creó (puede ser trainer)
+ * clientes/{userId}/rutinas/
+ *   └── rutina_1/                    ← ID FIJO basado en numeroRutina
+ *         ├── numeroRutina: 1        ← Número inmutable
+ *         ├── nombre: "Mi Rutina"    ← Nombre puede cambiar
+ *         ├── propietarioId: "userId"
+ *         ├── creadoPorId: "userId"
  *         ├── creadoPorTipo: "cliente|trainer"
- *         ├── compartidaConTrainer: true/false ← Si el trainer puede verla
- *         ├── trainerId: "trainerId"           ← Trainer asignado (si aplica)
- *         ├── ejercicioIds: [...]              ← Lista de IDs de ejercicios
+ *         ├── compartidaConTrainer: true/false
+ *         ├── trainerId: "trainerId"
+ *         ├── ejercicioIds: [...]
  *         ├── fechaCreacion: Timestamp
  *         └── fechaModificacion: Timestamp
  */
 data class RutinaFirestore(
     val rutinaId: String = "",
+    val numeroRutina: Int = 0,                // Número fijo de rutina (1-20) - CLAVE ÚNICA
     val nombre: String = "",
     val propietarioId: String = "",           // userId del dueño de la rutina
     val creadoPorId: String = "",             // userId de quien la creó (puede ser trainer)
@@ -38,6 +45,7 @@ data class RutinaFirestore(
      */
     fun toMap(): Map<String, Any?> {
         return mapOf(
+            "numeroRutina" to numeroRutina,
             "nombre" to nombre,
             "propietarioId" to propietarioId,
             "creadoPorId" to creadoPorId,
@@ -53,6 +61,18 @@ data class RutinaFirestore(
 
     companion object {
         /**
+         * Máximo número de rutinas permitidas por usuario
+         */
+        const val MAX_RUTINAS = 20
+
+        /**
+         * Genera el ID fijo del documento en Firebase basado en el número de rutina.
+         * Ejemplo: rutina_1, rutina_2, ... rutina_20
+         * Este ID NUNCA cambia, evitando duplicaciones.
+         */
+        fun generarDocumentId(numeroRutina: Int): String = "rutina_$numeroRutina"
+
+        /**
          * Crear desde DocumentSnapshot de Firestore
          */
         fun fromDocument(document: DocumentSnapshot): RutinaFirestore? {
@@ -60,6 +80,7 @@ data class RutinaFirestore(
                 val data = document.data ?: return null
                 RutinaFirestore(
                     rutinaId = document.id,
+                    numeroRutina = (data["numeroRutina"] as? Long)?.toInt() ?: 0,
                     nombre = data["nombre"] as? String ?: "",
                     propietarioId = data["propietarioId"] as? String ?: data["creadoPor"] as? String ?: "",
                     creadoPorId = data["creadoPorId"] as? String ?: data["creadoPor"] as? String ?: "",
