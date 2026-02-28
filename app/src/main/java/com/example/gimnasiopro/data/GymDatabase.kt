@@ -5,14 +5,24 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.example.gimnasiopro.data.local.MensajeLocal
+import com.example.gimnasiopro.data.local.MensajeDao
 
 /**
  * Base de datos Room para la aplicación GimnasioPro.
- * Contiene las tablas de ejercicios y rutinas.
+ *
+ * Version 6: Añadida tabla mensajes_locales
  */
 @Database(
-    entities = [Ejercicio::class, Rutina::class, RegistroEntrenamiento::class, EstadisticaEntrenamiento::class, RutinaDiaSemana::class],
-    version = 5,
+    entities = [
+        Ejercicio::class,
+        Rutina::class,
+        RegistroEntrenamiento::class,
+        EstadisticaEntrenamiento::class,
+        RutinaDiaSemana::class,
+        MensajeLocal::class  // ← NUEVO
+    ],
+    version = 6,  // ← INCREMENTADO de 5 a 6
     exportSchema = false
 )
 @TypeConverters(EjercicioIdsConverter::class)
@@ -23,6 +33,7 @@ abstract class GymDatabase : RoomDatabase() {
     abstract fun registroEntrenamientoDao(): RegistroEntrenamientoDao
     abstract fun estadisticaEntrenamientoDao(): EstadisticaEntrenamientoDao
     abstract fun rutinaDiaSemanaDao(): RutinaDiaSemanaDao
+    abstract fun mensajeDao(): MensajeDao  // ← NUEVO
 
     companion object {
         @Volatile
@@ -38,12 +49,11 @@ abstract class GymDatabase : RoomDatabase() {
                     GymDatabase::class.java,
                     "gimnasio_pro_database"
                 )
-                .fallbackToDestructiveMigration()
-                .build()
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }
         }
     }
 }
-

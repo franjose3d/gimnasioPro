@@ -2,6 +2,7 @@ package com.example.gimnasiopro
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -9,10 +10,16 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.example.gimnasiopro.data.GymDatabase
+import com.example.gimnasiopro.data.firestore.MensajeRepository
+import com.example.gimnasiopro.data.firestore.MensajesSyncService
 import com.example.gimnasiopro.data.firestore.RutinaRepositoryHibrido
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
+import com.example.gimnasiopro.utils.BadgeHelper
 
 class MainActivity : AppCompatActivity() {
 
@@ -23,6 +30,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvDayX: TextView
     private lateinit var ivUserPhoto: ImageView
     private lateinit var cardRegistrate: LinearLayout
+    private lateinit var tvBadgeNotifications: TextView
 
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
@@ -31,8 +39,11 @@ class MainActivity : AppCompatActivity() {
     private var cachedUserName: String? = null
     private var cachedUserId: String? = null
 
-    // ← NUEVO: control para sincronizar rutinas solo una vez por sesión
+    // Control para sincronizar rutinas solo una vez por sesión
     private var rutinasSincronizadas = false
+
+    // ====== NUEVO - Sincronización de mensajes ======
+    private var mensajesSync: MensajesSyncService? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,12 +55,22 @@ class MainActivity : AppCompatActivity() {
         setupViews()
         setupCards()
         loadUserData()
+
+        // ====== NUEVO - Inicializar sincronización de mensajes ======
+        inicializarSincronizacionMensajes()
     }
 
     override fun onResume() {
         super.onResume()
         // Recargar datos del usuario cuando vuelve de otra pantalla
         loadUserData()
+    }
+
+    // ====== NUEVO ======
+    override fun onDestroy() {
+        super.onDestroy()
+        // Detener escucha de mensajes al cerrar la app
+        mensajesSync?.detenerEscucha()
     }
 
     private fun setupViews() {
@@ -60,6 +81,7 @@ class MainActivity : AppCompatActivity() {
         tvDayX = findViewById(R.id.tvDayX)
         ivUserPhoto = findViewById(R.id.ivUserPhoto)
         cardRegistrate = findViewById(R.id.cardRegistrate)
+        tvBadgeNotifications = findViewById(R.id.tvBadgeNotifications)
     }
 
     private fun setupCards() {
@@ -141,7 +163,7 @@ class MainActivity : AppCompatActivity() {
                 cargarNombreUsuario(currentUser.uid, currentUser.displayName, currentUser.email)
             }
 
-            // ← NUEVO: sincronizar rutinas desde Firebase solo una vez por sesión
+            // Sincronizar rutinas desde Firebase solo una vez por sesión
             if (!rutinasSincronizadas) {
                 lifecycleScope.launch {
                     try {
@@ -168,13 +190,15 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+            observarMensajesNoLeidos()
 
         } else {
             // Usuario no logueado - resetear cache y flag de sincronización
             cachedUserName = null
             cachedUserId = null
-            rutinasSincronizadas = false  // ← NUEVO: resetear para la próxima sesión
+            rutinasSincronizadas = false
             tvUserName.text = getString(R.string.default_user_name)
+            tvBadgeNotifications.visibility = View.GONE
         }
 
         // Cargar racha actual
@@ -253,8 +277,11 @@ class MainActivity : AppCompatActivity() {
                         startActivity(intent)
                     }
                     1 -> {
+                        // ====== MODIFICADO ======
                         auth.signOut()
-                        rutinasSincronizadas = false  // ← NUEVO: resetear al cerrar sesión
+                        rutinasSincronizadas = false
+                        mensajesSync?.detenerEscucha()  // Detener sincronización de mensajes
+                        mensajesSync = null
                         loadUserData()
                         Toast.makeText(this, "Sesión cerrada", Toast.LENGTH_SHORT).show()
                     }
@@ -293,5 +320,79 @@ class MainActivity : AppCompatActivity() {
 
     private fun navigateToProgreso() {
         startActivity(Intent(this, ProgresoActivity::class.java))
+    }
+
+    // ====== NUEVO - Funciones de sincronización de mensajes ======
+
+    /**
+     * Inicializa la sincronización de mensajes si el usuario está autenticado.
+     */
+    private fun inicializarSincronizacionMensajes() {
+        val currentUser = auth.currentUser
+
+        if (currentUser != null) {
+            // Inicializar repositorio y servicio de sincronización
+            val db = GymDatabase.getDatabase(this)
+            val mensajeRepository = MensajeRepository(db.mensajeDao())
+
+            mensajesSync = MensajesSyncService(mensajeRepository)
+            mensajesSync?.iniciarEscucha()
+
+            // Obtener y guardar FCM token
+            obtenerYGuardarFCMToken()
+
+            android.util.Log.d("MainActivity", "✅ Sincronización de mensajes iniciada")
+        } else {
+            android.util.Log.d("MainActivity", "⏭️ Usuario no autenticado, sync omitida")
+        }
+    }
+
+    /**
+     * Obtiene el token de FCM y lo guarda en Firestore.
+     */
+    private fun obtenerYGuardarFCMToken() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val token = task.result
+                guardarFCMTokenEnFirestore(token)
+            } else {
+                android.util.Log.e("MainActivity", "Error obteniendo FCM token: ${task.exception?.message}")
+            }
+        }
+    }
+
+    /**
+     * Guarda el token FCM en Firestore para poder enviar notificaciones.
+     */
+    private fun guardarFCMTokenEnFirestore(token: String) {
+        val userId = auth.currentUser?.uid ?: return
+
+        firestore.collection("users")
+            .document(userId)
+            .set(
+                hashMapOf("fcmToken" to token),
+                SetOptions.merge()
+            )
+            .addOnSuccessListener {
+                android.util.Log.d("MainActivity", "✅ FCM Token guardado en Firestore")
+            }
+            .addOnFailureListener { e ->
+                android.util.Log.e("MainActivity", "❌ Error guardando FCM token: ${e.message}")
+            }
+    }
+    private fun observarMensajesNoLeidos() {
+        val db = GymDatabase.getDatabase(this)
+        val mensajeRepository = MensajeRepository(db.mensajeDao())
+
+        lifecycleScope.launch {
+            mensajeRepository.contarTotalNoLeidos().collect { count ->
+                actualizarBadgeNotificaciones(count)
+            }
+        }
+    }
+
+    private fun actualizarBadgeNotificaciones(count: Int) {
+        tvBadgeNotifications.visibility = BadgeHelper.obtenerVisibilidad(count)
+        tvBadgeNotifications.text = BadgeHelper.obtenerTextoBadge(count)
     }
 }

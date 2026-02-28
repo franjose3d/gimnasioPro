@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gimnasiopro.components.MensajeAdapter
+import com.example.gimnasiopro.data.GymDatabase
 import com.example.gimnasiopro.data.firestore.Mensaje
 import com.example.gimnasiopro.data.firestore.MensajeRepository
 import com.example.gimnasiopro.data.firestore.UserHelper
@@ -23,10 +24,14 @@ import kotlinx.coroutines.launch
 /**
  * Activity para conversaciones entre trainer y cliente.
  *
+ * Sistema híbrido:
+ * - Firebase: Buzón temporal (solo mensajes en tránsito)
+ * - Room: Historial completo (almacenamiento local)
+ *
  * Características:
  * - Mensajes breves (máx 200 caracteres)
- * - Persistencia semanal (se eliminan después de 7 días)
- * - Aviso de expiración
+ * - Historial completo en dispositivo
+ * - Sincronización automática
  */
 class ConversacionActivity : AppCompatActivity() {
 
@@ -40,13 +45,14 @@ class ConversacionActivity : AppCompatActivity() {
     private lateinit var layoutEmpty: LinearLayout
 
     private lateinit var adapter: MensajeAdapter
-    private val mensajeRepository = MensajeRepository()
+    private lateinit var mensajeRepository: MensajeRepository
     private val auth = FirebaseAuth.getInstance()
 
     private var currentUserId: String? = null
     private var currentUserNombre: String? = null
     private var otroUsuarioId: String? = null
     private var otroUsuarioNombre: String? = null
+    private var conversacionId: String? = null
 
     companion object {
         const val MAX_CARACTERES = 200
@@ -66,9 +72,17 @@ class ConversacionActivity : AppCompatActivity() {
             return
         }
 
+        // Generar ID de conversación
+        conversacionId = Mensaje.generarConversacionId(currentUserId!!, otroUsuarioId!!)
+
+        // ====== CORREGIDO: Inicializar repositorio con DAO ======
+        val db = GymDatabase.getDatabase(this)
+        mensajeRepository = MensajeRepository(db.mensajeDao())
+
         setupViews()
         loadCurrentUserName()
         observeMensajes()
+        marcarMensajesComoLeidos()
     }
 
     private fun setupViews() {
@@ -92,7 +106,7 @@ class ConversacionActivity : AppCompatActivity() {
         // Limitar caracteres
         etMensaje.filters = arrayOf(android.text.InputFilter.LengthFilter(MAX_CARACTERES))
 
-        // Contador de caracteres
+        // Contador de caracteres (opcional)
         etMensaje.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -120,7 +134,8 @@ class ConversacionActivity : AppCompatActivity() {
         progressBar.visibility = View.VISIBLE
 
         lifecycleScope.launch {
-            mensajeRepository.getMensajesConversacion(currentUserId!!, otroUsuarioId!!)
+            // ====== CORREGIDO: Ahora usa Room, no Firestore ======
+            mensajeRepository.getMensajesConversacion(conversacionId!!)
                 .collectLatest { mensajes ->
                     progressBar.visibility = View.GONE
 
@@ -130,10 +145,28 @@ class ConversacionActivity : AppCompatActivity() {
                     } else {
                         recyclerMensajes.visibility = View.VISIBLE
                         layoutEmpty.visibility = View.GONE
-                        adapter.submitList(mensajes)
+
+                        // ====== NUEVO: Convertir MensajeLocal a Mensaje para el adapter ======
+                        val mensajesParaAdapter = mensajes.map { mensajeLocal ->
+                            Mensaje(
+                                id = mensajeLocal.id,
+                                remitenteId = mensajeLocal.remitenteId,
+                                remitenteNombre = if (mensajeLocal.esRemitente)
+                                    currentUserNombre ?: "Tú"
+                                else
+                                    otroUsuarioNombre ?: "Otro",
+                                destinatarioId = mensajeLocal.destinatarioId,
+                                texto = mensajeLocal.texto,
+                                fechaEnvio = java.util.Date(mensajeLocal.fechaEnvio),
+                                leido = mensajeLocal.leido,
+                                conversacionId = mensajeLocal.conversacionId
+                            )
+                        }
+
+                        adapter.submitList(mensajesParaAdapter)
 
                         // Scroll al último mensaje
-                        recyclerMensajes.scrollToPosition(mensajes.size - 1)
+                        recyclerMensajes.scrollToPosition(mensajesParaAdapter.size - 1)
                     }
                 }
         }
@@ -152,24 +185,51 @@ class ConversacionActivity : AppCompatActivity() {
             return
         }
 
+        btnEnviar.isEnabled = false
+
         lifecycleScope.launch {
             try {
                 val result = mensajeRepository.enviarMensaje(
-                    remitenteId = currentUserId!!,
-                    remitenteNombre = currentUserNombre ?: "Usuario",
                     destinatarioId = otroUsuarioId!!,
-                    texto = texto
+                    texto = texto,
+                    conversacionId = conversacionId!!,
+                    remitenteNombre = currentUserNombre ?: "Usuario"
                 )
 
                 if (result.isSuccess) {
                     etMensaje.text.clear()
+                    // El mensaje aparecerá automáticamente por el Flow
                 } else {
-                    Toast.makeText(this@ConversacionActivity, "Error al enviar", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@ConversacionActivity,
+                        "Error al enviar: ${result.exceptionOrNull()?.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(this@ConversacionActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@ConversacionActivity,
+                    "Error: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } finally {
+                btnEnviar.isEnabled = true
             }
         }
     }
-}
 
+    /**
+     * Marcar mensajes como leídos al abrir la conversación.
+     */
+    private fun marcarMensajesComoLeidos() {
+        lifecycleScope.launch {
+            mensajeRepository.marcarComoLeidos(conversacionId!!)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Marcar como leídos al volver a la conversación
+        marcarMensajesComoLeidos()
+    }
+}

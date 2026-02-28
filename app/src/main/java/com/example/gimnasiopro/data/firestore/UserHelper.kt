@@ -328,15 +328,15 @@ object UserHelper {
         Log.d(TAG, "🔍 Buscando trainers disponibles...")
 
         return try {
-            // Query con filtro: solo trainers activos
-            // Nota: trainers sin campo 'activo' no aparecerán,
-            // pero es mejor que descargar toda la colección
+            // Query SIN filtro de "activo" (para compatibilidad con trainers existentes)
             val trainersQuery = firestore.collection("trainers")
-                .whereEqualTo("activo", true)
                 .get()
                 .await()
 
             val trainers = trainersQuery.documents.mapNotNull { doc ->
+                // Filtrar solo trainers activos (por defecto true si no existe el campo)
+                val activo = doc.getBoolean("activo") ?: true
+                if (!activo) return@mapNotNull null
 
                 // Verificar si acepta solicitudes (por defecto sí)
                 val aceptaSolicitudes = doc.getBoolean("aceptaSolicitudes") ?: true
@@ -359,6 +359,7 @@ object UserHelper {
             emptyList()
         }
     }
+
 
     /**
      * Actualiza la preferencia de aceptar solicitudes de un trainer.

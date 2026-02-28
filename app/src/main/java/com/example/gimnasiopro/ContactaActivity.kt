@@ -104,7 +104,7 @@ class ContactaActivity : AppCompatActivity() {
 
         cardMiTrainer.setOnClickListener {
             // Abrir conversación con el trainer o ver detalles
-            abrirConversacionConTrainer()
+            mostrarMenuOpcionesTrainer()
         }
 
 
@@ -353,6 +353,131 @@ class ContactaActivity : AppCompatActivity() {
                     "Error: ${e.message}"
                 }
                 Toast.makeText(this@ContactaActivity, errorMsg, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+
+    /**
+     * Mostrar menú de opciones cuando el cliente tiene trainer asignado.
+     */
+    private fun mostrarMenuOpcionesTrainer() {
+        val opciones = arrayOf(
+            "💬 Chat con mi Trainer",
+            "🔍 Buscar Otro Trainer",
+            "❌ Desvincularme"
+        )
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Opciones de Trainer")
+            .setItems(opciones) { _, which ->
+                when (which) {
+                    0 -> abrirConversacionConTrainer()
+                    1 -> abrirBuscarOtroTrainer()
+                    2 -> confirmarDesvinculacion()
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+    /**
+     * Abrir pantalla de búsqueda de trainers (modo consulta).
+     * El cliente puede ver otros trainers sin perder la conexión actual.
+     */
+    private fun abrirBuscarOtroTrainer() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Buscar Otro Trainer")
+            .setMessage("Puedes consultar otros trainers sin perder tu conexión actual.\n\nSi deseas cambiar de trainer, primero debes desvincularte del actual.")
+            .setPositiveButton("Ver Trainers") { _, _ ->
+                val intent = Intent(this, BuscarTrainerActivity::class.java)
+                startActivity(intent)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+    /**
+     * Confirmar desvinculación con el trainer.
+     * Muestra advertencia sobre lo que se perderá.
+     */
+    private fun confirmarDesvinculacion() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("⚠️ Desvincular Trainer")
+            .setMessage(
+                "¿Estás seguro de que quieres desvincularte de tu trainer?\n\n" +
+                        "Se perderá:\n" +
+                        "• Rutinas asignadas por el trainer\n" +
+                        "• Acceso del trainer a tu progreso\n" +
+                        "• Historial de chat (local)\n\n" +
+                        "Podrás buscar otro trainer después."
+            )
+            .setPositiveButton("Sí, Desvincularme") { _, _ ->
+                desvincularTrainer()
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    /**
+     * Desvincula al cliente de su trainer actual.
+     * Limpia la conexión en Firestore y el historial local.
+     */
+    private fun desvincularTrainer() {
+        progressBar.visibility = View.VISIBLE
+
+        lifecycleScope.launch {
+            try {
+                // Obtener conexión actual
+                val conexion = conexionRepository.getTrainerConectado(currentUserId!!).first()
+
+                if (conexion != null && conexion.id != null) {
+                    // Finalizar conexión en Firebase
+                    val result = conexionRepository.finalizarConexion(conexion.id!!)
+
+                    if (result.isSuccess) {
+                        // Opcional: Limpiar historial de chat local con ese trainer
+                        try {
+                            val db = com.example.gimnasiopro.data.GymDatabase.getDatabase(this@ContactaActivity)
+                            val conversacionId = com.example.gimnasiopro.data.firestore.Mensaje.generarConversacionId(
+                                currentUserId!!,
+                                conexion.trainerId
+                            )
+                            db.mensajeDao().eliminarConversacion(conversacionId)
+                        } catch (e: Exception) {
+                            android.util.Log.w("ContactaActivity", "No se pudo limpiar historial de chat: ${e.message}")
+                        }
+
+                        progressBar.visibility = View.GONE
+                        Toast.makeText(
+                            this@ContactaActivity,
+                            "✅ Te has desvinculado correctamente",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        // Recargar UI para mostrar "Buscar Trainer"
+                        setupClienteUI()
+                    } else {
+                        progressBar.visibility = View.GONE
+                        Toast.makeText(
+                            this@ContactaActivity,
+                            "❌ Error: ${result.exceptionOrNull()?.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                } else {
+                    progressBar.visibility = View.GONE
+                    Toast.makeText(
+                        this@ContactaActivity,
+                        "No se encontró conexión activa",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                progressBar.visibility = View.GONE
+                Toast.makeText(
+                    this@ContactaActivity,
+                    "❌ Error: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
