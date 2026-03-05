@@ -32,6 +32,7 @@ class ClienteRepository {
             // VALIDACIÓN: Teléfono único
             val telefonoExistente = clientesCollection
                 .whereEqualTo("telefono", cliente.telefono)
+                .limit(1)  // ← AÑADIDO: Solo necesitamos saber si existe
                 .get()
                 .await()
 
@@ -41,18 +42,32 @@ class ClienteRepository {
                 )
             }
 
+            // ====== MEJORA: Normalizar teléfono para búsquedas ======
+            val telefonoNormalizado = cliente.telefono
+                .replace(Regex("[^0-9]"), "")
+                .let { digitos ->
+                    if (digitos.startsWith("34") && digitos.length > 9) {
+                        digitos.removePrefix("34")
+                    } else {
+                        digitos
+                    }
+                }
+
             // GUARDAR EN clientes/ (todos los datos del cliente)
             val datosCliente = cliente.toClienteMap().toMutableMap()
             datosCliente["tipo"] = "cliente"
+            datosCliente["telefonoNormalizado"] = telefonoNormalizado  // ← NUEVO
 
             clientesCollection
                 .document(cliente.userId)
                 .set(datosCliente)
                 .await()
 
+            android.util.Log.d("ClienteRepo", "✅ Cliente registrado: ${cliente.userId}")
             Result.success(Unit)
 
         } catch (e: Exception) {
+            android.util.Log.e("ClienteRepo", "❌ Error registrando cliente: ${e.message}")
             Result.failure(e)
         }
     }

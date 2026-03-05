@@ -44,44 +44,35 @@ object UserHelper {
 
     /**
      * Obtiene la información de cualquier usuario por ID.
-     * Busca primero en clientes, luego en trainers.
+     * Busca PRIMERO en trainers (prioridad), luego en clientes.
+     *
+     * LÓGICA:
+     * 1. Si existe en trainers CON nombre → es TRAINER
+     * 2. Si existe en clientes CON nombre → es CLIENTE
+     * 3. Si no existe o documentos vacíos → null
      */
     suspend fun getUserInfo(userId: String): UserInfo? {
         Log.d(TAG, "🔍 Buscando usuario: $userId")
 
-        // Buscar en clientes primero
-        try {
-            val clienteDoc = firestore.collection("clientes").document(userId).get().await()
-            if (clienteDoc.exists()) {
-                Log.d(TAG, "✅ Usuario $userId encontrado como CLIENTE")
-                return UserInfo(
-                    userId = userId,
-                    tipo = "cliente",
-                    nombre = clienteDoc.getString("nombre"),
-                    email = clienteDoc.getString("email"),
-                    telefono = clienteDoc.getString("telefono"),
-                    documento = clienteDoc
-                )
-            } else {
-                Log.d(TAG, "📄 Documento clientes/$userId NO existe")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ Error buscando en clientes: ${e.message}")
-        }
-
-        // Si no está en clientes, buscar en trainers
+        // PRIORIDAD 1: Buscar en TRAINERS primero
         try {
             val trainerDoc = firestore.collection("trainers").document(userId).get().await()
             if (trainerDoc.exists()) {
-                Log.d(TAG, "✅ Usuario $userId encontrado como TRAINER")
-                return UserInfo(
-                    userId = userId,
-                    tipo = "trainer",
-                    nombre = trainerDoc.getString("nombre"),
-                    email = trainerDoc.getString("email"),
-                    telefono = trainerDoc.getString("telefono"),
-                    documento = trainerDoc
-                )
+                val nombre = trainerDoc.getString("nombre")
+                // Validar que el documento tenga nombre válido (no esté vacío)
+                if (!nombre.isNullOrBlank()) {
+                    Log.d(TAG, "✅ Usuario $userId identificado como TRAINER")
+                    return UserInfo(
+                        userId = userId,
+                        tipo = "trainer",
+                        nombre = nombre,
+                        email = trainerDoc.getString("email"),
+                        telefono = trainerDoc.getString("telefono"),
+                        documento = trainerDoc
+                    )
+                } else {
+                    Log.d(TAG, "⚠️ Documento trainers/$userId existe pero sin nombre válido")
+                }
             } else {
                 Log.d(TAG, "📄 Documento trainers/$userId NO existe")
             }
@@ -89,7 +80,33 @@ object UserHelper {
             Log.e(TAG, "❌ Error buscando en trainers: ${e.message}")
         }
 
-        Log.w(TAG, "⚠️ Usuario $userId NO encontrado en ninguna colección")
+        // PRIORIDAD 2: Si no es trainer, buscar en CLIENTES
+        try {
+            val clienteDoc = firestore.collection("clientes").document(userId).get().await()
+            if (clienteDoc.exists()) {
+                val nombre = clienteDoc.getString("nombre")
+                // Validar que el documento tenga nombre válido (no esté vacío)
+                if (!nombre.isNullOrBlank()) {
+                    Log.d(TAG, "✅ Usuario $userId identificado como CLIENTE")
+                    return UserInfo(
+                        userId = userId,
+                        tipo = "cliente",
+                        nombre = nombre,
+                        email = clienteDoc.getString("email"),
+                        telefono = clienteDoc.getString("telefono"),
+                        documento = clienteDoc
+                    )
+                } else {
+                    Log.d(TAG, "⚠️ Documento clientes/$userId existe pero sin nombre válido")
+                }
+            } else {
+                Log.d(TAG, "📄 Documento clientes/$userId NO existe")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error buscando en clientes: ${e.message}")
+        }
+
+        Log.w(TAG, "⚠️ Usuario $userId NO encontrado en ninguna colección o documentos vacíos")
         return null
     }
 

@@ -66,7 +66,7 @@ class RegisterTrainerViewModel(
                     fotoUrl = fotoUrl,
                     certificadoUrl = certificadoUrl,
                     tarifa = tarifa,
-                    verificado = false,  // Siempre false, admin debe aprobar
+                    verificado = true,
                     emailVerificado = emailVerificado,
                     numeroClientes = 0,
                     fechaRegistro = System.currentTimeMillis()

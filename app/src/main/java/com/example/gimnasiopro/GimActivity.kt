@@ -51,8 +51,36 @@ class GimActivity : AppCompatActivity() {
         setupCalendar()
         setupButtons()
 
+        // ✅ Sincronizar rutinas con Firebase al iniciar
+        lifecycleScope.launch {
+            sincronizarRutinas()
+        }
+
         // ✅ NUEVO: Cargar días con rutina
         cargarDiasConRutina()
+    }
+
+    /**
+     * Sincroniza las rutinas con Firebase automáticamente.
+     */
+    private suspend fun sincronizarRutinas() {
+        try {
+            val app = application as GimnasioproApplication
+            val rutinaHibridoRepo = app.rutinaRepositoryHibrido
+
+            android.util.Log.d("GimActivity", "🔄 Sincronizando rutinas con Firebase...")
+            val resultado = rutinaHibridoRepo.sincronizarRutinasConFirebase()
+
+            resultado.onSuccess { cantidadSincronizada ->
+                if (cantidadSincronizada > 0) {
+                    android.util.Log.d("GimActivity", "✅ $cantidadSincronizada rutinas sincronizadas")
+                }
+            }.onFailure { error ->
+                android.util.Log.w("GimActivity", "⚠️ Error en sincronización: ${error.message}")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("GimActivity", "❌ Error sincronizando rutinas: ${e.message}", e)
+        }
     }
 
     private fun setupBackButton() {

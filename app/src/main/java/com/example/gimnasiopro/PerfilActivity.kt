@@ -1,5 +1,6 @@
 package com.example.gimnasiopro
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.*
@@ -309,46 +310,102 @@ class PerfilActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                // Eliminar de la colección específica (trainers o clientes)
+                // PASO 1: Eliminar de Firestore primero
                 when (tipoUsuario) {
                     "trainer" -> {
                         firestore.collection("trainers").document(userId).delete().await()
+                        android.util.Log.d("PerfilActivity", "✅ Trainer eliminado de Firestore")
                     }
                     "cliente" -> {
                         firestore.collection("clientes").document(userId).delete().await()
+                        android.util.Log.d("PerfilActivity", "✅ Cliente eliminado de Firestore")
                     }
                 }
 
-                // Eliminar la cuenta de Firebase Auth
-                auth.currentUser?.delete()?.await()
+                // PASO 2: Intentar eliminar de Firebase Authentication
+                try {
+                    auth.currentUser?.delete()?.await()
 
-                runOnUiThread {
-                    Toast.makeText(this@PerfilActivity, "Cuenta eliminada correctamente", Toast.LENGTH_LONG).show()
-                    // Volver a MainActivity
-                    finish()
+                    // ✅ ÉXITO TOTAL - Eliminado de Firestore Y Authentication
+                    runOnUiThread {
+                        Toast.makeText(
+                            this@PerfilActivity,
+                            "✅ Cuenta eliminada completamente",
+                            Toast.LENGTH_LONG
+                        ).show()
+
+                        // Volver a MainActivity (pantalla de login)
+                        val intent = Intent(this@PerfilActivity, MainActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                        finish()
+                    }
+
+                } catch (authError: Exception) {
+                    android.util.Log.w("PerfilActivity", "⚠️ No se pudo eliminar de Auth: ${authError.message}")
+
+                    // ⚠️ ÉXITO PARCIAL - Eliminado de Firestore pero NO de Authentication
+                    runOnUiThread {
+                        btnEliminarCuenta.isEnabled = true
+                        btnEliminarCuenta.text = "ELIMINAR MI CUENTA"
+
+                        // Verificar si es error de reautenticación
+                        if (authError.message?.contains("requires-recent-login") == true ||
+                            authError.message?.contains("recent") == true) {
+
+                            androidx.appcompat.app.AlertDialog.Builder(this@PerfilActivity)
+                                .setTitle("Reautenticación necesaria")
+                                .setMessage(
+                                    "✅ Tus datos se han eliminado de la base de datos.\n\n" +
+                                            "⚠️ Para eliminar completamente tu cuenta de autenticación:\n\n" +
+                                            "1. Cierra sesión\n" +
+                                            "2. Vuelve a iniciar sesión\n" +
+                                            "3. Ve a Perfil → Eliminar cuenta de nuevo\n\n" +
+                                            "Esto es una medida de seguridad de Firebase.\n\n" +
+                                            "IMPORTANTE: Tu perfil de trainer/cliente YA fue eliminado. " +
+                                            "Solo queda limpiar la cuenta de email."
+                                )
+                                .setPositiveButton("Cerrar sesión ahora") { _, _ ->
+                                    auth.signOut()
+
+                                    // Limpiar badge de notificaciones
+                                    com.example.gimnasiopro.utils.NotificationBadgeManager.limpiarTodo(this@PerfilActivity)
+
+                                    val intent = Intent(this@PerfilActivity, MainActivity::class.java)
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                    startActivity(intent)
+                                    finish()
+                                }
+                                .setNegativeButton("Continuar sin cerrar sesión", null)
+                                .show()
+                        } else {
+                            // Error diferente
+                            Toast.makeText(
+                                this@PerfilActivity,
+                                "⚠️ Datos eliminados. Error de autenticación: ${authError.message}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
                 }
-            } catch (e: Exception) {
+
+            } catch (firestoreError: Exception) {
+                // ❌ ERROR TOTAL - No se pudo eliminar de Firestore
+                android.util.Log.e("PerfilActivity", "❌ Error eliminando de Firestore: ${firestoreError.message}")
+
                 runOnUiThread {
                     btnEliminarCuenta.isEnabled = true
                     btnEliminarCuenta.text = "ELIMINAR MI CUENTA"
 
-                    // Si falla por reautenticación necesaria
-                    if (e.message?.contains("recent") == true) {
-                        AlertDialog.Builder(this@PerfilActivity)
-                            .setTitle("Reautenticación necesaria")
-                            .setMessage("Por seguridad, necesitas cerrar sesión e iniciar sesión de nuevo antes de eliminar tu cuenta.")
-                            .setPositiveButton("Cerrar sesión") { _, _ ->
-                                auth.signOut()
-                                finish()
-                            }
-                            .setNegativeButton("Cancelar", null)
-                            .show()
-                    } else {
-                        Toast.makeText(this@PerfilActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-                    }
+                    Toast.makeText(
+                        this@PerfilActivity,
+                        "❌ Error al eliminar cuenta: ${firestoreError.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
         }
     }
+
 }
 

@@ -90,7 +90,37 @@ class RutinasActivity : AppCompatActivity() {
                 actualizarRutinasDesdeFirestore()
             }
         } else {
-            actualizarRutinas()
+            // Modo normal: sincronizar con Firebase antes de cargar
+            lifecycleScope.launch {
+                sincronizarRutinasYActualizar()
+            }
+        }
+    }
+
+    /**
+     * Sincroniza rutinas con Firebase y actualiza la UI.
+     * SOLO para modo normal (cliente/trainer viendo sus propias rutinas).
+     */
+    private suspend fun sincronizarRutinasYActualizar() {
+        try {
+            val app = application as GimnasioproApplication
+            val rutinaHibridoRepo = app.rutinaRepositoryHibrido
+
+            Log.d(TAG, "🔄 Sincronizando rutinas con Firebase...")
+            val resultado = rutinaHibridoRepo.sincronizarRutinasConFirebase()
+
+            resultado.onSuccess { cantidadSincronizada ->
+                if (cantidadSincronizada > 0) {
+                    Log.d(TAG, "✅ $cantidadSincronizada rutinas sincronizadas")
+                }
+            }.onFailure { error ->
+                Log.w(TAG, "⚠️ Error en sincronización: ${error.message}")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error sincronizando rutinas: ${e.message}", e)
+        } finally {
+            // Siempre actualizar UI (aunque falle la sincronización)
+            runOnUiThread { actualizarRutinas() }
         }
     }
 
@@ -615,6 +645,9 @@ class RutinasActivity : AppCompatActivity() {
         try {
             val trainerId = FirebaseAuth.getInstance().currentUser?.uid ?: return
             val app = application as GimnasioproApplication
+
+            Log.d(TAG, "🔄 Cargando rutinas del cliente $clienteId (trainer: $trainerId)...")
+
             val rutinasResult = app.rutinaRepositoryHibrido.getRutinasDeCliente(clienteId!!, trainerId)
 
             rutinasResult.fold(
@@ -622,10 +655,13 @@ class RutinasActivity : AppCompatActivity() {
                     rutinasFirestoreCache = rutinas.associateBy { it.numeroRutina }
                     cantidadRutinas = if (rutinas.isEmpty()) 10 else maxOf(10, rutinas.maxOf { it.numeroRutina })
                     Log.d(TAG, "✅ Cargadas ${rutinas.size} rutinas del cliente $clienteId")
+                    rutinas.forEach { rutina ->
+                        Log.d(TAG, "  - Rutina ${rutina.numeroRutina}: ${rutina.nombre} (${rutina.ejercicioIds.size} ejercicios)")
+                    }
                     runOnUiThread { actualizarUIRutinas() }
                 },
                 onFailure = { error ->
-                    Log.e(TAG, "❌ Error cargando rutinas del cliente: ${error.message}")
+                    Log.e(TAG, "❌ Error cargando rutinas del cliente: ${error.message}", error)
                     cantidadRutinas = 10
                     runOnUiThread {
                         actualizarUIRutinas()

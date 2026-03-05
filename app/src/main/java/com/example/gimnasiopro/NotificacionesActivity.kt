@@ -504,6 +504,17 @@ class NotificacionesActivity : AppCompatActivity() {
 
                         val result = notificacionRepository.eliminarNotificacion(notificacion.id)
                         if (result.isSuccess) {
+                            // Cancelar notificación del sistema
+                            com.example.gimnasiopro.presentation.NotificacionLocalService.cancelarNotificacion(
+                                this@NotificacionesActivity,
+                                notificacion.id
+                            )
+
+                            // Si era una notificación no leída, decrementar el badge
+                            if (!notificacion.leida) {
+                                com.example.gimnasiopro.utils.NotificationBadgeManager.decrementarBadge(this@NotificacionesActivity)
+                            }
+
                             android.util.Log.d("NotificacionesActivity", "✅ Notificación eliminada correctamente")
                             Toast.makeText(this@NotificacionesActivity, "Notificación eliminada", Toast.LENGTH_SHORT).show()
                         } else {
@@ -533,9 +544,37 @@ class NotificacionesActivity : AppCompatActivity() {
         val userId = currentUserId ?: return
 
         lifecycleScope.launch {
-            val result = notificacionRepository.marcarTodasComoLeidas(userId)
-            if (result.isSuccess) {
-                Toast.makeText(this@NotificacionesActivity, "Todas marcadas como leídas", Toast.LENGTH_SHORT).show()
+            try {
+                // 1. Marcar notificaciones de Firestore como leídas
+                val result = notificacionRepository.marcarTodasComoLeidas(userId)
+
+                // 2. Marcar TODOS los mensajes de Room como leídos (esto actualiza el badge)
+                val db = com.example.gimnasiopro.data.GymDatabase.getDatabase(this@NotificacionesActivity)
+                val mensajeRepository = com.example.gimnasiopro.data.firestore.MensajeRepository(db.mensajeDao())
+                mensajeRepository.marcarTodosLosMensajesComoLeidos()
+
+                // 3. Cancelar todas las notificaciones del sistema
+                com.example.gimnasiopro.presentation.NotificacionLocalService.cancelarTodas(this@NotificacionesActivity)
+
+                // 4. Limpiar badge del ícono de la app
+                com.example.gimnasiopro.utils.NotificationBadgeManager.limpiarBadge(this@NotificacionesActivity)
+
+                android.util.Log.d("NotificacionesActivity", "✅ Notificaciones y mensajes marcados como leídos, badge limpiado")
+
+                if (result.isSuccess) {
+                    Toast.makeText(
+                        this@NotificacionesActivity,
+                        "Todas marcadas como leídas",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("NotificacionesActivity", "❌ Error marcando como leídas: ${e.message}")
+                Toast.makeText(
+                    this@NotificacionesActivity,
+                    "Error: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }

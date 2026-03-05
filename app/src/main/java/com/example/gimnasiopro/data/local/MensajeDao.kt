@@ -38,6 +38,13 @@ interface MensajeDao {
     suspend fun marcarTodosComoLeidos(conversacionId: String)
 
     /**
+     * Marcar TODOS los mensajes recibidos (de todas las conversaciones) como leídos.
+     * Para usar al pulsar "marcar todas como leídas" en NotificacionesActivity.
+     */
+    @Query("UPDATE mensajes_locales SET leido = 1 WHERE esRemitente = 0")
+    suspend fun marcarTodosLosMensajesComoLeidos()
+
+    /**
      * Marcar mensaje como entregado.
      */
     @Query("UPDATE mensajes_locales SET entregado = 1 WHERE id = :mensajeId")

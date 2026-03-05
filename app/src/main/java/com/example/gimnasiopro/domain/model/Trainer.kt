@@ -20,7 +20,7 @@ data class Trainer(
     val fotoUrl: String = "",          // URL de la foto de perfil
     val certificadoUrl: String = "",   // URL del certificado de entrenador
     val tarifa: Double = 0.0,          // Tarifa por sesión en euros
-    val verificado: Boolean = false,   // Aprobado por admin
+    val verificado: Boolean = true,    // SIEMPRE true - perfil revisable pero acceso inmediato
     val numeroClientes: Int = 0,       // Contador de clientes
     val clientesActivos: List<String> = emptyList(), // IDs de clientes asignados
 
@@ -86,7 +86,7 @@ data class Trainer(
                 fotoUrl = map["fotoUrl"] as? String ?: "",
                 certificadoUrl = map["certificadoUrl"] as? String ?: "",
                 tarifa = (map["tarifa"] as? Number)?.toDouble() ?: 0.0,
-                verificado = map["verificado"] as? Boolean ?: false,
+                verificado = map["verificado"] as? Boolean ?: true,  // SIEMPRE true por defecto
                 emailVerificado = map["emailVerificado"] as? Boolean ?: false,
                 numeroClientes = (map["numeroClientes"] as? Number)?.toInt() ?: 0,
                 clientesActivos = @Suppress("UNCHECKED_CAST") (map["clientesActivos"] as? List<String>) ?: emptyList(),

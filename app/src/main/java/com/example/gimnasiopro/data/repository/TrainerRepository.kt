@@ -27,11 +27,21 @@ class TrainerRepository {
      * - users/ (datos comunes)
      * - trainers/ (datos específicos)
      */
+    /**
+     * Registrar un nuevo trainer
+     *
+     * Validaciones:
+     * - DNI único (crítico para identidad)
+     * - Teléfono único (evita duplicados)
+     *
+     * MANTIENE las validaciones porque trainers son pocos y la identidad es importante.
+     */
     suspend fun registerTrainer(trainer: Trainer): Result<Unit> {
         return try {
             // VALIDACIÓN 1: DNI único
             val dniExistente = trainersCollection
                 .whereEqualTo("dni", trainer.dni)
+                .limit(1)  // ← AÑADIDO: Solo necesitamos saber si existe (optimización menor)
                 .get()
                 .await()
 
@@ -44,6 +54,7 @@ class TrainerRepository {
             // VALIDACIÓN 2: Teléfono único
             val telefonoExistente = trainersCollection
                 .whereEqualTo("telefono", trainer.telefono)
+                .limit(1)  // ← AÑADIDO: Solo necesitamos saber si existe (optimización menor)
                 .get()
                 .await()
 
@@ -53,18 +64,35 @@ class TrainerRepository {
                 )
             }
 
+            // ====== MEJORA: Normalizar teléfono para búsquedas ======
+            val telefonoNormalizado = trainer.telefono
+                .replace(Regex("[^0-9]"), "")
+                .let { digitos ->
+                    if (digitos.startsWith("34") && digitos.length > 9) {
+                        digitos.removePrefix("34")
+                    } else {
+                        digitos
+                    }
+                }
+
             // GUARDAR EN trainers/ (todos los datos del trainer)
             val datosTrainer = trainer.toTrainerMap().toMutableMap()
             datosTrainer["tipo"] = "trainer"
+            datosTrainer["telefonoNormalizado"] = telefonoNormalizado  // ← NUEVO
+            datosTrainer["activo"] = true  // ← NUEVO: Para getTrainersDisponibles()
+            datosTrainer["aceptaSolicitudes"] = true  // ← NUEVO: Por defecto acepta clientes
+            datosTrainer["verificado"] = true  // ← FORZADO: SIEMPRE true al registrarse
 
             trainersCollection
                 .document(trainer.userId)
                 .set(datosTrainer)
                 .await()
 
+            android.util.Log.d("TrainerRepo", "✅ Trainer registrado: ${trainer.userId}")
             Result.success(Unit)
 
         } catch (e: Exception) {
+            android.util.Log.e("TrainerRepo", "❌ Error registrando trainer: ${e.message}")
             Result.failure(e)
         }
     }

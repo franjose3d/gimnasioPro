@@ -185,16 +185,25 @@ class DetalleRutinaActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val trainerId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+                Log.d(TAG, "🔄 Cargando rutina $numeroRutina del cliente $clienteId (trainer: $trainerId)...")
+
                 val rutina = rutinaRepository.getRutinaDeClientePorNumero(clienteId!!, trainerId, numeroRutina)
 
-                if (rutina == null || rutina.ejercicioIds.isEmpty()) {
+                if (rutina == null) {
+                    Log.w(TAG, "⚠️ Rutina $numeroRutina no encontrada para el cliente $clienteId")
+                    mostrarRutinaVacia()
+                } else if (rutina.ejercicioIds.isEmpty()) {
+                    Log.w(TAG, "⚠️ Rutina $numeroRutina sin ejercicios")
                     mostrarRutinaVacia()
                 } else {
                     // Convertir IDs de String a Long para el repositorio de ejercicios
+                    Log.d(TAG, "✅ Rutina encontrada: ${rutina.nombre} con ${rutina.ejercicioIds.size} ejercicios")
                     val ejercicioIds = rutina.ejercicioIds.mapNotNull { it.toLongOrNull() }
                     if (ejercicioIds.isEmpty()) {
+                        Log.w(TAG, "⚠️ No se pudieron convertir los IDs de ejercicios")
                         mostrarRutinaVacia()
                     } else {
+                        Log.d(TAG, "🏋️ Cargando ${ejercicioIds.size} ejercicios...")
                         cargarEjercicios(ejercicioIds)
                     }
                 }

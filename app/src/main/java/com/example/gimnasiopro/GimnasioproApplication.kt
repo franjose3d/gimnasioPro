@@ -104,10 +104,34 @@ class GimnasioproApplication : Application() {
         super.onCreate()
         Log.d(TAG, "Application onCreate - iniciando inicialización híbrida")
 
-        // 1. Inicializar la base de datos local PRIMERO (para cache inmediato)
+        // 0. Inicializar canales de notificación (debe hacerse antes de cualquier notificación)
+        try {
+            com.example.gimnasiopro.presentation.NotificacionLocalService.inicializarCanales(this)
+            Log.d(TAG, "✅ Canales de notificación inicializados")
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error inicializando canales: ${e.message}")
+        }
+
+        // 1. Restaurar badge desde SharedPreferences al iniciar la app
+        try {
+            val badgeCount = com.example.gimnasiopro.utils.NotificationBadgeManager.obtenerContador(this)
+            if (badgeCount > 0) {
+                // Reaplica el badge que teníamos guardado
+                com.example.gimnasiopro.utils.NotificationBadgeManager.setBadgeCount(this, badgeCount)
+                Log.d(TAG, "🔔 Badge restaurado al iniciar: $badgeCount notificaciones pendientes")
+            }
+
+            // Diagnóstico: Verificar compatibilidad con el launcher
+            com.example.gimnasiopro.utils.NotificationBadgeManager.diagnosticar(this)
+
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error restaurando badge: ${e.message}")
+        }
+
+        // 2. Inicializar la base de datos local PRIMERO (para cache inmediato)
         DatabaseInitializer.initializeIfNeeded(this, localEjercicioRepository, rutinaRepository)
 
-        // 2. Inicializar Firestore en background (no bloquea el inicio de la app)
+        // 3. Inicializar Firestore en background (no bloquea el inicio de la app)
         applicationScope.launch {
             try {
                 val result = firestoreInitializer.inicializarEjercicios()

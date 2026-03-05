@@ -134,6 +134,21 @@ class MensajeRepository(
     }
 
     /**
+     * Marcar TODOS los mensajes recibidos (de todas las conversaciones) como leídos.
+     * Se usa al pulsar "Marcar todas como leídas" en NotificacionesActivity.
+     */
+    suspend fun marcarTodosLosMensajesComoLeidos(): Result<Unit> {
+        return try {
+            mensajeDao.marcarTodosLosMensajesComoLeidos()
+            Log.d(TAG, "✅ Todos los mensajes marcados como leídos")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error marcando todos los mensajes como leídos: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    /**
      * Contar mensajes no leídos de una conversación.
      */
     fun contarNoLeidos(conversacionId: String): Flow<Int> {

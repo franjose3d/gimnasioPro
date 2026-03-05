@@ -87,6 +87,9 @@ dependencies {
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.11.1")
 
+    // ShortcutBadger - Badge en el ícono de la app
+    implementation("me.leolin:ShortcutBadger:1.1.22@aar")
+
     // ====== FIREBASE (BoM actualizado - sin versiones explícitas) ======
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-auth-ktx")

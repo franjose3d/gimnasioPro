@@ -9,6 +9,7 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.gimnasiopro.R
+import com.example.gimnasiopro.utils.NotificationBadgeManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -85,19 +86,46 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             ).apply {
                 description = "Notificaciones de mensajes"
                 enableVibration(true)
+                setShowBadge(true) // Habilitar badge en el ícono
             }
             notificationManager.createNotificationChannel(channel)
         }
 
+        // Intent para abrir notificaciones cuando se toca
+        val intent = Intent(this, Class.forName("com.example.gimnasiopro.NotificacionesActivity"))
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Incrementar contador de badge
+        Log.d(TAG, "========================================")
+        Log.d(TAG, "🔔 INCREMENTANDO BADGE desde FCM...")
+        Log.d(TAG, "🔔 Contador ANTES: ${NotificationBadgeManager.obtenerContador(this)}")
+        NotificationBadgeManager.incrementarBadge(this)
+        val badgeCount = NotificationBadgeManager.obtenerContador(this)
+        Log.d(TAG, "🔔 Contador DESPUÉS: $badgeCount")
+        Log.d(TAG, "========================================")
+
         // Crear notificación
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_email) // Icono temporal
+            .setSmallIcon(R.drawable.ic_notification) // Usar icono de la app
             .setContentTitle(titulo)
             .setContentText(mensaje)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .setNumber(badgeCount) // Mostrar número en la notificación
+            .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL) // Tipo de badge
             .build()
 
-        notificationManager.notify(System.currentTimeMillis().toInt(), notification)
+        // Usar un ID único para cada notificación
+        val notificationId = System.currentTimeMillis().toInt()
+        notificationManager.notify(notificationId, notification)
+
+        Log.d(TAG, "🔔 Notificación mostrada con badge: $badgeCount")
     }
 }

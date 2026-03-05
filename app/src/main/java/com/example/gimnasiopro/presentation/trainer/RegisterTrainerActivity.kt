@@ -486,15 +486,24 @@ class RegisterTrainerActivity : AppCompatActivity() {
      */
     private fun mostrarExito() {
         androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("✅ Cuenta creada")
+            .setTitle("✅ Registro exitoso")
             .setMessage(
                 "Tu cuenta ha sido creada correctamente.\n\n" +
-                        "📧 Revisa tu email (${etEmail.text}) para verificarlo.\n\n" +
-                        "Tu perfil será revisado en 24-48h."
+
+                        "📧 VERIFICA TU EMAIL\n" +
+                        "Revisa tu correo (${etEmail.text}) y haz click en el enlace de verificación.\n\n" +
+
+                        "✅ ACCESO COMPLETO\n" +
+                        "Ya puedes usar todas las funcionalidades de la aplicación.\n\n" +
+
+                        "⚠️ IMPORTANTE\n" +
+                        "Tu perfil y documentación serán revisados. Tu cuenta puede ser anulada si se detecta falsedad o incumplimiento de la legalidad en los documentos presentados.\n\n" +
+
+                        "¡Bienvenido a GimnasioPro!"
             )
-            .setPositiveButton("Verificar ahora") { _, _ ->
-                // Ir a pantalla de verificación
-                val intent = Intent(this, VerificarEmailActivity::class.java)
+            .setPositiveButton("Comenzar") { _, _ ->
+                // Ir a pantalla de verificación de email
+                val intent = Intent(this, com.example.gimnasiopro.presentation.auth.VerificarEmailActivity::class.java)
                 startActivity(intent)
                 finish()
             }

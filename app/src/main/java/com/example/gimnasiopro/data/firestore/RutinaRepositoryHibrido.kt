@@ -57,6 +57,95 @@ class RutinaRepositoryHibrido(
     fun getAllRutinas(): Flow<List<Rutina>> = localRepository.getAllRutinas()
 
     /**
+     * Sincronizar rutinas desde Firebase a Room (descarga inicial).
+     * Se ejecuta al iniciar la app para obtener las rutinas más recientes.
+     *
+     * ESTRATEGIA:
+     * 1. Descarga todas las rutinas de Firebase
+     * 2. Compara con las locales (por fechaModificacion)
+     * 3. Actualiza Room solo si Firebase tiene versión más reciente
+     * 4. Si hay rutinas en Room que no están en Firebase, las sube
+     */
+    suspend fun sincronizarRutinasConFirebase(): Result<Int> {
+        val userId = auth.currentUser?.uid ?: return Result.failure(
+            IllegalStateException("Usuario no autenticado")
+        )
+
+        // Si estamos en modo entrenamiento, no sincronizar
+        if (!SyncManager.isSyncEnabled) {
+            Log.d(TAG, "⏸️ Sincronización deshabilitada (modo entrenamiento)")
+            return Result.success(0)
+        }
+
+        return try {
+            Log.d(TAG, "🔄 Iniciando sincronización bidireccional de rutinas...")
+
+            val tipoUsuario = obtenerTipoUsuario(userId)
+            val rutinasCollection = getRutinasCollection(userId, tipoUsuario)
+
+            // 1. Descargar rutinas de Firebase
+            val snapshot = rutinasCollection.get().await()
+            val rutinasFirebase = snapshot.documents
+                .mapNotNull { RutinaFirestore.fromDocument(it) }
+                .filter { it.numeroRutina in 1..RutinaFirestore.MAX_RUTINAS }
+
+            Log.d(TAG, "📥 Descargadas ${rutinasFirebase.size} rutinas de Firebase")
+
+            // 2. Obtener rutinas locales
+            val rutinasLocales = localRepository.getAllRutinas().first()
+                .associateBy { it.numeroRutina }
+
+            var actualizadas = 0
+            var subidas = 0
+
+            // 3. Actualizar Room con rutinas de Firebase si son más recientes
+            rutinasFirebase.forEach { rutinaFb ->
+                val rutinaLocal = rutinasLocales[rutinaFb.numeroRutina]
+
+                if (rutinaLocal == null) {
+                    // No existe en local, descargarla
+                    val rutinaParaRoom = Rutina(
+                        numeroRutina = rutinaFb.numeroRutina,
+                        nombre = rutinaFb.nombre,
+                        ejercicioIds = rutinaFb.ejercicioIds.mapNotNull { it.toIntOrNull() },
+                        fechaCreacion = rutinaFb.fechaCreacion.time,
+                        fechaModificacion = rutinaFb.fechaModificacion.time
+                    )
+                    localRepository.insertRutina(rutinaParaRoom)
+                    actualizadas++
+                    Log.d(TAG, "⬇️ Rutina ${rutinaFb.numeroRutina} descargada a Room")
+                } else if (rutinaFb.fechaModificacion.time > rutinaLocal.fechaModificacion) {
+                    // Firebase tiene versión más reciente
+                    val rutinaActualizada = rutinaLocal.copy(
+                        nombre = rutinaFb.nombre,
+                        ejercicioIds = rutinaFb.ejercicioIds.mapNotNull { it.toIntOrNull() },
+                        fechaModificacion = rutinaFb.fechaModificacion.time
+                    )
+                    localRepository.insertRutina(rutinaActualizada)
+                    actualizadas++
+                    Log.d(TAG, "🔄 Rutina ${rutinaFb.numeroRutina} actualizada desde Firebase")
+                }
+            }
+
+            // 4. Subir rutinas locales que no están en Firebase
+            val numerosEnFirebase = rutinasFirebase.map { it.numeroRutina }.toSet()
+            rutinasLocales.values.forEach { rutinaLocal ->
+                if (rutinaLocal.numeroRutina !in numerosEnFirebase && rutinaLocal.ejercicioIds.isNotEmpty()) {
+                    sincronizarRutinaConFirebase(rutinaLocal)
+                    subidas++
+                    Log.d(TAG, "⬆️ Rutina ${rutinaLocal.numeroRutina} subida a Firebase")
+                }
+            }
+
+            Log.d(TAG, "✅ Sincronización completada: $actualizadas actualizadas, $subidas subidas")
+            Result.success(actualizadas + subidas)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error en sincronización bidireccional: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
      * Obtener una rutina por su número.
      */
     fun getRutinaByNumero(numeroRutina: Int): Flow<Rutina?> =
@@ -659,6 +748,7 @@ class RutinaRepositoryHibrido(
      */
     private suspend fun verificarPermisoTrainer(trainerId: String, clienteId: String): Boolean {
         return try {
+            // Verificar en la colección de conexiones
             val snapshot = firestore.collection("conexiones")
                 .whereEqualTo("trainerId", trainerId)
                 .whereEqualTo("clienteId", clienteId)
@@ -666,8 +756,17 @@ class RutinaRepositoryHibrido(
                 .get()
                 .await()
 
-            snapshot.documents.isNotEmpty()
+            val tienePermiso = snapshot.documents.isNotEmpty()
+
+            if (tienePermiso) {
+                Log.d(TAG, "✅ Trainer $trainerId tiene permiso para acceder al cliente $clienteId")
+            } else {
+                Log.w(TAG, "⚠️ No se encontró conexión activa entre trainer $trainerId y cliente $clienteId")
+            }
+
+            tienePermiso
         } catch (e: Exception) {
+            Log.e(TAG, "❌ Error verificando permiso trainer-cliente: ${e.message}", e)
             false
         }
     }

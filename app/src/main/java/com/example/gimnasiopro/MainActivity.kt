@@ -171,18 +171,25 @@ class MainActivity : AppCompatActivity() {
                         val prefs = getSharedPreferences("sync_prefs", MODE_PRIVATE)
                         val ultimaSync = prefs.getLong("ultima_sync_rutinas", 0L)
                         val ahora = System.currentTimeMillis()
-                        val unaHora = 60 * 60 * 1000L
+                        val cincuentaMinutos = 50 * 60 * 1000L // 50 minutos para evitar consumo excesivo
 
-                        // Solo sincronizar si pasó más de 1 hora desde la última vez
-                        if (ahora - ultimaSync > unaHora) {
-                            val hibrido = RutinaRepositoryHibrido(app.rutinaRepository)
-                            val result = hibrido.descargarRutinasDeFirebase()
-                            if (result.isSuccess) {
+                        // Solo sincronizar si pasó más de 50 minutos desde la última vez
+                        if (ahora - ultimaSync > cincuentaMinutos) {
+                            android.util.Log.d("MainActivity", "🔄 Iniciando sincronización bidireccional de rutinas...")
+                            val result = app.rutinaRepositoryHibrido.sincronizarRutinasConFirebase()
+                            result.onSuccess { cantidadSincronizada ->
                                 prefs.edit().putLong("ultima_sync_rutinas", ahora).apply()
-                                android.util.Log.d("MainActivity", "✅ Rutinas sincronizadas desde Firebase")
+                                if (cantidadSincronizada > 0) {
+                                    android.util.Log.d("MainActivity", "✅ $cantidadSincronizada rutinas sincronizadas")
+                                } else {
+                                    android.util.Log.d("MainActivity", "✅ Rutinas sincronizadas (sin cambios)")
+                                }
+                            }.onFailure { error ->
+                                android.util.Log.w("MainActivity", "⚠️ Error sincronizando rutinas: ${error.message}")
                             }
                         } else {
-                            android.util.Log.d("MainActivity", "⏭️ Sync omitida, datos recientes")
+                            val minutosRestantes = ((cincuentaMinutos - (ahora - ultimaSync)) / (60 * 1000)).toInt()
+                            android.util.Log.d("MainActivity", "⏭️ Sync omitida, datos recientes (próxima sync en $minutosRestantes min)")
                         }
                         rutinasSincronizadas = true
                     } catch (e: Exception) {
@@ -226,40 +233,49 @@ class MainActivity : AppCompatActivity() {
         val tipoGuardado = prefs.getString("tipo_usuario_$uid", null)
 
         // Si ya sabemos el tipo, solo hacemos 1 lectura
-        val coleccion = when (tipoGuardado) {
-            "trainer" -> "trainers"
-            "cliente" -> "clientes"
-            else -> "clientes" // primera vez, intentamos clientes primero
+        if (tipoGuardado != null) {
+            val coleccion = if (tipoGuardado == "trainer") "trainers" else "clientes"
+            firestore.collection(coleccion).document(uid).get()
+                .addOnSuccessListener { doc ->
+                    if (doc.exists()) {
+                        val nombre = doc.getString("nombre")
+                        if (!nombre.isNullOrBlank()) {
+                            tvUserName.text = nombre.uppercase()
+                            cachedUserName = nombre.uppercase()
+                            cachedUserId = uid
+                        }
+                    }
+                }
+            return
         }
 
-        firestore.collection(coleccion).document(uid).get()
-            .addOnSuccessListener { doc ->
-                if (doc.exists()) {
-                    val nombre = doc.getString("nombre")
+        // No sabemos el tipo - buscar en TRAINERS primero (tiene prioridad)
+        firestore.collection("trainers").document(uid).get()
+            .addOnSuccessListener { trainerDoc ->
+                if (trainerDoc.exists()) {
+                    val nombre = trainerDoc.getString("nombre")
                     if (!nombre.isNullOrBlank()) {
                         tvUserName.text = nombre.uppercase()
                         cachedUserName = nombre.uppercase()
                         cachedUserId = uid
                         // Guardar tipo para la próxima vez
-                        prefs.edit().putString("tipo_usuario_$uid", coleccion.removeSuffix("s")).apply()
+                        prefs.edit().putString("tipo_usuario_$uid", "trainer").apply()
                         return@addOnSuccessListener
                     }
                 }
 
-                // Solo si no lo encontramos en clientes y no teníamos tipo guardado
-                if (tipoGuardado == null) {
-                    firestore.collection("trainers").document(uid).get()
-                        .addOnSuccessListener { trainerDoc ->
-                            val nombre = trainerDoc.getString("nombre")
-                                ?: email?.substringBefore("@") ?: "USUARIO"
-                            tvUserName.text = nombre.uppercase()
-                            cachedUserName = nombre.uppercase()
-                            cachedUserId = uid
-                            if (trainerDoc.exists()) {
-                                prefs.edit().putString("tipo_usuario_$uid", "trainer").apply()
-                            }
+                // Si no está en trainers o el documento está vacío, buscar en clientes
+                firestore.collection("clientes").document(uid).get()
+                    .addOnSuccessListener { clienteDoc ->
+                        val nombre = clienteDoc.getString("nombre")
+                            ?: email?.substringBefore("@") ?: "USUARIO"
+                        tvUserName.text = nombre.uppercase()
+                        cachedUserName = nombre.uppercase()
+                        cachedUserId = uid
+                        if (clienteDoc.exists() && !clienteDoc.getString("nombre").isNullOrBlank()) {
+                            prefs.edit().putString("tipo_usuario_$uid", "cliente").apply()
                         }
-                }
+                    }
             }
     }
 
@@ -282,8 +298,12 @@ class MainActivity : AppCompatActivity() {
                         rutinasSincronizadas = false
                         mensajesSync?.detenerEscucha()  // Detener sincronización de mensajes
                         mensajesSync = null
-                        loadUserData()
-                        Toast.makeText(this, "Sesión cerrada", Toast.LENGTH_SHORT).show()
+
+                        // Limpiar badge de notificaciones
+                        com.example.gimnasiopro.utils.NotificationBadgeManager.limpiarTodo(this)
+
+                        finish()
+                        startActivity(Intent(this, MainActivity::class.java))
                     }
                 }
             }
@@ -381,12 +401,48 @@ class MainActivity : AppCompatActivity() {
             }
     }
     private fun observarMensajesNoLeidos() {
-        val db = GymDatabase.getDatabase(this)
-        val mensajeRepository = MensajeRepository(db.mensajeDao())
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val notificacionRepository = com.example.gimnasiopro.data.firestore.NotificacionRepository()
+
+        // Variable para detectar nuevas notificaciones (evitar notificar las existentes al inicio)
+        var primeraVez = true
+        var notificacionesAnteriores = emptyList<com.example.gimnasiopro.data.firestore.Notificacion>()
 
         lifecycleScope.launch {
-            mensajeRepository.contarTotalNoLeidos().collect { count ->
+            // Observar notificaciones no leídas desde Firestore (incluye solicitudes, invitaciones y mensajes)
+            notificacionRepository.getNotificacionesFlow(userId).collect { notificaciones ->
+                val count = notificaciones.count { !it.leida }
                 actualizarBadgeNotificaciones(count)
+
+                // Sincronizar badge del ícono de la app
+                com.example.gimnasiopro.utils.NotificationBadgeManager.sincronizarConFirestore(this@MainActivity, count)
+
+                android.util.Log.d("MainActivity", "🔔 Badge actualizado: $count notificaciones no leídas")
+
+                // Detectar NUEVAS notificaciones (solo después de la carga inicial)
+                if (!primeraVez) {
+                    val nuevasNotificaciones = notificaciones.filter { notif ->
+                        !notif.leida && notificacionesAnteriores.none { it.id == notif.id }
+                    }
+
+                    // Generar notificaciones locales para las nuevas
+                    nuevasNotificaciones.forEach { notif ->
+                        android.util.Log.d("MainActivity", "🔔 Nueva notificación detectada: ${notif.titulo}")
+                        com.example.gimnasiopro.presentation.NotificacionLocalService.mostrarNotificacion(
+                            this@MainActivity,
+                            notif
+                        )
+                    }
+                }
+
+                // Actualizar lista de notificaciones anteriores
+                notificacionesAnteriores = notificaciones
+                primeraVez = false
+
+                // DIAGNÓSTICO: Ejecutar solo una vez al inicio
+                if (count > 0 && primeraVez) {
+                    com.example.gimnasiopro.utils.NotificationBadgeManager.diagnosticar(this@MainActivity)
+                }
             }
         }
     }

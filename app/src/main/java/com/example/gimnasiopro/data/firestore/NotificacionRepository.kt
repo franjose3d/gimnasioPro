@@ -117,8 +117,15 @@ class NotificacionRepository {
                 titulo = "Nueva solicitud de conexión",
                 mensaje = if (mensaje.isNotEmpty()) mensaje.take(200) else "$clienteNombre quiere conectar contigo como trainer",
                 fechaCreacion = Date(),
-                datosExtra = extras
+                datosExtra = extras,
+                leida = false  // 🔔 EXPLÍCITO: marca como no leída
             )
+
+            Log.d(TAG, "📤 Creando notificación de solicitud:")
+            Log.d(TAG, "   Destinatario (trainer): $trainerId")
+            Log.d(TAG, "   Remitente (cliente): $clienteId ($clienteNombre)")
+            Log.d(TAG, "   Tipo: ${notificacion.tipo}")
+            Log.d(TAG, "   Leída: ${notificacion.leida}")
 
             val docRef = notificacionesCollection.add(notificacion.toMap()).await()
             Log.d(TAG, "✅ Solicitud de conexión enviada: ${docRef.id}")
@@ -154,8 +161,15 @@ class NotificacionRepository {
                 titulo = "Invitación de trainer",
                 mensaje = if (mensaje.isNotEmpty()) mensaje.take(200) else "$trainerNombre te invita a ser su cliente",
                 fechaCreacion = Date(),
-                datosExtra = extras
+                datosExtra = extras,
+                leida = false  // 🔔 EXPLÍCITO: marca como no leída
             )
+
+            Log.d(TAG, "📤 Creando notificación de invitación:")
+            Log.d(TAG, "   Destinatario (cliente): $clienteId")
+            Log.d(TAG, "   Remitente (trainer): $trainerId ($trainerNombre)")
+            Log.d(TAG, "   Tipo: ${notificacion.tipo}")
+            Log.d(TAG, "   Leída: ${notificacion.leida}")
 
             val docRef = notificacionesCollection.add(notificacion.toMap()).await()
             Log.d(TAG, "✅ Invitación de trainer enviada: ${docRef.id}")

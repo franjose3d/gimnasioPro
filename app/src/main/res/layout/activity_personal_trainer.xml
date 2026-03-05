@@ -106,26 +106,13 @@
             android:gravity="center"
             android:layout_marginBottom="16dp" />
 
-        <!-- BOTÓN 1: BUSCAR ENTRENADORES -->
-        <Button
-            android:id="@+id/btnBuscarTrainers"
-            android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:text="BUSCAR ENTRENADORES"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_on_button"
-            android:background="@drawable/bg_card_trainer"
-            android:elevation="8dp"
-            android:stateListAnimator="@null"
-            android:layout_marginBottom="16dp" />
 
         <!-- BOTÓN 2: REGISTRARSE COMO USUARIO/CLIENTE -->
         <Button
             android:id="@+id/btnRegistrarseUsuario"
             android:layout_width="match_parent"
             android:layout_height="64dp"
-            android:text="REGISTRARSE COMO USUARIO"
+            android:text="REGISTRARSE COMO CLIENTE"
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="@color/text_on_button"
