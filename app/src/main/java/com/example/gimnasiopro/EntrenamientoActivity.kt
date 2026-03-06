@@ -57,6 +57,9 @@ class EntrenamientoActivity : AppCompatActivity() {
         // Registrar tiempo de inicio
         tiempoInicio = System.currentTimeMillis()
 
+        // ====== NUEVO: Precargar intersticial para cuando finalice ======
+        com.example.gimnasiopro.utils.AdHelper.precargarIntersticial(this)
+
         // IMPORTANTE: Activar modo entrenamiento para trabajar solo con Room
         // Durante el entrenamiento NO se sincroniza con Firebase
         // Solo se sincronizará al pulsar "Finalizar entrenamiento"
@@ -124,6 +127,7 @@ class EntrenamientoActivity : AppCompatActivity() {
 
         // Configurar botón finalizar
         btnFinalizarEntrenamiento.setOnClickListener {
+            com.example.gimnasiopro.utils.AdHelper.mostrarIntersticial(this)
             finalizarEntrenamiento()
         }
     }

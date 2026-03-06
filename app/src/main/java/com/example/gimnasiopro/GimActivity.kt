@@ -32,12 +32,22 @@ class GimActivity : AppCompatActivity() {
     private lateinit var rutinaRepository: RutinaRepository
     private var diaSeleccionado: Int = 0
 
+
+    private lateinit var adContainerGim: FrameLayout
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_gim)
         // TEST FIREBASE - TEMPORAL
         val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
         android.util.Log.d("Firebase", "✅ Firebase conectado: ${db != null}")
+
+        // ====== NUEVO: Inicializar AdMob y cargar banner ======
+        adContainerGim = findViewById(R.id.adContainerGim)
+        com.example.gimnasiopro.utils.AdHelper.cargarBanner(adContainerGim)
+
+        // ====== NUEVO: Precargar intersticial para cuando finalice ======
+        com.example.gimnasiopro.utils.AdHelper.precargarIntersticial(this)
 
         // Inicializar repositorios
         val database = GymDatabase.getDatabase(this)

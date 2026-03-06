@@ -97,6 +97,10 @@ dependencies {
     implementation("com.google.firebase:firebase-storage-ktx")
     implementation("com.google.firebase:firebase-messaging")  // Sin versión explícita
 
+    // ====== NUEVO: Google AdMob ======
+    implementation("com.google.android.gms:play-services-ads:22.6.0")
+
+
     // ====== TESTING ======
     // Unit Tests
     testImplementation(libs.junit)
