@@ -73,7 +73,7 @@ data class EstadisticaFirestore(
             val year = calendar.get(java.util.Calendar.YEAR)
             val month = calendar.get(java.util.Calendar.MONTH) + 1
             val day = calendar.get(java.util.Calendar.DAY_OF_MONTH)
-            return String.format("%04d-%02d-%02d", year, month, day)
+            return String.format(java.util.Locale.ROOT, "%04d-%02d-%02d", year, month, day)
         }
 
         /**

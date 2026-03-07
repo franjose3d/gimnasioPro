@@ -20,11 +20,12 @@ import com.example.gimnasiopro.data.local.MensajeDao
         Ejercicio::class,
         Rutina::class,
         RegistroEntrenamiento::class,
+        RegistroSerie::class,
         EstadisticaEntrenamiento::class,
         RutinaDiaSemana::class,
         MensajeLocal::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 @TypeConverters(EjercicioIdsConverter::class)
@@ -33,6 +34,7 @@ abstract class GymDatabase : RoomDatabase() {
     abstract fun ejercicioDao(): EjercicioDao
     abstract fun rutinaDao(): RutinaDao
     abstract fun registroEntrenamientoDao(): RegistroEntrenamientoDao
+    abstract fun registroSerieDao(): RegistroSerieDao  // ← NUEVO
     abstract fun estadisticaEntrenamientoDao(): EstadisticaEntrenamientoDao
     abstract fun rutinaDiaSemanaDao(): RutinaDiaSemanaDao
     abstract fun mensajeDao(): MensajeDao
@@ -42,13 +44,28 @@ abstract class GymDatabase : RoomDatabase() {
         private var INSTANCE: GymDatabase? = null
 
         /**
-         * Migración de versión 6 a 7:
-         * Añade columna numeroSeries a registros_entrenamiento
+         * Migración de versión 7 a 8:
+         * Añade tabla registros_series para guardar cada serie individualmente
          */
-        private val MIGRATION_6_7 = object : Migration(6, 7) {
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                // Añadir columna numeroSeries con valor por defecto 3
-                database.execSQL("ALTER TABLE registros_entrenamiento ADD COLUMN numeroSeries INTEGER NOT NULL DEFAULT 3")
+                // Crear tabla de series
+                database.execSQL("""
+            CREATE TABLE IF NOT EXISTS registros_series (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                registroEntrenamientoId INTEGER NOT NULL,
+                numeroSerie INTEGER NOT NULL,
+                pesoKg REAL NOT NULL,
+                repeticiones INTEGER NOT NULL,
+                FOREIGN KEY(registroEntrenamientoId) REFERENCES registros_entrenamiento(id) ON DELETE CASCADE
+            )
+        """)
+
+                // Crear índice para mejorar rendimiento
+                database.execSQL("""
+            CREATE INDEX IF NOT EXISTS index_registros_series_registroEntrenamientoId 
+            ON registros_series(registroEntrenamientoId)
+        """)
             }
         }
 
@@ -62,7 +79,7 @@ abstract class GymDatabase : RoomDatabase() {
                     GymDatabase::class.java,
                     "gimnasio_pro_database"
                 )
-                    .addMigrations(MIGRATION_6_7)  // ← NUEVO: Usar migración
+                    .addMigrations(MIGRATION_7_8)  // ← NUEVO: Usar migración
                     // ❌ ELIMINADO: .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance

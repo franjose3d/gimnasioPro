@@ -12,7 +12,10 @@
     <string name="greeting_hello">HOLA,</string>
     <string name="greeting_motivation">¡A DARLE!</string>
     <string name="default_user_name">REGÍSTRATE</string>
-    <string name="racha_title">Racha de %1$d Días</string>
+    <plurals name="racha_title">
+        <item quantity="one">Racha de %1$d Día</item>
+        <item quantity="other">Racha de %1$d Días</item>
+    </plurals>
     <string name="racha_message">¡No pares ahora!</string>
     <string name="subtitle_biblioteca">BIBLIOTECA</string>
     <string name="subtitle_mis_planes">MIS PLANES</string>
@@ -24,10 +27,6 @@
 
 
     <!-- Content Descriptions -->
-    <string name="desc_btn_gim">Acceder al gimnasio</string>
-    <string name="desc_btn_ejercicios">Ver lista de ejercicios</string>
-    <string name="desc_btn_rutinas">Gestionar rutinas</string>
-    <string name="desc_btn_progreso">Ver progreso</string>
     <string name="desc_btn_personal_trainer">Contactar entrenador personal</string>
     <string name="desc_ver_video">Ver video del ejercicio en YouTube</string>
 
@@ -110,7 +109,10 @@
     <string name="confirmar_limpiar_rutina">¿Estás seguro de que quieres eliminar todos los ejercicios de esta rutina?</string>
     <string name="rutina_limpiada">Rutina limpiada correctamente</string>
     <string name="confirmar_borrar_ejercicios">¿Estás seguro de que quieres eliminar los ejercicios seleccionados?</string>
-    <string name="ejercicios_eliminados">%1$d ejercicio(s) eliminado(s)</string>
+    <plurals name="ejercicios_eliminados">
+        <item quantity="one">%1$d ejercicio eliminado</item>
+        <item quantity="other">%1$d ejercicios eliminados</item>
+    </plurals>
     <string name="selecciona_ejercicios_borrar">Selecciona los ejercicios que deseas eliminar</string>
 
     <!-- Colores adicionales -->

@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.gimnasiopro.NotificacionesActivity
@@ -34,47 +33,45 @@ object NotificacionLocalService {
      * Inicializa los canales de notificación (llamar en Application.onCreate)
      */
     fun inicializarCanales(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-            // Canal para solicitudes de conexión
-            val canalSolicitudes = NotificationChannel(
-                CHANNEL_ID_SOLICITUDES,
-                "Solicitudes de conexión",
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = "Notificaciones de solicitudes de trainer/cliente"
-                enableVibration(true)
-                setShowBadge(true)
-            }
-
-            // Canal para mensajes
-            val canalMensajes = NotificationChannel(
-                CHANNEL_ID_MENSAJES,
-                "Mensajes",
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = "Mensajes de chat con trainer/cliente"
-                enableVibration(true)
-                setShowBadge(true)
-            }
-
-            // Canal para notificaciones del sistema
-            val canalSistema = NotificationChannel(
-                CHANNEL_ID_SISTEMA,
-                "Sistema",
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply {
-                description = "Notificaciones del sistema"
-                setShowBadge(true)
-            }
-
-            notificationManager.createNotificationChannels(
-                listOf(canalSolicitudes, canalMensajes, canalSistema)
-            )
-
-            Log.d(TAG, "✅ Canales de notificación creados")
+        // Canal para solicitudes de conexión
+        val canalSolicitudes = NotificationChannel(
+            CHANNEL_ID_SOLICITUDES,
+            "Solicitudes de conexión",
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = "Notificaciones de solicitudes de trainer/cliente"
+            enableVibration(true)
+            setShowBadge(true)
         }
+
+        // Canal para mensajes
+        val canalMensajes = NotificationChannel(
+            CHANNEL_ID_MENSAJES,
+            "Mensajes",
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = "Mensajes de chat con trainer/cliente"
+            enableVibration(true)
+            setShowBadge(true)
+        }
+
+        // Canal para notificaciones del sistema
+        val canalSistema = NotificationChannel(
+            CHANNEL_ID_SISTEMA,
+            "Sistema",
+            NotificationManager.IMPORTANCE_DEFAULT
+        ).apply {
+            description = "Notificaciones del sistema"
+            setShowBadge(true)
+        }
+
+        notificationManager.createNotificationChannels(
+            listOf(canalSolicitudes, canalMensajes, canalSistema)
+        )
+
+        Log.d(TAG, "✅ Canales de notificación creados")
     }
 
     /**

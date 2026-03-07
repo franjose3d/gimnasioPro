@@ -18,18 +18,17 @@ import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
  * Características:
  * - Banners en parte inferior de pantallas
  * - Intersticiales con control de frecuencia (máximo 1 cada 5 minutos)
- * - IDs de prueba en desarrollo, reales en producción
+ * - IDs de PRODUCCIÓN activos
  */
 object AdHelper {
 
     private const val TAG = "AdHelper"
 
-    // ====== IDs DE PRODUCCIÓN ======
+    // ====== IDs DE PRODUCCIÓN (ACTIVOS) ======
     private const val BANNER_AD_UNIT_ID = "ca-app-pub-2121593613571802/9823659590"
     private const val INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-2121593613571802/7660530688"
 
-    // ====== IDs DE PRUEBA (para desarrollo) ======
-    // Descomentar estas líneas y comentar las de arriba mientras pruebas
+    // ====== IDs DE PRUEBA (COMENTADOS) ======
     // private const val BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111"
     // private const val INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
 

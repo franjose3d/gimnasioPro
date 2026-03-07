@@ -71,7 +71,10 @@ class GimnasioproApplication : Application() {
     // Lazy initialization del repositorio de registros de entrenamiento
     val registroEntrenamientoRepository: RegistroEntrenamientoRepository by lazy {
         Log.d(TAG, "Inicializando repositorio de registros de entrenamiento...")
-        RegistroEntrenamientoRepository(database.registroEntrenamientoDao())
+        RegistroEntrenamientoRepository(
+            database.registroEntrenamientoDao(),
+            database.registroSerieDao()  // ← NUEVO: Añadido DAO de series
+        )
     }
 
     // Lazy initialization del repositorio de estadísticas (local)

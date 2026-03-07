@@ -18,8 +18,12 @@ import kotlinx.coroutines.tasks.await
 object UserHelper {
 
     private const val TAG = "UserHelper"
-    private val firestore = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
+    // Usar getters en vez de campos estáticos para evitar StaticFieldLeak
+    // y garantizar que siempre se obtiene la instancia actual de Firebase
+    private val firestore: FirebaseFirestore
+        get() = FirebaseFirestore.getInstance()
+    private val auth: FirebaseAuth
+        get() = FirebaseAuth.getInstance()
 
     /**
      * Resultado de búsqueda de usuario

@@ -36,7 +36,7 @@ class CalendarView @JvmOverloads constructor(
     private var diasConRutina: Set<Int> = emptySet()  // 1=Lunes, 2=Martes, etc.
     private var onDateLongPressListener: OnDateLongPressListener? = null
 
-    private val monthYearFormat = SimpleDateFormat("MMMM yyyy", Locale("es", "ES"))
+    private val monthYearFormat = SimpleDateFormat("MMMM yyyy", Locale.forLanguageTag("es-ES"))
 
     interface OnDateSelectedListener {
         fun onDateSelected(year: Int, month: Int, day: Int)
@@ -163,19 +163,19 @@ class CalendarView @JvmOverloads constructor(
                             android.view.MotionEvent.ACTION_DOWN -> {
                                 longPressHandler = Runnable {
                                     // Vibrar para feedback
-                                    val vibrator =
-                                        context.getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
-                                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                                        vibrator.vibrate(
-                                            android.os.VibrationEffect.createOneShot(
-                                                50,
-                                                android.os.VibrationEffect.DEFAULT_AMPLITUDE
-                                            )
-                                        )
+                                    val vibrator = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                                        val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager
+                                        vibratorManager.defaultVibrator
                                     } else {
                                         @Suppress("DEPRECATION")
-                                        vibrator.vibrate(50)
+                                        context.getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
                                     }
+                                    vibrator.vibrate(
+                                        android.os.VibrationEffect.createOneShot(
+                                            50,
+                                            android.os.VibrationEffect.DEFAULT_AMPLITUDE
+                                        )
+                                    )
 
                                     onDateLongPressListener?.onDateLongPress(
                                         calendar.get(Calendar.YEAR),

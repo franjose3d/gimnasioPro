@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
@@ -16,34 +11,19 @@
     <color name="card_dark">#1A1A3E</color>
     <color name="card_dark_secondary">#252550</color>
 
-    <!-- Colores de acento -->
+    <!-- Colores Base del Sistema -->
     <color name="accent_purple">#6B5CE7</color>
-    <color name="accent_purple_light">#8B7CF7</color>
     <color name="accent_green">#4ADE80</color>
     <color name="accent_green_dark">#22C55E</color>
     <color name="accent_blue">#3B82F6</color>
 
-    <!-- Textos -->
+    <!-- Textos Base -->
     <color name="text_primary">#FFFFFF</color>
     <color name="text_secondary">#A1A1AA</color>
-    <color name="text_muted">#71717A</color>
-
-    <!-- Cards especiales -->
-    <color name="card_gym">#1E3A2F</color>
-    <color name="card_gym_overlay">#2D5A47</color>
-    <color name="card_ejercicios">#1F1F4A</color>
-    <color name="card_rutinas">#1F1F4A</color>
-    <color name="card_progreso">#1A1A3E</color>
-    <color name="card_trainer">#4338CA</color>
-
-    <!-- Racha -->
-    <color name="racha_background">#1A1A3E</color>
-    <color name="racha_day_active">#6B5CE7</color>
-    <color name="racha_day_inactive">#3F3F5A</color>
 
     <!-- Navegación -->
     <color name="nav_background">#0D0D1A</color>
-    <color name="nav_selected">#6B5CE7</color>
+    <color name="nav_selected">@color/accent_purple</color>
     <color name="nav_unselected">#71717A</color>
 
     <!-- Compatibilidad con código existente -->
@@ -66,4 +46,9 @@
     <color name="hint_text">#80FFFFFF</color>
     <color name="accent_color">@color/accent_purple</color>
     <color name="divider_color">#3F3F5A</color>
+    <color name="card_gym">@color/card_dark</color>
+    <color name="card_trainer">@color/card_dark_secondary</color>
+    <color name="racha_day_active">@color/accent_purple</color>
+    <color name="racha_day_inactive">@color/nav_unselected</color>
+    <color name="text_muted">@color/text_secondary</color>
 </resources>

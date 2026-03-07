@@ -26,12 +26,6 @@ class EjercicioAdapter(
 
     // La selección siempre está activa
     var selectionMode = true
-        set(value) {
-            if (field != value) {
-                field = value
-                notifyDataSetChanged()
-            }
-        }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EjercicioViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -49,8 +43,14 @@ class EjercicioAdapter(
     fun getSelectedCount(): Int = selectedEjercicios.size
 
     fun clearSelection() {
+        val oldSelections = selectedEjercicios.toList()
         selectedEjercicios.clear()
-        notifyDataSetChanged()
+        oldSelections.forEach { ejercicio ->
+            val index = currentList.indexOf(ejercicio)
+            if (index != -1) {
+                notifyItemChanged(index)
+            }
+        }
         onSelectionChanged(selectedEjercicios)
     }
 

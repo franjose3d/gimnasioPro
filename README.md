@@ -50,6 +50,27 @@ Adicionalmente, el proyecto cuenta con un portal web complementario para la pres
 
 ---
 
+## 🛠️ Refactorización y Optimizaciones Recientes (v1.0.1)
+
+Se ha realizado una limpieza profunda y optimización del código para mejorar el rendimiento y la mantenibilidad:
+
+### 🚀 Rendimiento y UI
+- **Reducción de Overdraw:** Se eliminaron fondos redundantes en múltiples layouts (`activity_main`, `activity_perfil`, etc.), optimizando el renderizado.
+- **Optimización de RecyclerView:** Mejora en el refresco de listas mediante notificaciones selectivas de items en lugar de recargas totales.
+- **Desactivación de Baseline Alignment:** Mejora en la velocidad de inflado de layouts complejos desactivando el alineamiento de línea base.
+- **Soporte de Plurales:** Implementación de recursos de tipo `<plurals>` para una gramática correcta en contadores de días y ejercicios.
+
+### 🧹 Código y Recursos
+- **Limpieza de Recursos:** Eliminación de strings, colores y drawables no utilizados para reducir el tamaño del APK.
+- **Uso de Tools Attributes:** Optimización de previews de diseño usando `tools:text` y `tools:src`.
+- **Corrección de Atributos:** Actualización de atributos deprecados como `android:tint` a `app:tint` para mejor compatibilidad.
+
+### ⚙️ Configuración y Dependencias
+- **Generación de BuildConfig:** Habilitada para control dinámico de logs y anuncios en modo debug/release.
+- **Actualización de Librerías:** Sincronización de todas las dependencias a sus versiones estables más recientes vía Version Catalog.
+
+---
+
 ## 📦 Tecnologías Utilizadas
 
 - **Lenguaje:** Kotlin
@@ -690,7 +711,7 @@ app/src/main/
 - ✅ Conexión trainer-cliente
 - ✅ Sincronización offline-first
 - ✅ Estadísticas básicas
-- ✅ Corrección de errores estructurales subyacentes (`UseAppTint` detectados por Android Lint y depuración de código muerto/defectuoso en listados XML).
+
 
 ### Próximas Versiones
 

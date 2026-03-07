@@ -30,6 +30,7 @@ class EntrenamientoActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_NUMERO_RUTINA = "extra_numero_rutina"
+        private const val TAG = "EntrenamientoActivity"
     }
 
     private lateinit var ejercicioRepository: EjercicioRepositoryHibrido
@@ -140,7 +141,7 @@ class EntrenamientoActivity : AppCompatActivity() {
         })
     }
 
-    // ====== FUNCIÓN MODIFICADA: Ahora carga el número correcto de series ======
+    // ====== FUNCIÓN CORREGIDA: Carga series individuales del último entrenamiento ======
     private fun cargarEjerciciosDeRutina() {
         lifecycleScope.launch {
             val rutina = rutinaRepository.getRutinaByNumeroSync(numeroRutina)
@@ -149,41 +150,47 @@ class EntrenamientoActivity : AppCompatActivity() {
             if (ejercicioIds.isNotEmpty()) {
                 val ejercicios = ejercicioRepository.getEjerciciosByIds(ejercicioIds)
 
-                // Obtener últimos registros para precargar valores
-                val ultimosRegistros = registroRepository.getUltimosRegistrosDeRutina(numeroRutina)
-
-                // Mantener el orden original y crear EjercicioEntrenamiento con valores anteriores
+                // Mantener el orden original y crear EjercicioEntrenamiento
                 val ejerciciosOrdenados = ejercicioIds.mapNotNull { id ->
                     ejercicios.find { it.id == id }
                 }.map { ejercicio ->
-                    val ultimoRegistro = ultimosRegistros[ejercicio.id]
-                    val pesoAnterior = ultimoRegistro?.pesoKg ?: 0f
+                    // ====== NUEVO: Cargar series individuales del último entrenamiento ======
+                    val ultimasSeries = registroRepository.getUltimasSeriesPorEjercicio(
+                        rutinaId = numeroRutina,
+                        ejercicioId = ejercicio.id,
+                        numeroSeries = 6  // Máximo de series a cargar
+                    )
 
-                    // ====== NUEVO: Obtener número de series del último registro ======
-                    val numSeriesAnterior = ultimoRegistro?.numeroSeries ?: 3
+                    android.util.Log.d(TAG, "=== CARGANDO SERIES para ejercicio ${ejercicio.nombre} (ID: ${ejercicio.id}) ===")
+                    android.util.Log.d(TAG, "Series encontradas: ${ultimasSeries.size}")
+                    ultimasSeries.forEach { serie ->
+                        android.util.Log.d(TAG, "  Serie ${serie.numeroSerie}: ${serie.pesoKg}kg × ${serie.repeticiones} reps")
+                    }
 
-                    // Calcular repeticiones por serie (dividir entre el número de series anterior)
-                    val repsTotalesAnteriores = ultimoRegistro?.repeticiones ?: (10 * numSeriesAnterior)
-                    val repsPorSerie = (repsTotalesAnteriores / numSeriesAnterior).coerceAtLeast(1)
-
-                    // ====== NUEVO: Crear el número correcto de series ======
-                    val seriesIniciales = mutableListOf<SerieEntrenamiento>()
-                    repeat(numSeriesAnterior) {
-                        seriesIniciales.add(
+                    val seriesIniciales = if (ultimasSeries.isNotEmpty()) {
+                        // Usar las series del último entrenamiento TAL CUAL
+                        ultimasSeries.map { registroSerie ->
                             SerieEntrenamiento(
-                                repeticiones = repsPorSerie,
-                                pesoKg = pesoAnterior
+                                repeticiones = registroSerie.repeticiones,
+                                pesoKg = registroSerie.pesoKg
                             )
+                        }.toMutableList()
+                    } else {
+                        // Si no hay historial, crear 3 series por defecto
+                        android.util.Log.d(TAG, "  No hay historial, creando 3 series por defecto")
+                        mutableListOf(
+                            SerieEntrenamiento(repeticiones = 10, pesoKg = 0f),
+                            SerieEntrenamiento(repeticiones = 10, pesoKg = 0f),
+                            SerieEntrenamiento(repeticiones = 10, pesoKg = 0f)
                         )
                     }
 
                     EjercicioEntrenamiento(
                         ejercicio = ejercicio,
                         series = seriesIniciales,
-                        completado = false // Siempre inicia sin completar
+                        completado = false
                     ).apply {
-                        // ====== NUEVO: Establecer seriesVisibles ======
-                        seriesVisibles = numSeriesAnterior
+                        seriesVisibles = seriesIniciales.size
                     }
                 }
 
@@ -227,55 +234,70 @@ class EntrenamientoActivity : AppCompatActivity() {
         }
     }
 
-    // ====== FUNCIÓN MODIFICADA: Ahora guarda el número de series ======
+    // ====== FUNCIÓN CORREGIDA: Guarda cada serie individualmente ======
     private fun finalizarEntrenamiento() {
         lifecycleScope.launch {
             // IMPORTANTE: Forzar guardado del estado actual del adapter
-            // Esto captura cualquier valor que esté en los EditText pero no se haya guardado
             forceAdapterStateSave()
 
             // Calcular tiempo de entrenamiento
             val tiempoFin = System.currentTimeMillis()
             val tiempoEntrenamientoMs = tiempoFin - tiempoInicio
-
-            // Crear registros para cada ejercicio del entrenamiento
             val fechaEntrenamiento = tiempoFin
-            val registros = ejerciciosEntrenamiento.map { ejercicioEntrenamiento ->
-                // Calcular peso promedio de las series visibles para estadísticas
+
+            // ====== NUEVO: Crear registros Y mapear series individuales ======
+            val registros = mutableListOf<RegistroEntrenamiento>()
+            val seriesPorRegistro = mutableMapOf<Int, List<SerieEntrenamiento>>()
+
+            ejerciciosEntrenamiento.forEachIndexed { index, ejercicioEntrenamiento ->
+                // Obtener series visibles
                 val seriesVisibles = ejercicioEntrenamiento.series.take(ejercicioEntrenamiento.seriesVisibles)
-                val pesoPromedio = if (seriesVisibles.isNotEmpty()) {
-                    seriesVisibles.map { it.pesoKg }.average().toFloat()
+
+                // Peso máximo para estadísticas
+                val pesoMaximo = if (seriesVisibles.isNotEmpty()) {
+                    seriesVisibles.maxOf { it.pesoKg }
                 } else {
                     0f
                 }
 
-                // Calcular repeticiones totales de todas las series visibles
+                // Repeticiones totales
                 val repeticionesTotales = ejercicioEntrenamiento.calcularRepeticionesTotales()
 
-                RegistroEntrenamiento(
+                val registro = RegistroEntrenamiento(
                     rutinaId = numeroRutina,
                     ejercicioId = ejercicioEntrenamiento.ejercicio.id,
-                    repeticiones = repeticionesTotales, // Total de repeticiones de todas las series
-                    pesoKg = pesoPromedio, // Peso promedio para estadísticas de progreso
+                    repeticiones = repeticionesTotales,
+                    pesoKg = pesoMaximo,  // Peso máximo para estadísticas
                     completado = ejercicioEntrenamiento.completado,
                     fechaEntrenamiento = fechaEntrenamiento,
-                    numeroSeries = ejercicioEntrenamiento.seriesVisibles  // ← NUEVO: Guardar número de series
+                    numeroSeries = ejercicioEntrenamiento.seriesVisibles
                 )
+
+                registros.add(registro)
+                seriesPorRegistro[index] = seriesVisibles  // Guardar series individuales
             }
 
-            // 1. Guardar todos los registros en Room (local)
-            registroRepository.guardarRegistros(registros)
+            // ====== LOG DE DIAGNÓSTICO ======
+            android.util.Log.d(TAG, "=== GUARDANDO ENTRENAMIENTO ===")
+            seriesPorRegistro.forEach { (index, series) ->
+                android.util.Log.d(TAG, "Ejercicio $index tiene ${series.size} series:")
+                series.forEachIndexed { i, serie ->
+                    android.util.Log.d(TAG, "  Serie ${i+1}: ${serie.pesoKg}kg × ${serie.repeticiones} reps")
+                }
+            }
+
+            // 1. Guardar todos los registros CON sus series en Room (local)
+            registroRepository.guardarRegistrosConSeries(registros, seriesPorRegistro)
+            android.util.Log.d(TAG, "✅ Registros guardados con series individuales")
 
             // 2. Calcular estadísticas del entrenamiento
             val ejerciciosCompletados = ejerciciosEntrenamiento.count { it.completado }
-            // Usar calcularVolumenTotal() que suma correctamente todas las series visibles
             val volumenTotal = ejerciciosEntrenamiento
                 .filter { it.completado }
                 .sumOf { it.calcularVolumenTotal().toDouble() }
                 .toFloat()
 
             // 3. IMPORTANTE: Desactivar modo entrenamiento ANTES de registrar estadísticas
-            // Esto permite que se sincronice con Firebase
             SyncManager.endTrainingMode()
 
             // 4. Registrar estadísticas del día (ahora SÍ sincronizará con Firebase)

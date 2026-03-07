@@ -6,7 +6,10 @@ import kotlinx.coroutines.flow.Flow
  * Repositorio para gestionar los registros de entrenamiento.
  * Proporciona métodos para persistir y recuperar datos de entrenamientos.
  */
-class RegistroEntrenamientoRepository(private val registroDao: RegistroEntrenamientoDao) {
+class RegistroEntrenamientoRepository(
+    private val registroDao: RegistroEntrenamientoDao,
+    private val serieDao: RegistroSerieDao  // ← NUEVO
+) {
 
     /**
      * Guarda un registro de entrenamiento.
@@ -20,6 +23,47 @@ class RegistroEntrenamientoRepository(private val registroDao: RegistroEntrenami
      */
     suspend fun guardarRegistros(registros: List<RegistroEntrenamiento>) {
         registroDao.insertRegistros(registros)
+    }
+
+    // ====== NUEVO: Guardar registros CON series individuales ======
+    /**
+     * Guarda registros de entrenamiento CON sus series individuales.
+     */
+    suspend fun guardarRegistrosConSeries(
+        registros: List<RegistroEntrenamiento>,
+        seriesPorRegistro: Map<Int, List<SerieEntrenamiento>>  // Índice → Lista de series
+    ) {
+        registros.forEachIndexed { index, registro ->
+            // Guardar registro principal
+            val registroId = registroDao.insertRegistro(registro)
+
+            // Guardar series individuales
+            val series = seriesPorRegistro[index] ?: emptyList()
+            val registrosSeries = series.mapIndexed { serieIndex, serie ->
+                RegistroSerie(
+                    registroEntrenamientoId = registroId,
+                    numeroSerie = serieIndex + 1,
+                    pesoKg = serie.pesoKg,
+                    repeticiones = serie.repeticiones
+                )
+            }
+
+            if (registrosSeries.isNotEmpty()) {
+                serieDao.insertAll(registrosSeries)
+            }
+        }
+    }
+
+    // ====== NUEVO: Obtener series del último entrenamiento ======
+    /**
+     * Obtiene las series del último registro de un ejercicio de una rutina.
+     */
+    suspend fun getUltimasSeriesPorEjercicio(
+        rutinaId: Int,
+        ejercicioId: Long,
+        numeroSeries: Int
+    ): List<RegistroSerie> {
+        return serieDao.getUltimasSeriesDeEjercicio(ejercicioId, rutinaId, numeroSeries)
     }
 
     /**
@@ -151,4 +195,3 @@ data class ProgresoEjercicio(
     val repeticionesActuales: Int,
     val porcentajeMejora: Float
 )
-

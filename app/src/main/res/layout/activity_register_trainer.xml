@@ -2,7 +2,6 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dark_green_background"
     android:fillViewport="true">
 
     <LinearLayout
@@ -265,7 +264,8 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="16dp"
+            android:baselineAligned="false">
 
             <ImageView
                 android:id="@+id/ivfotoPerfil"
@@ -302,7 +302,8 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="24dp">
+            android:layout_marginBottom="24dp"
+            android:baselineAligned="false">
 
             <EditText
                 android:id="@+id/ettarifa"
@@ -349,7 +350,8 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
+            android:layout_marginBottom="8dp"
+            android:baselineAligned="false">
 
             <ImageView
                 android:id="@+id/ivCertificadoIcon"

@@ -38,6 +38,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     testOptions {
@@ -69,20 +70,21 @@ dependencies {
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
+    testImplementation(libs.kotlinx.coroutines.test)
 
     // RecyclerView & CardView
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.cardview)
 
     // ConstraintLayout
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation(libs.androidx.constraintlayout)
 
     // Material Design Components
-    implementation("com.google.android.material:material:1.11.0")
+    implementation(libs.google.material)
 
     // Coil para cargar SVG
-    implementation("io.coil-kt:coil:2.5.0")
-    implementation("io.coil-kt:coil-svg:2.5.0")
+    implementation(libs.coil.kt)
+    implementation(libs.coil.svg)
 
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.11.1")
@@ -91,14 +93,14 @@ dependencies {
     implementation("me.leolin:ShortcutBadger:1.1.22@aar")
 
     // ====== FIREBASE (BoM actualizado - sin versiones explícitas) ======
-    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
-    implementation("com.google.firebase:firebase-storage-ktx")
-    implementation("com.google.firebase:firebase-messaging")  // Sin versión explícita
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.messaging)
 
     // ====== NUEVO: Google AdMob ======
-    implementation("com.google.android.gms:play-services-ads:22.6.0")
+    implementation(libs.play.services.ads)
 
 
     // ====== TESTING ======
@@ -106,10 +108,10 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation("org.mockito:mockito-core:5.8.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    testImplementation(libs.kotlinx.coroutines.test)
     testImplementation("androidx.arch.core:core-testing:2.2.0")
-    testImplementation("org.robolectric:robolectric:4.11.1")
-    testImplementation("androidx.test:core:1.5.0")
+    testImplementation("org.robolectric:robolectric:4.16.1")
+    testImplementation(libs.androidx.test.core)
 
     // Android Tests
     androidTestImplementation(libs.androidx.junit)
@@ -120,8 +122,8 @@ dependencies {
     androidTestImplementation(libs.androidx.uiautomator)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test:core:1.5.0")
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.test.core)
 
     // Debug
     debugImplementation(libs.androidx.compose.ui.tooling)

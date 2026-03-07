@@ -8,7 +8,8 @@
     android:orientation="horizontal"
     android:padding="16dp"
     android:gravity="center_vertical"
-    android:layout_marginBottom="12dp">
+    android:layout_marginBottom="12dp"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <ImageView
         android:id="@+id/ivTrainerPhoto"
@@ -30,7 +31,7 @@
             android:id="@+id/tvTrainerNombre"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Nombre del Trainer"
+            tools:text="Nombre del Trainer"
             android:textColor="@color/text_primary"
             android:textSize="16sp"
             android:textStyle="bold" />
@@ -39,7 +40,7 @@
             android:id="@+id/tvTrainerEmail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="email@ejemplo.com"
+            tools:text="email@ejemplo.com"
             android:textColor="@color/text_secondary"
             android:textSize="12sp"
             android:layout_marginTop="2dp" />
@@ -48,7 +49,7 @@
             android:id="@+id/tvTrainerCertificado"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="🏅 Certificado"
+            tools:text="🏅 Certificado"
             android:textColor="@color/accent_green"
             android:textSize="12sp"
             android:layout_marginTop="4dp"

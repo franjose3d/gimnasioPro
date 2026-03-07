@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.gimnasiopro.R
@@ -77,19 +76,17 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     ) {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // Crear canal (Android 8+)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Mensajes de chat",
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = "Notificaciones de mensajes"
-                enableVibration(true)
-                setShowBadge(true) // Habilitar badge en el ícono
-            }
-            notificationManager.createNotificationChannel(channel)
+        // Crear canal de notificación
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            "Mensajes de chat",
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = "Notificaciones de mensajes"
+            enableVibration(true)
+            setShowBadge(true) // Habilitar badge en el ícono
         }
+        notificationManager.createNotificationChannel(channel)
 
         // Intent para abrir notificaciones cuando se toca
         val intent = Intent(this, Class.forName("com.example.gimnasiopro.NotificacionesActivity"))

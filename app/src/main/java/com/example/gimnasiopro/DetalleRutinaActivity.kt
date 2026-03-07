@@ -343,7 +343,7 @@ class DetalleRutinaActivity : AppCompatActivity() {
                         adapter.clearSelection()
                         Toast.makeText(
                             this@DetalleRutinaActivity,
-                            getString(R.string.ejercicios_eliminados, eliminados),
+                            resources.getQuantityString(R.plurals.ejercicios_eliminados, eliminados, eliminados),
                             Toast.LENGTH_SHORT
                         ).show()
                         recargarDatosFirestore()
@@ -360,7 +360,7 @@ class DetalleRutinaActivity : AppCompatActivity() {
 
                 Toast.makeText(
                     this@DetalleRutinaActivity,
-                    getString(R.string.ejercicios_eliminados, eliminados),
+                    resources.getQuantityString(R.plurals.ejercicios_eliminados, eliminados, eliminados),
                     Toast.LENGTH_SHORT
                 ).show()
             }

@@ -213,10 +213,10 @@ class MainActivity : AppCompatActivity() {
             try {
                 val app = application as GimnasioproApplication
                 val racha = app.estadisticaRepository.getRachaActual()
-                tvRachaTitle.text = getString(R.string.racha_title, racha)
+                tvRachaTitle.text = resources.getQuantityString(R.plurals.racha_title, racha, racha)
                 actualizarIndicadoresDias(racha)
             } catch (e: Exception) {
-                tvRachaTitle.text = getString(R.string.racha_title, 0)
+                tvRachaTitle.text = resources.getQuantityString(R.plurals.racha_title, 0, 0)
             }
         }
     }
