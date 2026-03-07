@@ -1,0 +1,374 @@
+POLÍTICA DE PRIVACIDAD Y TÉRMINOS DE USO DE GIMNASIOPRO
+
+Última actualización: 6 de marzo de 2026
+
+Al utilizar GimnasioPro, aceptas estos términos y nuestra política de privacidad.
+
+═══════════════════════════════════════
+
+1. RESPONSABLE DEL TRATAMIENTO
+
+[Mmdevs]
+NIF/CIF: [24360584L]
+Email: [mmdevmerono@gmail.com]
+Dirección: [c/domeño 17 Manises-Valencia]
+
+═══════════════════════════════════════
+
+2. DATOS QUE RECOPILAMOS
+
+CLIENTES:
+- Identificación: nombre, email, teléfono
+- Salud: peso, altura, edad, objetivos
+- Actividad: rutinas, progreso, mensajes
+
+TRAINERS:
+- Identificación: nombre, DNI, email, teléfono
+- Profesionales: ubicación, tarifa, certificación
+- Comunicación: mensajes con clientes
+
+═══════════════════════════════════════
+
+3. FINALIDAD Y BASE LEGAL
+
+Tus datos se usan para:
+- Prestación del servicio de entrenamiento
+- Comunicación entre usuarios
+- Gestión de rutinas y progreso
+- Verificación de trainers
+
+Base legal: Consentimiento + Ejecución del contrato
+
+DATOS DE SALUD: Requieren tu consentimiento expreso.
+
+═══════════════════════════════════════
+
+4. DESTINATARIOS
+
+- Otros usuarios: Trainers ven datos de sus clientes
+- Google Firebase: Almacenamiento en la nube (USA)
+- Autoridades: Si lo requiere la ley
+
+NO vendemos datos a terceros.
+
+═══════════════════════════════════════
+
+5. TUS DERECHOS
+
+Puedes ejercer estos derechos:
+- Acceso: Ver tus datos
+- Rectificación: Corregir datos
+- Supresión: Eliminar tu cuenta
+- Portabilidad: Recibir tus datos
+- Oposición: Oponerte al tratamiento
+
+Cómo ejercerlos:
+- Desde la app: Perfil → Eliminar cuenta
+- Email: [TU EMAIL]
+
+Plazo de respuesta: 1 mes
+
+═══════════════════════════════════════
+
+6. SEGURIDAD
+
+Protegemos tus datos con:
+- Cifrado HTTPS
+- Firebase Authentication
+- Acceso restringido
+
+═══════════════════════════════════════
+
+7. MENORES DE EDAD
+
+GimnasioPro NO es para menores de 16 años.
+Entre 16-18 años: Requiere consentimiento parental para datos de salud.
+
+═══════════════════════════════════════
+
+8. RELACIÓN ENTRE USUARIOS
+
+GimnasioPro es ÚNICAMENTE una PLATAFORMA TECNOLÓGICA que conecta trainers y clientes.
+
+NO SOMOS:
+- Un gimnasio
+- Un centro deportivo
+- Un proveedor de servicios médicos
+- Un asesor de salud
+- Empleador de los trainers
+
+Los trainers son PROFESIONALES INDEPENDIENTES responsables de sus propios servicios.
+
+═══════════════════════════════════════
+
+9. EXENCIÓN DE RESPONSABILIDAD MÉDICA
+
+⚠️ ADVERTENCIA CRÍTICA - LEE CON ATENCIÓN:
+
+GimnasioPro NO proporciona asesoramiento médico, diagnóstico o tratamiento.
+
+DEBES CONSULTAR A UN MÉDICO antes de:
+- Iniciar cualquier programa de ejercicio
+- Modificar tu dieta o suplementación
+- Si tienes condiciones médicas preexistentes
+- Si estás embarazada o en periodo de lactancia
+- Si tomas medicación regularmente
+- Si has tenido lesiones previas
+
+CONDICIONES MÉDICAS:
+Si padeces: cardiopatías, hipertensión, diabetes, problemas articulares, obesidad mórbida, trastornos respiratorios, o cualquier otra condición médica, es OBLIGATORIO el certificado médico que autorice la práctica deportiva.
+
+═══════════════════════════════════════
+
+10. ASUNCIÓN DE RIESGOS
+
+Al usar GimnasioPro, RECONOCES Y ACEPTAS que:
+
+- El ejercicio físico conlleva riesgos inherentes
+- Puede producir lesiones musculares, articulares, cardiovasculares
+- Existe riesgo de muerte súbita (aunque remoto)
+- Los resultados NO están garantizados
+- Tu estado de salud puede afectar tu capacidad de ejercicio
+
+DECLARAS que:
+- Gozas de buena salud para realizar ejercicio
+- Has consultado con un médico (o asumes la responsabilidad de no hacerlo)
+- Conoces tus limitaciones físicas
+- Informarás a tu trainer de cualquier problema de salud
+
+═══════════════════════════════════════
+
+11. LIMITACIÓN DE RESPONSABILIDAD
+
+EN LA MÁXIMA MEDIDA PERMITIDA POR LA LEY:
+
+NO somos responsables de:
+- Lesiones, daños corporales o muerte
+- Problemas de salud derivados del ejercicio
+- Reacciones adversas a entrenamientos
+- Agravamiento de condiciones médicas preexistentes
+- Resultados no alcanzados
+- Pérdida de datos o interrupciones del servicio
+- Conflictos entre trainers y clientes
+- Calidad, idoneidad o seguridad de los entrenamientos
+- Verificación de certificaciones de trainers
+- Pagos y acuerdos económicos entre usuarios
+- Contenido generado por usuarios
+- Uso inadecuado de las rutinas proporcionadas
+
+LÍMITE ECONÓMICO:
+Nuestra responsabilidad máxima, en cualquier caso, queda limitada a la cantidad pagada por el servicio en los últimos 12 meses (si aplica).
+
+═══════════════════════════════════════
+
+12. EXCLUSIÓN DE GARANTÍAS
+
+GimnasioPro se proporciona "TAL CUAL" y "SEGÚN DISPONIBILIDAD".
+
+NO GARANTIZAMOS:
+- Funcionamiento ininterrumpido
+- Ausencia de errores
+- Resultados específicos de entrenamiento
+- Pérdida de peso o ganancia muscular
+- Compatibilidad con todos los dispositivos
+- Seguridad absoluta de los datos
+- Competencia profesional de los trainers
+- Veracidad de la información proporcionada por usuarios
+
+═══════════════════════════════════════
+
+13. INDEMNIZACIÓN
+
+ACEPTAS INDEMNIZAR y EXIMIR de responsabilidad a [TU NOMBRE/EMPRESA], sus directores, empleados y colaboradores de:
+
+- Cualquier reclamación de terceros
+- Daños, pérdidas o lesiones
+- Costes legales y honorarios de abogados
+- Multas o sanciones
+
+Derivados de:
+- Tu uso de la aplicación
+- Tu incumplimiento de estos términos
+- Violación de derechos de terceros
+- Información falsa proporcionada
+- Negligencia en la práctica de ejercicio
+
+═══════════════════════════════════════
+
+14. RELACIÓN TRAINER-CLIENTE
+
+La relación contractual de entrenamiento es EXCLUSIVAMENTE entre cliente y trainer.
+
+TRAINERS:
+- Son profesionales autónomos independientes
+- Fijan sus propias tarifas y condiciones
+- Son responsables de la calidad de sus servicios
+- Deben tener la formación y seguros adecuados
+- Responden de sus propias acciones y asesoramiento
+
+CLIENTES:
+- Eligen libremente a su trainer
+- Negocian directamente las condiciones
+- Pagan directamente al trainer (fuera de la app)
+- Asumen la responsabilidad de verificar credenciales
+
+GimnasioPro NO INTERVIENE en estas relaciones.
+
+═══════════════════════════════════════
+
+15. VERIFICACIÓN DE TRAINERS
+
+Aunque solicitamos certificados a los trainers:
+
+- NO verificamos exhaustivamente las titulaciones
+- NO garantizamos la competencia profesional
+- NO realizamos comprobaciones de antecedentes
+- NO supervisamos la calidad del servicio
+
+Es responsabilidad del CLIENTE verificar las credenciales del trainer antes de contratar sus servicios.
+
+═══════════════════════════════════════
+
+16. USO PROHIBIDO
+
+NO puedes:
+- Proporcionar información falsa o fraudulenta
+- Hacerte pasar por otra persona
+- Acosar, amenazar o intimidar
+- Compartir contenido ilegal, ofensivo o inapropiado
+- Vulnerar la seguridad de la aplicación
+- Usar la app para fines comerciales no autorizados
+- Copiar, modificar o distribuir el contenido sin permiso
+- Realizar ingeniería inversa del software
+- Interferir con el funcionamiento de la app
+
+Nos reservamos el derecho de suspender o cancelar cuentas sin previo aviso.
+
+═══════════════════════════════════════
+
+17. SUSPENSIÓN Y CANCELACIÓN
+
+Podemos suspender o cancelar tu cuenta si:
+- Incumples estos términos
+- Proporcionas información falsa
+- Realizas actividades fraudulentas
+- Recibes quejas graves de otros usuarios
+- Lo consideramos necesario por motivos legales
+
+NO habrá derecho a reembolso ni compensación.
+
+═══════════════════════════════════════
+
+18. MODIFICACIONES DEL SERVICIO
+
+Nos reservamos el derecho a:
+- Modificar, suspender o discontinuar la app
+- Cambiar funcionalidades
+- Actualizar estos términos
+- Modificar precios (si aplica)
+
+Sin previo aviso y sin responsabilidad.
+
+═══════════════════════════════════════
+
+19. PROPIEDAD INTELECTUAL
+
+Todo el contenido de GimnasioPro (diseño, código, logos, textos) es propiedad de [Mmdevs].
+
+Queda PROHIBIDO:
+- Copiar, reproducir o distribuir
+- Usar nuestros logos o marca
+- Crear obras derivadas
+- Realizar scraping de datos
+
+═══════════════════════════════════════
+
+20. RESOLUCIÓN DE DISPUTAS
+
+LEY APLICABLE: Legislación española
+
+JURISDICCIÓN: Tribunales de [TU CIUDAD], España
+
+MEDIACIÓN:
+Antes de acudir a tribunales, las partes intentarán resolver el conflicto mediante mediación.
+
+ARBITRAJE (Opcional):
+Las disputas podrán someterse a arbitraje según el Reglamento de Arbitraje de Consumo.
+
+═══════════════════════════════════════
+
+21. CONTACTO Y RECLAMACIONES
+
+Para consultas, problemas o reclamaciones:
+
+Email: [TU EMAIL]
+Dirección: [TU DIRECCIÓN]
+Plazo de respuesta: 30 días
+
+RECLAMACIONES OFICIALES:
+Agencia Española de Protección de Datos (AEPD)
+Web: www.aepd.es
+Teléfono: 901 100 099
+
+Consumo (si aplica):
+Junta Arbitral de Consumo de tu comunidad autónoma
+
+═══════════════════════════════════════
+
+22. DECLARACIONES FINALES
+
+Al marcar "Acepto", DECLARAS Y GARANTIZAS que:
+
+✓ Has leído y comprendes TODOS estos términos
+✓ Eres mayor de 16 años
+✓ Tienes capacidad legal para contratar
+✓ Asumes TODOS los riesgos del ejercicio físico
+✓ Consultarás con un médico antes de entrenar (o asumes las consecuencias)
+✓ Verificarás las credenciales de tu trainer
+✓ NO reclamarás a GimnasioPro por lesiones o daños
+✓ Indemnizarás a GimnasioPro en caso de reclamaciones de terceros
+✓ Consientes el tratamiento de tus datos (incluidos datos de salud)
+✓ Aceptas las limitaciones de responsabilidad establecidas
+
+RENUNCIA DE RESPONSABILIDAD:
+Al usar GimnasioPro, RENUNCIAS expresamente a cualquier reclamación contra [TU NOMBRE/EMPRESA] por lesiones, daños o perjuicios relacionados con el uso de la aplicación o los servicios de entrenamiento contratados a través de ella.
+
+═══════════════════════════════════════
+
+23. SEPARABILIDAD
+
+Si alguna cláusula fuera declarada nula o inaplicable, el resto de términos permanecerán vigentes.
+
+═══════════════════════════════════════
+
+24. IDIOMA
+
+En caso de conflicto entre versiones en distintos idiomas, prevalecerá la versión en español.
+
+═══════════════════════════════════════
+
+ÚLTIMA ACTUALIZACIÓN: 6 de marzo de 2026
+VERSIÓN: 2.0
+
+Al hacer clic en "Acepto" confirmas haber leído, comprendido y aceptado estos términos en su totalidad.
+
+═══════════════════════════════════════
+
+RESUMEN EJECUTIVO (NO VINCULANTE - SOLO INFORMATIVO):
+
+- Usas la app bajo tu propio riesgo
+- Consulta a un médico antes de entrenar
+- GimnasioPro es solo una plataforma tecnológica
+- Los trainers son independientes, no nuestros empleados
+- No garantizamos resultados ni seguridad
+- No somos responsables de lesiones o daños
+- Verificas tú mismo las credenciales del trainer
+- Puedes eliminar tu cuenta cuando quieras
+- Tus datos están protegidos según RGPD
+
+Este resumen NO sustituye la lectura completa de los términos.
+
+═══════════════════════════════════════
+
+Legislación aplicable: España
+Jurisdicción: [Valencia]

@@ -14,6 +14,11 @@ GimnasioPro es una aplicación móvil para **entrenar de forma inteligente**, pe
 - ✅ Funcionamiento 100% offline con sincronización en la nube
 - ✅ Sistema de mensajería interno entre trainer-cliente
 
+Adicionalmente, el proyecto cuenta con un portal web complementario para la presentación de servicios llamado **FranJose3D**, desarrollado bajo los siguientes parámetros:
+- **Tecnologías:** HTML5, Vanilla CSS, Vanilla JS
+- **Diseño:** Moderno, responsive (One-page layout), incluye animaciones (Parallax, Scroll Reveal)
+- **Estructura Modularizada:** Separación de estructura (HTML), estilos (CSS) y lógica (JS).
+
 ---
 
 ## 🏗️ Arquitectura
@@ -685,6 +690,7 @@ app/src/main/
 - ✅ Conexión trainer-cliente
 - ✅ Sincronización offline-first
 - ✅ Estadísticas básicas
+- ✅ Corrección de errores estructurales subyacentes (`UseAppTint` detectados por Android Lint y depuración de código muerto/defectuoso en listados XML).
 
 ### Próximas Versiones
 

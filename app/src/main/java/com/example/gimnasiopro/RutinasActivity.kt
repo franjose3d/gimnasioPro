@@ -22,6 +22,9 @@ import com.example.gimnasiopro.data.firestore.RutinaFirestoreRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import com.example.gimnasiopro.utils.RutinaClipboard
+
+
 
 class RutinasActivity : AppCompatActivity() {
 
@@ -206,19 +209,201 @@ class RutinasActivity : AppCompatActivity() {
      * Opciones: Cambiar nombre, Eliminar, Cargar rutina guardada.
      */
     private fun mostrarOpcionesRutina(button: Button, numeroRutina: Int) {
-        val opciones = arrayOf("✏️ Cambiar nombre", "🗑️ Eliminar rutina", "📥 Cargar rutina guardada")
+        // Construir opciones dinámicamente
+        val opcionesList = mutableListOf<String>()
+        opcionesList.add("✏️ Cambiar nombre")
+        opcionesList.add("📋 Copiar rutina")
+
+        // Solo mostrar "Pegar" si hay rutina copiada
+        val tieneRutinaCopiada = RutinaClipboard.tieneRutinaCopiada(this)
+        val indexPegar = if (tieneRutinaCopiada) {
+            opcionesList.add("📥 Pegar rutina")
+            2 // Índice de "Pegar rutina"
+        } else {
+            -1
+        }
+
+        opcionesList.add("🗑️ Eliminar rutina")
+        val indexEliminar = opcionesList.size - 1
+
+        val opciones = opcionesList.toTypedArray()
 
         AlertDialog.Builder(this)
             .setTitle("Rutina $numeroRutina")
             .setItems(opciones) { _, which ->
                 when (which) {
                     0 -> mostrarDialogoCambiarNombre(button, numeroRutina)
-                    1 -> confirmarEliminarRutina(button, numeroRutina)
-                    2 -> mostrarRutinasGuardadas(numeroRutina)
+                    1 -> copiarRutina(button, numeroRutina)
+                    indexPegar -> if (which == indexPegar && indexPegar != -1) pegarRutina(numeroRutina)
+                    indexEliminar -> confirmarEliminarRutina(button, numeroRutina)
                 }
             }
             .setNegativeButton("Cancelar", null)
             .show()
+    }
+
+    // ==================== COPIAR RUTINA ====================
+
+    /**
+     * Copia los ejercicios de una rutina al portapapeles.
+     */
+    private fun copiarRutina(button: Button, numeroRutina: Int) {
+        lifecycleScope.launch {
+            try {
+                val rutinaCopiada = if (modoTrainer && clienteId != null) {
+                    // Modo trainer: copiar desde cache Firestore
+                    rutinasFirestoreCache[numeroRutina]
+                } else {
+                    // Modo normal: copiar desde Room
+                    rutinaRepository.getRutinaByNumero(numeroRutina).first()
+                }
+                if (rutinaCopiada == null) {
+                    runOnUiThread {
+                        Toast.makeText(
+                            this@RutinasActivity,
+                            "⚠️ No se pudo copiar la rutina",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    return@launch
+                }
+
+                val ejercicioIds = if (modoTrainer && clienteId != null) {
+                    rutinaCopiada as com.example.gimnasiopro.data.firestore.RutinaFirestore
+                    rutinaCopiada.ejercicioIds
+                } else {
+                    rutinaCopiada as com.example.gimnasiopro.data.Rutina
+                    rutinaCopiada.ejercicioIds.map { it.toString() }
+                }
+
+                if (ejercicioIds.isEmpty()) {
+                    runOnUiThread {
+                        Toast.makeText(
+                            this@RutinasActivity,
+                            "⚠️ La rutina está vacía (sin ejercicios)",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    return@launch
+                }
+
+                val nombreRutina = if (modoTrainer && clienteId != null) {
+                    (rutinaCopiada as com.example.gimnasiopro.data.firestore.RutinaFirestore).nombre
+                } else {
+                    (rutinaCopiada as com.example.gimnasiopro.data.Rutina).nombre
+                }
+
+                RutinaClipboard.copiar(
+                    context = this@RutinasActivity,
+                    numeroRutina = numeroRutina,
+                    nombreRutina = nombreRutina,
+                    ejercicioIds = ejercicioIds
+                )
+
+                runOnUiThread {
+                    Toast.makeText(
+                        this@RutinasActivity,
+                        "✅ Rutina copiada: $nombreRutina (${ejercicioIds.size} ejercicios)",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Error copiando rutina: ${e.message}", e)
+                runOnUiThread {
+                    Toast.makeText(
+                        this@RutinasActivity,
+                        "❌ Error: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+
+// ==================== PEGAR RUTINA ====================
+
+    /**
+     * Pega los ejercicios de la rutina copiada en la rutina destino.
+     */
+    private fun pegarRutina(numeroRutinaDestino: Int) {
+        val rutinaCopiada = RutinaClipboard.obtenerRutinaCopiada(this)
+
+        if (rutinaCopiada == null) {
+            Toast.makeText(
+                this,
+                "⚠️ No hay ninguna rutina copiada",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("⚠️ Confirmar pegado")
+            .setMessage(
+                "¿Pegar \"${rutinaCopiada.nombreRutina}\"?\n\n" +
+                        "Se copiarán ${rutinaCopiada.ejercicioIds.size} ejercicios en la Rutina $numeroRutinaDestino.\n\n" +
+                        "⚠️ Esto reemplazará los ejercicios actuales."
+            )
+            .setPositiveButton("Pegar rutina") { _, _ ->
+                ejecutarPegadoRutina(numeroRutinaDestino, rutinaCopiada)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    /**
+     * Ejecuta el pegado de la rutina en la rutina destino.
+     */
+    private fun ejecutarPegadoRutina(
+        numeroRutinaDestino: Int,
+        rutinaCopiada: RutinaClipboard.RutinaCopiada
+    ) {
+        lifecycleScope.launch {
+            try {
+                val app = application as GimnasioproApplication
+                val nombreDestino = "Copia de ${rutinaCopiada.nombreRutina}"
+
+                if (modoTrainer && clienteId != null) {
+                    // Modo trainer: guardar en Firestore del cliente
+                    val trainerId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+                    app.rutinaRepositoryHibrido.crearRutinaParaCliente(
+                        trainerId = trainerId,
+                        clienteId = clienteId!!,
+                        numeroRutina = numeroRutinaDestino,
+                        nombre = nombreDestino,
+                        ejercicioIds = rutinaCopiada.ejercicioIds
+                    )
+                    rutinasCacheModificadas = true
+                    cargarRutinasFirestoreCliente()
+                } else {
+                    // Modo normal: guardar en Room local
+                    val ejercicioIdsInt = rutinaCopiada.ejercicioIds.mapNotNull { it.toIntOrNull() }
+                    app.rutinaRepositoryHibrido.actualizarEjerciciosDeRutina(
+                        numeroRutina = numeroRutinaDestino,
+                        ejercicioIds = ejercicioIdsInt
+                    )
+                    rutinaRepository.actualizarNombreRutina(numeroRutinaDestino, nombreDestino)
+                    runOnUiThread { actualizarRutinas() }
+                }
+
+                runOnUiThread {
+                    Toast.makeText(
+                        this@RutinasActivity,
+                        "✅ Rutina pegada correctamente",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Error pegando rutina: ${e.message}", e)
+                runOnUiThread {
+                    Toast.makeText(
+                        this@RutinasActivity,
+                        "❌ Error: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
     }
 
     // ==================== ELIMINAR RUTINA ====================
@@ -266,137 +451,6 @@ class RutinasActivity : AppCompatActivity() {
     }
 
 
-    // ==================== CARGAR RUTINA GUARDADA ====================
-
-    /**
-     * Muestra la lista de rutinas guardadas en Firestore para cargar en la rutina destino.
-     * Permite duplicar una rutina existente.
-     */
-    private fun mostrarRutinasGuardadas(numeroRutinaDestino: Int) {
-        lifecycleScope.launch {
-            try {
-                val rutinasDisponibles = if (modoTrainer && clienteId != null) {
-                    // Trainer: usa cache de rutinas del cliente (ya cargadas, sin lectura extra)
-                    rutinasFirestoreCache.values.toList()
-                } else {
-                    // Cliente: carga desde Firestore propio
-                    val app = application as GimnasioproApplication
-                    app.rutinaRepositoryHibrido.getRutinasFromFirebase().first()
-                }
-
-                val rutinasConEjercicios = rutinasDisponibles
-                    .filter { it.ejercicioIds.isNotEmpty() }
-                    .sortedBy { it.numeroRutina }
-
-                if (rutinasConEjercicios.isEmpty()) {
-                    runOnUiThread {
-                        Toast.makeText(
-                            this@RutinasActivity,
-                            "No hay rutinas guardadas con ejercicios",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    return@launch
-                }
-
-                val nombres = rutinasConEjercicios.map { rutina ->
-                    val esLaMisma = rutina.numeroRutina == numeroRutinaDestino
-                    val prefijo = if (esLaMisma) "🔄 " else ""
-                    "${prefijo}Rutina ${rutina.numeroRutina}: ${rutina.nombre} (${rutina.ejercicioIds.size} ejercicios)"
-                }.toTypedArray()
-
-                runOnUiThread {
-                    AlertDialog.Builder(this@RutinasActivity)
-                        .setTitle("Cargar en Rutina $numeroRutinaDestino\nSelecciona una rutina:")
-
-                        .setItems(nombres) { _, index ->
-                            val rutinaOrigen = rutinasConEjercicios[index]
-                            confirmarCargarRutina(rutinaOrigen, numeroRutinaDestino)
-                        }
-                        .setNegativeButton("Cancelar", null)
-                        .show()
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "❌ Error cargando rutinas guardadas: ${e.message}", e)
-                runOnUiThread {
-                    Toast.makeText(
-                        this@RutinasActivity,
-                        "Error cargando rutinas: ${e.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-        }
-    }
-
-    /**
-     * Confirma y ejecuta la copia de ejercicios de una rutina origen a la rutina destino.
-     */
-    private fun confirmarCargarRutina(rutinaOrigen: RutinaFirestore, numeroRutinaDestino: Int) {
-        val esDuplicado = rutinaOrigen.numeroRutina == numeroRutinaDestino
-        val mensaje = if (esDuplicado) {
-            "Vas a recargar la Rutina ${rutinaOrigen.numeroRutina} con sus datos actuales.\n\nLos ejercicios serán los mismos."
-        } else {
-            "Vas a copiar los ejercicios de '${rutinaOrigen.nombre}' (Rutina ${rutinaOrigen.numeroRutina}) en la Rutina $numeroRutinaDestino.\n\n⚠️ Se sobrescribirán los ejercicios actuales de la Rutina $numeroRutinaDestino."
-        }
-
-        AlertDialog.Builder(this)
-            .setTitle("¿Confirmar carga?")
-            .setMessage(mensaje)
-            .setPositiveButton("Cargar") { _, _ ->
-                lifecycleScope.launch {
-                    try {
-                        val app = application as GimnasioproApplication
-                        val nombreDestino = if (esDuplicado) {
-                            rutinaOrigen.nombre
-                        } else {
-                            "Copia de ${rutinaOrigen.nombre}"
-                        }
-
-                        if (modoTrainer && clienteId != null) {
-                            val trainerId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
-                            app.rutinaRepositoryHibrido.crearRutinaParaCliente(
-                                trainerId = trainerId,
-                                clienteId = clienteId!!,
-                                numeroRutina = numeroRutinaDestino,
-                                nombre = nombreDestino,
-                                ejercicioIds = rutinaOrigen.ejercicioIds
-                            )
-                            rutinasCacheModificadas = true
-                            // Recargar cache desde Firestore para reflejar los cambios
-                            cargarRutinasFirestoreCliente()
-                        } else {
-                            app.rutinaRepositoryHibrido.actualizarEjerciciosDeRutina(
-                                numeroRutina = numeroRutinaDestino,
-                                ejercicioIds = rutinaOrigen.ejercicioIds.mapNotNull { it.toIntOrNull() }
-                            )
-                            // Actualizar nombre en Room
-                            rutinaRepository.actualizarNombreRutina(numeroRutinaDestino, nombreDestino)
-                            runOnUiThread { actualizarRutinas() }
-                        }
-
-                        runOnUiThread {
-                            Toast.makeText(
-                                this@RutinasActivity,
-                                "✅ Rutina cargada correctamente",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "❌ Error cargando rutina: ${e.message}", e)
-                        runOnUiThread {
-                            Toast.makeText(
-                                this@RutinasActivity,
-                                "Error al cargar: ${e.message}",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-                }
-            }
-            .setNegativeButton("Cancelar", null)
-            .show()
-    }
 
     // ==================== CAMBIAR NOMBRE ====================
 

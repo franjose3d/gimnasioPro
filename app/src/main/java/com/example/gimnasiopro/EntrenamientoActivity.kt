@@ -140,6 +140,7 @@ class EntrenamientoActivity : AppCompatActivity() {
         })
     }
 
+    // ====== FUNCIÓN MODIFICADA: Ahora carga el número correcto de series ======
     private fun cargarEjerciciosDeRutina() {
         lifecycleScope.launch {
             val rutina = rutinaRepository.getRutinaByNumeroSync(numeroRutina)
@@ -157,22 +158,33 @@ class EntrenamientoActivity : AppCompatActivity() {
                 }.map { ejercicio ->
                     val ultimoRegistro = ultimosRegistros[ejercicio.id]
                     val pesoAnterior = ultimoRegistro?.pesoKg ?: 0f
-                    // Calcular repeticiones promedio por serie (asumiendo 3 series por defecto)
-                    val repsTotalesAnteriores = ultimoRegistro?.repeticiones ?: 30
-                    val repsPorSerie = (repsTotalesAnteriores / 3).coerceAtLeast(1)
 
-                    // Crear series con el peso y repeticiones anteriores
-                    val seriesIniciales = mutableListOf(
-                        SerieEntrenamiento(repeticiones = repsPorSerie, pesoKg = pesoAnterior),
-                        SerieEntrenamiento(repeticiones = repsPorSerie, pesoKg = pesoAnterior),
-                        SerieEntrenamiento(repeticiones = repsPorSerie, pesoKg = pesoAnterior)
-                    )
+                    // ====== NUEVO: Obtener número de series del último registro ======
+                    val numSeriesAnterior = ultimoRegistro?.numeroSeries ?: 3
+
+                    // Calcular repeticiones por serie (dividir entre el número de series anterior)
+                    val repsTotalesAnteriores = ultimoRegistro?.repeticiones ?: (10 * numSeriesAnterior)
+                    val repsPorSerie = (repsTotalesAnteriores / numSeriesAnterior).coerceAtLeast(1)
+
+                    // ====== NUEVO: Crear el número correcto de series ======
+                    val seriesIniciales = mutableListOf<SerieEntrenamiento>()
+                    repeat(numSeriesAnterior) {
+                        seriesIniciales.add(
+                            SerieEntrenamiento(
+                                repeticiones = repsPorSerie,
+                                pesoKg = pesoAnterior
+                            )
+                        )
+                    }
 
                     EjercicioEntrenamiento(
                         ejercicio = ejercicio,
                         series = seriesIniciales,
                         completado = false // Siempre inicia sin completar
-                    )
+                    ).apply {
+                        // ====== NUEVO: Establecer seriesVisibles ======
+                        seriesVisibles = numSeriesAnterior
+                    }
                 }
 
                 ejerciciosEntrenamiento.clear()
@@ -215,6 +227,7 @@ class EntrenamientoActivity : AppCompatActivity() {
         }
     }
 
+    // ====== FUNCIÓN MODIFICADA: Ahora guarda el número de series ======
     private fun finalizarEntrenamiento() {
         lifecycleScope.launch {
             // IMPORTANTE: Forzar guardado del estado actual del adapter
@@ -245,7 +258,8 @@ class EntrenamientoActivity : AppCompatActivity() {
                     repeticiones = repeticionesTotales, // Total de repeticiones de todas las series
                     pesoKg = pesoPromedio, // Peso promedio para estadísticas de progreso
                     completado = ejercicioEntrenamiento.completado,
-                    fechaEntrenamiento = fechaEntrenamiento
+                    fechaEntrenamiento = fechaEntrenamiento,
+                    numeroSeries = ejercicioEntrenamiento.seriesVisibles  // ← NUEVO: Guardar número de series
                 )
             }
 
@@ -280,4 +294,3 @@ class EntrenamientoActivity : AppCompatActivity() {
         }
     }
 }
-

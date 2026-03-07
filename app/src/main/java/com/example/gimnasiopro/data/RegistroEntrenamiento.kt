@@ -16,6 +16,7 @@ data class RegistroEntrenamiento(
     val repeticiones: Int,
     val pesoKg: Float,
     val completado: Boolean = false,
-    val fechaEntrenamiento: Long = System.currentTimeMillis()
+    val fechaEntrenamiento: Long = System.currentTimeMillis(),
+    val numeroSeries: Int = 3
 )
 

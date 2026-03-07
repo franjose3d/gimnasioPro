@@ -8,9 +8,11 @@ import android.provider.MediaStore
 import android.util.Patterns
 import android.view.View
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -58,7 +60,7 @@ class RegisterTrainerActivity : AppCompatActivity() {
     // Views - Certificado
     private lateinit var ivCertificadoIcon: ImageView
     private lateinit var btnSeleccionarCertificado: Button
-    private lateinit var tvCertificadoNombre: android.widget.TextView
+    private lateinit var tvCertificadoNombre: TextView
 
     // Views - UI
     private lateinit var btnRegistrar: Button
@@ -69,6 +71,10 @@ class RegisterTrainerActivity : AppCompatActivity() {
 
     // Certificado
     private var certificadoUri: Uri? = null
+
+    // ====== NUEVO: Términos y Condiciones ======
+    private lateinit var checkboxTerminos: CheckBox
+    private lateinit var tvTerminos: TextView
 
     companion object {
         private const val PICK_IMAGE_REQUEST = 1001
@@ -113,6 +119,10 @@ class RegisterTrainerActivity : AppCompatActivity() {
         // UI
         btnRegistrar = findViewById(R.id.btnregistrar)
         progressBar = findViewById(R.id.progressBar)
+
+        // ====== NUEVO: Términos y Condiciones ======
+        checkboxTerminos = findViewById(R.id.checkboxTerminos)
+        tvTerminos = findViewById(R.id.tvTerminos)
     }
 
     private fun setupClickListeners() {
@@ -132,6 +142,11 @@ class RegisterTrainerActivity : AppCompatActivity() {
                 addCategory(Intent.CATEGORY_OPENABLE)
             }
             startActivityForResult(Intent.createChooser(intent, "Seleccionar certificado"), PICK_CERTIFICADO_REQUEST)
+        }
+
+        // ====== NUEVO: Click en texto abre diálogo ======
+        tvTerminos.setOnClickListener {
+            mostrarTerminosYCondiciones()
         }
     }
 
@@ -235,6 +250,11 @@ class RegisterTrainerActivity : AppCompatActivity() {
         }
 
         if (hayError) return
+
+        // ====== NUEVO: Validar términos ======
+        if (!validarTerminos()) {
+            return
+        }
 
         // Teléfono con prefijo
         val telefonoCompleto = "+34$telefonoSinPrefijo"
@@ -503,7 +523,7 @@ class RegisterTrainerActivity : AppCompatActivity() {
             )
             .setPositiveButton("Comenzar") { _, _ ->
                 // Ir a pantalla de verificación de email
-                val intent = Intent(this, com.example.gimnasiopro.presentation.auth.VerificarEmailActivity::class.java)
+                val intent = Intent(this, VerificarEmailActivity::class.java)
                 startActivity(intent)
                 finish()
             }
@@ -589,5 +609,75 @@ class RegisterTrainerActivity : AppCompatActivity() {
         etSobreMi.isEnabled = !show
         etTarifa.isEnabled = !show
         btnSeleccionarFoto.isEnabled = !show
+    }
+
+    // ====== NUEVO: FUNCIONES TÉRMINOS Y CONDICIONES ======
+
+    /**
+     * MOSTRAR TÉRMINOS Y CONDICIONES
+     */
+    private fun mostrarTerminosYCondiciones() {
+        try {
+            android.util.Log.d("Terminos", "=== INICIANDO CARGA DE TÉRMINOS ===")
+
+            // Verificar que el recurso existe
+            val resourceId = R.raw.terminos_condiciones
+            android.util.Log.d("Terminos", "Resource ID: $resourceId")
+
+            val inputStream = resources.openRawResource(R.raw.terminos_condiciones)
+            android.util.Log.d("Terminos", "InputStream obtenido: ${inputStream != null}")
+
+            val texto = inputStream.bufferedReader().use { it.readText() }
+            android.util.Log.d("Terminos", "Texto cargado. Longitud: ${texto.length}")
+            android.util.Log.d("Terminos", "Primeros 100 caracteres: ${texto.take(100)}")
+
+            if (texto.isBlank()) {
+                android.util.Log.e("Terminos", "❌ El texto está VACÍO")
+                Toast.makeText(this, "⚠️ El archivo de términos está vacío", Toast.LENGTH_LONG).show()
+                return
+            }
+
+            val scrollView = android.widget.ScrollView(this)
+            val textView = android.widget.TextView(this).apply {
+                text = texto
+                textSize = 14f
+                setTextColor(android.graphics.Color.BLACK)  // ← CAMBIADO A NEGRO
+                setBackgroundColor(android.graphics.Color.WHITE)  // ← FONDO BLANCO
+                setPadding(40, 40, 40, 40)
+            }
+            scrollView.addView(textView)
+
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Términos y Condiciones")
+                .setView(scrollView)
+                .setPositiveButton("Acepto") { _, _ ->
+                    checkboxTerminos.isChecked = true
+                }
+                .setNegativeButton("No acepto") { _, _ ->
+                    checkboxTerminos.isChecked = false
+                }
+                .show()
+
+            android.util.Log.d("Terminos", "✅ Diálogo mostrado correctamente")
+
+        } catch (e: Exception) {
+            android.util.Log.e("Terminos", "❌ Error: ${e.message}", e)
+            Toast.makeText(this, "Error al cargar términos: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    /**
+     * VALIDAR TÉRMINOS
+     */
+    private fun validarTerminos(): Boolean {
+        if (!checkboxTerminos.isChecked) {
+            Toast.makeText(
+                this,
+                "⚠️ Debes aceptar los Términos y Condiciones para continuar",
+                Toast.LENGTH_LONG
+            ).show()
+            return false
+        }
+        return true
     }
 }
