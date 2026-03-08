@@ -13,6 +13,7 @@
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
+<<<<<<< HEAD
       <SelectionState runConfigName="Tests in 'com.example.gimnasiopro'">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
@@ -27,6 +28,8 @@
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
+=======
+>>>>>>> ed8cf2f (cambio de nombre en build.gradle)
     </selectionStates>
   </component>
 </project>

@@ -8,8 +8,8 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.example.gimnasiopro" />
-                  <option name="mobileSdkAppId" value="1:738701331749:android:5fb98470915ab192951ecc" />
+                  <option name="appId" value="com.mmdevs.gimnasiopro" />
+                  <option name="mobileSdkAppId" value="1:738701331749:android:4ac4400230db7ea7951ecc" />
                   <option name="projectId" value="gimnasiopro-97109" />
                   <option name="projectNumber" value="738701331749" />
                 </ConnectionSetting>
