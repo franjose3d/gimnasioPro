@@ -1,6 +1,7 @@
 # 🏋️ GimnasioPro
 
-Aplicación Android para gestión de rutinas de gimnasio, ejercicios y seguimiento de progreso con arquitectura offline-first y sincronización con Firebase.
+Aplicación Android para gestión de rutinas de gimnasio, ejercicios y seguimiento de progreso .
+Con conexión entre trainer y cliente .
 
 ---
 
@@ -14,10 +15,10 @@ GimnasioPro es una aplicación móvil para **entrenar de forma inteligente**, pe
 - ✅ Funcionamiento 100% offline con sincronización en la nube
 - ✅ Sistema de mensajería interno entre trainer-cliente
 
-Adicionalmente, el proyecto cuenta con un portal web complementario para la presentación de servicios llamado **FranJose3D**, desarrollado bajo los siguientes parámetros:
-- **Tecnologías:** HTML5, Vanilla CSS, Vanilla JS
-- **Diseño:** Moderno, responsive (One-page layout), incluye animaciones (Parallax, Scroll Reveal)
-- **Estructura Modularizada:** Separación de estructura (HTML), estilos (CSS) y lógica (JS).
+Adicionalmente, el proyecto cuenta con un portal web complementario para la presentación de servicios llamado **mmdevs**, desarrollado bajo los siguientes parámetros:
+- **Tecnologías:** kotlin, firebase, room, recyclerview
+- **Diseño:** SOLID, responsive (One-page layout), incluye animaciones (Parallax, Scroll Reveal)
+- **Estructura Modularizada:** Separación de estructura (XML), estilos (SVG) y lógica (JS).
 
 ---
 
@@ -48,28 +49,7 @@ Adicionalmente, el proyecto cuenta con un portal web complementario para la pres
 | **I** - Interface Segregation | Interfaces específicas por funcionalidad |
 | **D** - Dependency Inversion | Domain define contratos; Data los implementa |
 
----
 
-## 🛠️ Refactorización y Optimizaciones Recientes (v1.0.1)
-
-Se ha realizado una limpieza profunda y optimización del código para mejorar el rendimiento y la mantenibilidad:
-
-### 🚀 Rendimiento y UI
-- **Reducción de Overdraw:** Se eliminaron fondos redundantes en múltiples layouts (`activity_main`, `activity_perfil`, etc.), optimizando el renderizado.
-- **Optimización de RecyclerView:** Mejora en el refresco de listas mediante notificaciones selectivas de items en lugar de recargas totales.
-- **Desactivación de Baseline Alignment:** Mejora en la velocidad de inflado de layouts complejos desactivando el alineamiento de línea base.
-- **Soporte de Plurales:** Implementación de recursos de tipo `<plurals>` para una gramática correcta en contadores de días y ejercicios.
-
-### 🧹 Código y Recursos
-- **Limpieza de Recursos:** Eliminación de strings, colores y drawables no utilizados para reducir el tamaño del APK.
-- **Uso de Tools Attributes:** Optimización de previews de diseño usando `tools:text` y `tools:src`.
-- **Corrección de Atributos:** Actualización de atributos deprecados como `android:tint` a `app:tint` para mejor compatibilidad.
-
-### ⚙️ Configuración y Dependencias
-- **Generación de BuildConfig:** Habilitada para control dinámico de logs y anuncios en modo debug/release.
-- **Actualización de Librerías:** Sincronización de todas las dependencias a sus versiones estables más recientes vía Version Catalog.
-
----
 
 ## 📦 Tecnologías Utilizadas
 
@@ -691,9 +671,9 @@ app/src/main/
 ## 🎨 Diseño y UI
 
 ### Tema
-- **Color principal:** Verde oscuro (#1B5E20)
-- **Acento:** Verde claro (#4CAF50)
-- **Background:** Gris oscuro (#121212)
+- **Color principal:** Azul oscuro 
+- **Acento:** Azul claro 
+- **Background:** Gris oscuro 
 - **Texto:** Blanco/Gris claro
 
 ### Componentes Reutilizables
@@ -754,7 +734,7 @@ Este proyecto está bajo la Licencia MIT. Ver archivo `LICENSE` para más detall
 
 ## 👨‍💻 Autor
 
-**Francisco** - Desarrollador Principal
+**Francisco Meroño ** - Desarrollador Principal
 
 ---
 
@@ -763,13 +743,15 @@ Este proyecto está bajo la Licencia MIT. Ver archivo `LICENSE` para más detall
 - Comunidad de Android Developers
 - Firebase por las herramientas de backend
 - Todos los contribuidores y testers
+- Equipo de Brais moure
+- Equipo de Big school
 
 ---
 
 ## 📞 Soporte
 
 ¿Problemas o preguntas? Abre un issue en GitHub o contacta a:
-- Email: soporte@gimnasiopro.com
+- Email: mmdevmerono@gmail.com
 - GitHub Issues: [github.com/tu-usuario/GimnasioPro/issues](https://github.com/tu-usuario/GimnasioPro/issues)
 
 ---

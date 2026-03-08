@@ -269,12 +269,26 @@ class ListaEjerciciosActivity : AppCompatActivity() {
             "Gemelos"
         )
 
-        // Configurar Spinner
-        val adapter = android.widget.ArrayAdapter(
+        // Configurar Spinner con color blanco forzado
+        val adapter = object : android.widget.ArrayAdapter<String>(
             this,
             android.R.layout.simple_spinner_item,
             gruposMusculares
-        )
+        ) {
+            override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
+                val view = super.getView(position, convertView, parent) as TextView
+                view.setTextColor(android.graphics.Color.WHITE)
+                view.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 14f)
+                return view
+            }
+
+            override fun getDropDownView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
+                val view = super.getDropDownView(position, convertView, parent) as TextView
+                view.setTextColor(android.graphics.Color.WHITE)
+                view.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 14f)
+                return view
+            }
+        }
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerGrupo.adapter = adapter
 
@@ -282,6 +296,8 @@ class ListaEjerciciosActivity : AppCompatActivity() {
         val indexActual = gruposMusculares.indexOf(grupoMuscularActual)
         if (indexActual >= 0) {
             spinnerGrupo.setSelection(indexActual)
+            // Forzar color blanco después de seleccionar
+            (spinnerGrupo.selectedView as? TextView)?.setTextColor(android.graphics.Color.WHITE)
         }
 
         // Limitar descripción a 200 caracteres

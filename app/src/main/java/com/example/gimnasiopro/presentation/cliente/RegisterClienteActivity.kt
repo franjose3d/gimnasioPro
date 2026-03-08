@@ -65,6 +65,8 @@ class RegisterClienteActivity : AppCompatActivity() {
     private lateinit var checkboxTerminos: CheckBox
     private lateinit var tvTerminos: TextView
 
+
+
     companion object {
         private const val PICK_IMAGE_REQUEST = 2001
     }
@@ -77,8 +79,10 @@ class RegisterClienteActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[RegisterClienteViewModel::class.java]
 
         initViews()
+        setupSpinners()
         setupClickListeners()
         observeViewModel()
+
     }
 
     private fun initViews() {
@@ -121,6 +125,34 @@ class RegisterClienteActivity : AppCompatActivity() {
         // ====== NUEVO: Click en texto abre diálogo ======
         tvTerminos.setOnClickListener {
             mostrarTerminosYCondiciones()
+        }
+    }
+
+    private fun setupSpinners() {
+        spinnerGenero.adapter = createSpinnerAdapter(resources.getStringArray(R.array.generos).toList())
+        spinnerObjetivo.adapter = createSpinnerAdapter(resources.getStringArray(R.array.objetivos).toList())
+        spinnerNivel.adapter = createSpinnerAdapter(resources.getStringArray(R.array.niveles).toList())
+    }
+
+    private fun createSpinnerAdapter(items: List<String>): android.widget.ArrayAdapter<String> {
+        return object : android.widget.ArrayAdapter<String>(
+            this,
+            R.layout.spinner_item_dialog_white,
+            items
+        ) {
+            override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
+                val view = super.getView(position, convertView, parent) as TextView
+                view.setTextColor(getColor(R.color.text_primary))
+                return view
+            }
+
+            override fun getDropDownView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
+                val view = super.getDropDownView(position, convertView, parent) as TextView
+                view.setTextColor(getColor(R.color.text_primary))
+                return view
+            }
+        }.apply {
+            setDropDownViewResource(R.layout.spinner_dropdown_item_dialog_white)
         }
     }
 
