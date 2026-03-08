@@ -734,7 +734,7 @@ Este proyecto está bajo la Licencia MIT. Ver archivo `LICENSE` para más detall
 
 ## 👨‍💻 Autor
 
-**Francisco Meroño ** - Desarrollador Principal
+**Francisco Jose Meroño Muñoz ** 
 
 ---
 
