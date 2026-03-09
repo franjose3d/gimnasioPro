@@ -481,6 +481,7 @@ class RutinasActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 if (modoTrainer && clienteId != null) {
+                    // Modo trainer: actualizar en Firestore del cliente
                     val documentId = RutinaFirestore.generarDocumentId(numeroRutina)
                     val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
                     firestore.collection("clientes")
@@ -492,7 +493,7 @@ class RutinasActivity : AppCompatActivity() {
                             "fechaModificacion", com.google.firebase.Timestamp.now()
                         )
                         .addOnSuccessListener {
-                            // Actualizar cache local sin releer Firestore
+                            // Actualizar cache local
                             val rutinaExistente = rutinasFirestoreCache[numeroRutina]
                             if (rutinaExistente != null) {
                                 rutinasFirestoreCache = rutinasFirestoreCache.toMutableMap().apply {
@@ -514,7 +515,20 @@ class RutinasActivity : AppCompatActivity() {
                             ).show()
                         }
                 } else {
+                    // ✅ CORRECCIÓN: Usar repositorio híbrido
+                    val app = application as GimnasioproApplication
+
+                    // 1. Actualizar nombre en Room
                     rutinaRepository.actualizarNombreRutina(numeroRutina, nuevoNombre)
+
+                    // 2. Obtener rutina actualizada
+                    val rutina = rutinaRepository.getRutinaByNumeroSync(numeroRutina)
+
+                    // 3. Sincronizar con Firebase
+                    rutina?.let {
+                        app.rutinaRepositoryHibrido.saveRutina(it)
+                    }
+
                     runOnUiThread {
                         button.text = nuevoNombre
                         Toast.makeText(
