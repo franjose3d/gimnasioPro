@@ -21,6 +21,69 @@ Adicionalmente, el proyecto cuenta con un portal web complementario para la pres
 - **Estructura Modularizada:** Separación de estructura (XML), estilos (SVG) y lógica (JS).
 
 ---
+---
+
+## 📸 Capturas de Pantalla
+
+### 🔐 Autenticación y Onboarding
+
+<p align="center">
+  <img src="screenshots/12-iniciar sesion.png" width="250" alt="Iniciar Sesión" />
+  <img src="screenshots/10-Registro de usuario.png" width="250" alt="Registro Cliente" />
+  <img src="screenshots/11-registro Trainer.png" width="250" alt="Registro Trainer" />
+</p>
+
+<p align="center">
+  <em>Inicio de Sesión • Registro Cliente • Registro Trainer</em>
+</p>
+
+### 📱 Dashboard y Gestión de Rutinas
+
+<p align="center">
+  <img src="screenshots/01-Pantalla principal.png" width="250" alt="Pantalla Principal" />
+  <img src="screenshots/03-Rutinas.png" width="250" alt="Lista de Rutinas" />
+  <img src="screenshots/03-Grupo Muscular.png" width="250" alt="Grupos Musculares" />
+</p>
+
+<p align="center">
+  <em>Dashboard Principal • Rutinas Personalizadas • Ejercicios por Grupo Muscular</em>
+</p>
+
+### 📊 Entrenamiento y Estadísticas
+
+<p align="center">
+  <img src="screenshots/02-Calendario.png" width="250" alt="Calendario Semanal" />
+  <img src="screenshots/05-Estadisticas.png" width="250" alt="Estadísticas de Progreso" />
+</p>
+
+<p align="center">
+  <em>Calendario de Entrenamientos • Estadísticas y Progreso</em>
+</p>
+
+### 👥 Sistema Trainer-Cliente
+
+<p align="center">
+  <img src="screenshots/06-Contacta trainer-cliente.png" width="250" alt="Conexión Trainer-Cliente" />
+  <img src="screenshots/07-Lista de clientes.png" width="250" alt="Lista de Clientes" />
+  <img src="screenshots/08-pantalla de chat.png" width="250" alt="Chat" />
+</p>
+
+<p align="center">
+  <em>Solicitud de Conexión • Dashboard de Clientes • Mensajería Interna</em>
+</p>
+
+### 🔔 Sistema de Notificaciones
+
+<p align="center">
+  <img src="screenshots/09-Notificaciones.png" width="300" alt="Notificaciones" />
+</p>
+
+<p align="center">
+  <em>Notificaciones con Badge (Solicitudes, Mensajes, Conexiones)</em>
+</p>
+
+---
+
 
 ## 🏗️ Arquitectura
 
@@ -661,7 +724,7 @@ app/src/main/
 └── res/
     ├── layout/                     # XML Layouts
     ├── values/
-    │   ├── colors.xml             # Tema verde oscuro
+    │   ├── colors.xml             # Tema Azul oscuro 
     │   └── strings.xml
     └── drawable/
 ```
@@ -751,8 +814,8 @@ Este proyecto está bajo la Licencia MIT. Ver archivo `LICENSE` para más detall
 ## 📞 Soporte
 
 ¿Problemas o preguntas? Abre un issue en GitHub o contacta a:
-- Email: mmdevmerono@gmail.com
-- GitHub Issues: [github.com/tu-usuario/GimnasioPro/issues](https://github.com/tu-usuario/GimnasioPro/issues)
+- Email: fanjose3d@gmail.com
+- GitHub Issues: https://github.com/franjose3d/GimnasioPro
 
 ---
 
