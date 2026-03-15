@@ -124,8 +124,9 @@ class ContactaActivity : AppCompatActivity() {
         progressBar.visibility = View.VISIBLE
 
         lifecycleScope.launch {
+            val userId = currentUserId ?: return@launch
             try {
-                val userInfo = UserHelper.getUserInfo(currentUserId!!)
+                val userInfo = UserHelper.getUserInfo(userId)
                 currentUserTipo = userInfo?.tipo
 
                 progressBar.visibility = View.GONE
@@ -151,8 +152,9 @@ class ContactaActivity : AppCompatActivity() {
 
         // Verificar si tiene trainer asignado
         lifecycleScope.launch {
+            val userId = currentUserId ?: return@launch
             try {
-                val conexion = conexionRepository.getTrainerConectado(currentUserId!!).first()
+                val conexion = conexionRepository.getTrainerConectado(userId).first()
 
                 if (conexion != null) {
                     // Tiene trainer
@@ -165,7 +167,7 @@ class ContactaActivity : AppCompatActivity() {
                     tvEstadoConexion.text = "Conexión activa"
                 } else {
                     // Verificar si tiene solicitud pendiente
-                    val solicitud = conexionRepository.getSolicitudPendienteDeCliente(currentUserId!!).first()
+                    val solicitud = conexionRepository.getSolicitudPendienteDeCliente(userId).first()
 
                     if (solicitud != null) {
                         cardBuscarTrainer.visibility = View.GONE
@@ -191,8 +193,9 @@ class ContactaActivity : AppCompatActivity() {
 
         // Contar clientes conectados
         lifecycleScope.launch {
+            val userId = currentUserId ?: return@launch
             try {
-                val clientes = conexionRepository.getClientesConectados(currentUserId!!).first()
+                val clientes = conexionRepository.getClientesConectados(userId).first()
                 tvNumeroClientes.text = "${clientes.size} cliente${if (clientes.size != 1) "s" else ""}"
             } catch (e: Exception) {
                 tvNumeroClientes.text = "0 clientes"
@@ -202,8 +205,9 @@ class ContactaActivity : AppCompatActivity() {
 
     private fun abrirConversacionConTrainer() {
         lifecycleScope.launch {
+            val userId = currentUserId ?: return@launch
             try {
-                val conexion = conexionRepository.getTrainerConectado(currentUserId!!).first()
+                val conexion = conexionRepository.getTrainerConectado(userId).first()
 
                 if (conexion != null) {
                     val trainerInfo = UserHelper.getUserInfo(conexion.trainerId)
@@ -247,6 +251,7 @@ class ContactaActivity : AppCompatActivity() {
     private fun enviarInvitacion(emailOTelefono: String) {
         progressBar.visibility = View.VISIBLE
         lifecycleScope.launch {
+            val userId = currentUserId ?: return@launch
             try {
                 var valorBusqueda = emailOTelefono.trim()
 
@@ -287,41 +292,43 @@ class ContactaActivity : AppCompatActivity() {
                     }
 
                     // Verificar que no sea uno mismo
-                    if (clienteId == currentUserId) {
+                    if (clienteId == userId) {
                         Toast.makeText(this@ContactaActivity, "No puedes invitarte a ti mismo", Toast.LENGTH_SHORT).show()
                         return@launch
                     }
 
                     // Verificar que no tenga ya una conexión activa o pendiente
                     try {
-                        val conexionExistente = conexionRepository.getClientesConectados(currentUserId!!).first()
+                        val conexionExistente = conexionRepository.getClientesConectados(userId).first()
                         val yaConectado = conexionExistente.any { it.clienteId == clienteId }
                         if (yaConectado) {
                             Toast.makeText(this@ContactaActivity, "Ya tienes conexión con este cliente", Toast.LENGTH_SHORT).show()
                             return@launch
                         }
                         // También verificar pendientes
-                        val pendiente = conexionRepository.getConexionPendienteEntreUsuarios(clienteId, currentUserId!!)
+                        val pendiente = conexionRepository.getConexionPendienteEntreUsuarios(clienteId, userId)
                         if (pendiente != null) {
                             Toast.makeText(this@ContactaActivity, "Ya existe una solicitud pendiente con este cliente", Toast.LENGTH_SHORT).show()
                             return@launch
                         }
-                    } catch (_: Exception) { }
+                    } catch (e: Exception) {
+                        android.util.Log.w("ContactaActivity", "Error verificando conexiones existentes: ${e.message}")
+                    }
 
                     // Crear conexión pendiente en Firestore
                     val conexionResult = conexionRepository.solicitarConexionComoTrainer(
                         clienteId = clienteId,
-                        trainerId = currentUserId!!
+                        trainerId = userId
                     )
 
                     val conexionId = conexionResult.getOrNull() ?: ""
 
                     // Enviar invitación (crear notificación con conexionId)
                     val notificacionRepository = com.example.gimnasiopro.data.firestore.NotificacionRepository()
-                    val trainerInfo = UserHelper.getUserInfo(currentUserId!!)
+                    val trainerInfo = UserHelper.getUserInfo(userId)
                     val resultado = notificacionRepository.enviarInvitacionTrainer(
                         clienteId = clienteId,
-                        trainerId = currentUserId!!,
+                        trainerId = userId,
                         trainerNombre = trainerInfo?.nombre ?: "Trainer",
                         conexionId = conexionId
                     )
@@ -425,9 +432,10 @@ class ContactaActivity : AppCompatActivity() {
         progressBar.visibility = View.VISIBLE
 
         lifecycleScope.launch {
+            val userId = currentUserId ?: return@launch
             try {
                 // Obtener conexión actual
-                val conexion = conexionRepository.getTrainerConectado(currentUserId!!).first()
+                val conexion = conexionRepository.getTrainerConectado(userId).first()
 
                 if (conexion != null && conexion.id != null) {
                     // Finalizar conexión en Firebase
@@ -438,7 +446,7 @@ class ContactaActivity : AppCompatActivity() {
                         try {
                             val db = com.example.gimnasiopro.data.GymDatabase.getDatabase(this@ContactaActivity)
                             val conversacionId = com.example.gimnasiopro.data.firestore.Mensaje.generarConversacionId(
-                                currentUserId!!,
+                                userId,
                                 conexion.trainerId
                             )
                             db.mensajeDao().eliminarConversacion(conversacionId)

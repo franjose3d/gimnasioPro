@@ -67,9 +67,10 @@ class BuscarTrainerActivity : AppCompatActivity() {
         tvEmpty.visibility = View.GONE
 
         lifecycleScope.launch {
+            val userId = currentUserId ?: return@launch
             try {
                 // Obtener nombre del usuario actual
-                val userInfo = UserHelper.getUserInfo(currentUserId!!)
+                val userInfo = UserHelper.getUserInfo(userId)
                 currentUserNombre = userInfo?.nombre ?: "Cliente"
 
                 // Obtener lista de trainers disponibles
@@ -116,20 +117,21 @@ class BuscarTrainerActivity : AppCompatActivity() {
         progressBar.visibility = View.VISIBLE
 
         lifecycleScope.launch {
+            val userId = currentUserId ?: return@launch
             try {
                 // Crear conexión pendiente
                 val resultConexion = conexionRepository.solicitarConexion(
-                    clienteId = currentUserId!!,
+                    clienteId = userId,
                     trainerId = trainer.userId,
                     mensaje = mensaje
                 )
 
                 if (resultConexion.isSuccess) {
-                    val conexionId = resultConexion.getOrNull()!!
+                    val conexionId = resultConexion.getOrNull() ?: ""
                     // Enviar notificación al trainer con el conexionId
                     notificacionRepository.enviarSolicitudConexion(
                         trainerId = trainer.userId,
-                        clienteId = currentUserId!!,
+                        clienteId = currentUserId ?: return@launch,
                         clienteNombre = currentUserNombre ?: "Cliente",
                         mensaje = mensaje,
                         conexionId = conexionId

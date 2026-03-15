@@ -130,18 +130,17 @@ class NotificacionesActivity : AppCompatActivity() {
                 notificacionRepository.getNotificacionesFlow(userId).collectLatest { notificaciones ->
                     progressBar.visibility = View.GONE
 
-                    // ← NUEVO: limpiar expiradas de las que ya llegaron (sin lecturas extra)
+                    // Filtrar expiradas y eliminarlas en un único coroutine (no uno por cada una)
                     val ahora = Date()
                     val notificacionesVigentes = notificaciones.filter { notificacion ->
-                        val expirada = notificacion.fechaExpiracion?.before(ahora) == true
-                        if (expirada) {
-                            lifecycleScope.launch {
-                                notificacionRepository.eliminarNotificacion(notificacion.id)
-                            }
-                        }
-                        !expirada
+                        notificacion.fechaExpiracion?.before(ahora) != true
                     }
-                    // ← FIN NUEVO
+                    val expiradas = notificaciones.filter { it.fechaExpiracion?.before(ahora) == true }
+                    if (expiradas.isNotEmpty()) {
+                        lifecycleScope.launch {
+                            expiradas.forEach { notificacionRepository.eliminarNotificacion(it.id) }
+                        }
+                    }
 
                     if (notificacionesVigentes.isEmpty()) {
                         recyclerNotificaciones.visibility = View.GONE
@@ -158,7 +157,9 @@ class NotificacionesActivity : AppCompatActivity() {
                     }
                 }
             } catch (e: Exception) {
-                // ... resto del catch que ya tienes
+                progressBar.visibility = View.GONE
+                android.util.Log.e("NotificacionesActivity", "Error cargando notificaciones: ${e.message}", e)
+                Toast.makeText(this@NotificacionesActivity, "Error al cargar notificaciones", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -256,7 +257,13 @@ class NotificacionesActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val conexionId = notificacion.datosExtra["conexionId"]
-                val clienteId = notificacion.datosExtra["clienteId"] ?: notificacion.remitenteId
+                val clienteId = notificacion.datosExtra["clienteId"]?.takeIf { it.isNotEmpty() }
+                    ?: notificacion.remitenteId.takeIf { it.isNotEmpty() }
+                    ?: run {
+                        android.util.Log.e("NotificacionesActivity", "❌ No se pudo determinar clienteId para notificacion ${notificacion.id}")
+                        Toast.makeText(this@NotificacionesActivity, "Error: datos de solicitud incompletos", Toast.LENGTH_SHORT).show()
+                        return@launch
+                    }
 
                 android.util.Log.d("NotificacionesActivity", "  conexionId=$conexionId, clienteId=$clienteId, currentUserId=$currentUserId")
 
@@ -418,7 +425,13 @@ class NotificacionesActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val conexionId = notificacion.datosExtra["conexionId"]
-                val clienteId = notificacion.datosExtra["clienteId"] ?: notificacion.remitenteId
+                val clienteId = notificacion.datosExtra["clienteId"]?.takeIf { it.isNotEmpty() }
+                    ?: notificacion.remitenteId.takeIf { it.isNotEmpty() }
+                    ?: run {
+                        android.util.Log.e("NotificacionesActivity", "❌ No se pudo determinar clienteId para rechazar notificacion ${notificacion.id}")
+                        Toast.makeText(this@NotificacionesActivity, "Error: datos de solicitud incompletos", Toast.LENGTH_SHORT).show()
+                        return@launch
+                    }
 
                 if (conexionId != null && conexionId.isNotEmpty()) {
                     // Rechazar directamente por ID

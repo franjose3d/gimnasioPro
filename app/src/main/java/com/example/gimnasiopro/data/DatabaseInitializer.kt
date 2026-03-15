@@ -3,6 +3,8 @@ package com.example.gimnasiopro.data
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -15,6 +17,10 @@ object DatabaseInitializer {
 
     @Volatile
     private var isInitialized = false
+
+    // Scope persistente para operaciones de reinicialización
+    private val initScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var reinitializeJob: Job? = null
 
     /**
      * Inicializa la base de datos con los ejercicios predefinidos
@@ -64,7 +70,8 @@ object DatabaseInitializer {
      * Útil para actualizar los ejercicios cuando se actualiza la app.
      */
     fun forceReinitialize(repository: EjercicioRepository) {
-        CoroutineScope(Dispatchers.IO).launch {
+        reinitializeJob?.cancel() // Cancelar reinicialización previa si aún está en curso
+        reinitializeJob = initScope.launch {
             try {
                 // Eliminar todos los ejercicios existentes
                 repository.deleteAllEjercicios()

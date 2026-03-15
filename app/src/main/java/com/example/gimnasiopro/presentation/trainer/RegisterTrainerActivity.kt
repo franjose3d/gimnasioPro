@@ -2,7 +2,9 @@ package com.example.gimnasiopro.presentation.trainer
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Patterns
@@ -14,6 +16,7 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.gimnasiopro.R
@@ -75,6 +78,16 @@ class RegisterTrainerActivity : AppCompatActivity() {
     // ====== NUEVO: Términos y Condiciones ======
     private lateinit var checkboxTerminos: CheckBox
     private lateinit var tvTerminos: TextView
+
+    // Launcher para solicitar permiso de notificaciones (Android 13+)
+    private val requestNotificationPermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            Toast.makeText(this, "Notificaciones activadas", Toast.LENGTH_SHORT).show()
+        }
+        // Si el usuario deniega, no bloqueamos el registro — es opcional
+    }
 
     companion object {
         private const val PICK_IMAGE_REQUEST = 1001
@@ -652,6 +665,7 @@ class RegisterTrainerActivity : AppCompatActivity() {
                 .setView(scrollView)
                 .setPositiveButton("Acepto") { _, _ ->
                     checkboxTerminos.isChecked = true
+                    solicitarPermisoNotificaciones()
                 }
                 .setNegativeButton("No acepto") { _, _ ->
                     checkboxTerminos.isChecked = false
@@ -663,6 +677,20 @@ class RegisterTrainerActivity : AppCompatActivity() {
         } catch (e: Exception) {
             android.util.Log.e("Terminos", "❌ Error: ${e.message}", e)
             Toast.makeText(this, "Error al cargar términos: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    /**
+     * Solicita permiso de notificaciones en Android 13+.
+     * En versiones anteriores las notificaciones ya están activas por defecto.
+     */
+    private fun solicitarPermisoNotificaciones() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestNotificationPermission.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
     }
 

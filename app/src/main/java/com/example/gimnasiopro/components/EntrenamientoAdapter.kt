@@ -275,18 +275,15 @@ class EntrenamientoAdapter(
         ) {
             btnIncrementar.setOnClickListener {
                 val ejercicio = currentEjercicio ?: return@setOnClickListener
-                if (indice < ejercicio.series.size) {
-                    ejercicio.series[indice].pesoKg += KG_INCREMENT
-                    actualizarPesoEditText(etPeso, ejercicio.series[indice].pesoKg)
-                }
+                val serie = ejercicio.series.getOrNull(indice) ?: return@setOnClickListener
+                serie.pesoKg += KG_INCREMENT
+                actualizarPesoEditText(etPeso, serie.pesoKg)
             }
             btnDecrementar.setOnClickListener {
                 val ejercicio = currentEjercicio ?: return@setOnClickListener
-                if (indice < ejercicio.series.size) {
-                    val serie = ejercicio.series[indice]
-                    serie.pesoKg = if (serie.pesoKg >= KG_INCREMENT) serie.pesoKg - KG_INCREMENT else MIN_KG
-                    actualizarPesoEditText(etPeso, serie.pesoKg)
-                }
+                val serie = ejercicio.series.getOrNull(indice) ?: return@setOnClickListener
+                serie.pesoKg = if (serie.pesoKg >= KG_INCREMENT) serie.pesoKg - KG_INCREMENT else MIN_KG
+                actualizarPesoEditText(etPeso, serie.pesoKg)
             }
             etPeso.setOnClickListener {
                 currentEjercicio?.let { ejercicio -> mostrarDialogoPeso(ejercicio, indice, etPeso) }
@@ -302,18 +299,15 @@ class EntrenamientoAdapter(
         ) {
             btnIncrementar.setOnClickListener {
                 val ejercicio = currentEjercicio ?: return@setOnClickListener
-                if (indice < ejercicio.series.size) {
-                    ejercicio.series[indice].repeticiones += REP_INCREMENT
-                    actualizarRepEditText(etRep, ejercicio.series[indice].repeticiones)
-                }
+                val serie = ejercicio.series.getOrNull(indice) ?: return@setOnClickListener
+                serie.repeticiones += REP_INCREMENT
+                actualizarRepEditText(etRep, serie.repeticiones)
             }
             btnDecrementar.setOnClickListener {
                 val ejercicio = currentEjercicio ?: return@setOnClickListener
-                if (indice < ejercicio.series.size) {
-                    val serie = ejercicio.series[indice]
-                    if (serie.repeticiones > MIN_REP) serie.repeticiones -= REP_INCREMENT
-                    actualizarRepEditText(etRep, serie.repeticiones)
-                }
+                val serie = ejercicio.series.getOrNull(indice) ?: return@setOnClickListener
+                if (serie.repeticiones > MIN_REP) serie.repeticiones -= REP_INCREMENT
+                actualizarRepEditText(etRep, serie.repeticiones)
             }
             etRep.setOnClickListener {
                 currentEjercicio?.let { ejercicio -> mostrarDialogoRepeticiones(ejercicio, indice, etRep) }

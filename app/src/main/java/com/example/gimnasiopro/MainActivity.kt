@@ -36,11 +36,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var firestore: FirebaseFirestore
 
     // Cache del nombre de usuario para evitar lecturas repetidas a Firebase
-    private var cachedUserName: String? = null
-    private var cachedUserId: String? = null
+    @Volatile private var cachedUserName: String? = null
+    @Volatile private var cachedUserId: String? = null
 
     // Control para sincronizar rutinas solo una vez por sesión
-    private var rutinasSincronizadas = false
+    @Volatile private var rutinasSincronizadas = false
 
     // ====== NUEVO - Sincronización de mensajes ======
     private var mensajesSync: MensajesSyncService? = null
@@ -188,7 +188,7 @@ class MainActivity : AppCompatActivity() {
                                 android.util.Log.w("MainActivity", "⚠️ Error sincronizando rutinas: ${error.message}")
                             }
                         } else {
-                            val minutosRestantes = ((cincuentaMinutos - (ahora - ultimaSync)) / (60 * 1000)).toInt()
+                            val minutosRestantes = (maxOf(0L, cincuentaMinutos - (ahora - ultimaSync)) / (60 * 1000)).toInt()
                             android.util.Log.d("MainActivity", "⏭️ Sync omitida, datos recientes (próxima sync en $minutosRestantes min)")
                         }
                         rutinasSincronizadas = true

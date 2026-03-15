@@ -7,6 +7,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 /**
@@ -22,6 +24,7 @@ class MensajesSyncService(
 ) {
 
     private var listenerRegistration: ListenerRegistration? = null
+    private var serviceScope: CoroutineScope? = null
 
     companion object {
         private const val TAG = "MensajesSync"
@@ -39,8 +42,11 @@ class MensajesSyncService(
             return
         }
 
-        // Detener listener anterior si existe
+        // Detener listener anterior si existe (también cancela el scope anterior)
         detenerEscucha()
+
+        // Crear scope gestionado para esta sesión de escucha
+        serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
         Log.d(TAG, "Iniciando escucha de mensajes para usuario: $userId")
 
@@ -59,7 +65,7 @@ class MensajesSyncService(
                     when (change.type) {
                         DocumentChange.Type.ADDED -> {
                             // Nuevo mensaje recibido
-                            CoroutineScope(Dispatchers.IO).launch {
+                            serviceScope?.launch {
                                 procesarMensajeNuevo(change.document.id, change.document.data)
                             }
                         }
@@ -79,11 +85,20 @@ class MensajesSyncService(
         data: Map<String, Any>
     ) {
         try {
-            val remitenteId = data["de"] as? String ?: return
-            val texto = data["texto"] as? String ?: return
+            val remitenteId = data["de"] as? String ?: run {
+                Log.w(TAG, "⚠️ Mensaje $mensajeId ignorado: falta campo 'de'")
+                return
+            }
+            val texto = data["texto"] as? String ?: run {
+                Log.w(TAG, "⚠️ Mensaje $mensajeId ignorado: falta campo 'texto'")
+                return
+            }
             val timestamp = (data["timestamp"] as? com.google.firebase.Timestamp)?.toDate()?.time
                 ?: System.currentTimeMillis()
-            val conversacionId = data["conversacionId"] as? String ?: return
+            val conversacionId = data["conversacionId"] as? String ?: run {
+                Log.w(TAG, "⚠️ Mensaje $mensajeId ignorado: falta campo 'conversacionId'")
+                return
+            }
 
             Log.d(TAG, "Procesando mensaje nuevo: $mensajeId de $remitenteId")
 
@@ -123,6 +138,8 @@ class MensajesSyncService(
      * Llamar esto en MainActivity.onDestroy().
      */
     fun detenerEscucha() {
+        serviceScope?.cancel()
+        serviceScope = null
         listenerRegistration?.remove()
         listenerRegistration = null
         Log.d(TAG, "Escucha de mensajes detenida")

@@ -72,8 +72,10 @@ class ConversacionActivity : AppCompatActivity() {
             return
         }
 
-        // Generar ID de conversación
-        conversacionId = Mensaje.generarConversacionId(currentUserId!!, otroUsuarioId!!)
+        // Generar ID de conversación (currentUserId y otroUsuarioId son no-null aquí)
+        val userId = currentUserId ?: return
+        val otroId = otroUsuarioId ?: return
+        conversacionId = Mensaje.generarConversacionId(userId, otroId)
 
         // ====== CORREGIDO: Inicializar repositorio con DAO ======
         val db = GymDatabase.getDatabase(this)
@@ -116,7 +118,7 @@ class ConversacionActivity : AppCompatActivity() {
             }
         })
 
-        adapter = MensajeAdapter(currentUserId!!)
+        adapter = MensajeAdapter(currentUserId ?: return)
         recyclerMensajes.layoutManager = LinearLayoutManager(this).apply {
             stackFromEnd = true
         }
@@ -125,7 +127,8 @@ class ConversacionActivity : AppCompatActivity() {
 
     private fun loadCurrentUserName() {
         lifecycleScope.launch {
-            val userInfo = UserHelper.getUserInfo(currentUserId!!)
+            val userId = currentUserId ?: return@launch
+            val userInfo = UserHelper.getUserInfo(userId)
             currentUserNombre = userInfo?.nombre ?: "Usuario"
         }
     }
@@ -135,7 +138,8 @@ class ConversacionActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             // ====== CORREGIDO: Ahora usa Room, no Firestore ======
-            mensajeRepository.getMensajesConversacion(conversacionId!!)
+            val convId = conversacionId ?: return@launch
+            mensajeRepository.getMensajesConversacion(convId)
                 .collectLatest { mensajes ->
                     progressBar.visibility = View.GONE
 
@@ -190,9 +194,9 @@ class ConversacionActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val result = mensajeRepository.enviarMensaje(
-                    destinatarioId = otroUsuarioId!!,
+                    destinatarioId = otroUsuarioId ?: return@launch,
                     texto = texto,
-                    conversacionId = conversacionId!!,
+                    conversacionId = conversacionId ?: return@launch,
                     remitenteNombre = currentUserNombre ?: "Usuario"
                 )
 
@@ -223,7 +227,8 @@ class ConversacionActivity : AppCompatActivity() {
      */
     private fun marcarMensajesComoLeidos() {
         lifecycleScope.launch {
-            mensajeRepository.marcarComoLeidos(conversacionId!!)
+            val convId = conversacionId ?: return@launch
+            mensajeRepository.marcarComoLeidos(convId)
         }
     }
 

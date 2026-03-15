@@ -279,8 +279,8 @@ class NotificacionRepository {
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     Log.e(TAG, "❌ Error escuchando notificaciones: ${error.message}", error)
-                    // No cerrar el flow, enviar lista vacía para que la UI no se rompa
-                    trySend(emptyList())
+                    // Propagar el error al colector para que la UI pueda informar al usuario
+                    close(error)
                     return@addSnapshotListener
                 }
 
