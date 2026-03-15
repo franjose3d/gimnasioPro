@@ -279,8 +279,7 @@ class NotificacionRepository {
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     Log.e(TAG, "❌ Error escuchando notificaciones: ${error.message}", error)
-                    // Propagar el error al colector para que la UI pueda informar al usuario
-                    close(error)
+                    // No cerramos el Flow — Firestore reintenta automáticamente errores transitorios
                     return@addSnapshotListener
                 }
 

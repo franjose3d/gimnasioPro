@@ -156,6 +156,8 @@ class NotificacionesActivity : AppCompatActivity() {
                         adapter.submitList(notificacionesVigentes.toList())
                     }
                 }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e // Cancelación normal del lifecycle — no es un error
             } catch (e: Exception) {
                 progressBar.visibility = View.GONE
                 android.util.Log.e("NotificacionesActivity", "Error cargando notificaciones: ${e.message}", e)

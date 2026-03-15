@@ -7,25 +7,6 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:738701331749:android:5fb98470915ab192951ecc",
-        "android_client_info": {
-          "package_name": "com.example.gimnasiopro"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyD70K5FI8qtOigEQ_5mXCAsE-57Yvxzw-k"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:738701331749:android:4ac4400230db7ea7951ecc",
         "android_client_info": {
           "package_name": "com.mmdevs.gimnasiopro"
