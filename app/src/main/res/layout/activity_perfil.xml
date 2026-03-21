@@ -49,13 +49,40 @@
             android:gravity="center"
             android:layout_marginBottom="24dp">
 
-            <ImageView
-                android:id="@+id/ivFotoPerfil"
+            <!-- Foto con icono de cámara superpuesto -->
+            <FrameLayout
                 android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:src="@drawable/ic_user_placeholder"
-                android:background="@drawable/bg_icon_circle"
-                android:scaleType="centerCrop" />
+                android:layout_height="100dp">
+
+                <ImageView
+                    android:id="@+id/ivFotoPerfil"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/ic_user_placeholder"
+                    android:background="@drawable/bg_icon_circle"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="@string/desc_user_photo" />
+
+                <!-- Overlay cámara (bottom-end) -->
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="bottom|end"
+                    android:src="@drawable/ic_camara"
+                    android:background="@drawable/bg_icon_circle"
+                    android:padding="5dp"
+                    android:contentDescription="Cambiar foto"
+                    android:clickable="false"
+                    android:focusable="false" />
+            </FrameLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Mantén pulsado para cambiar"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp" />
 
             <TextView
                 android:id="@+id/tvTipoUsuario"

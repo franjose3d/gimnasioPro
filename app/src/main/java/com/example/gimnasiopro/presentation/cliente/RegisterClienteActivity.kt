@@ -22,6 +22,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.gimnasiopro.R
 import com.example.gimnasiopro.presentation.auth.VerificarEmailActivity
+import com.example.gimnasiopro.utils.UserPhotoManager
 import com.google.firebase.auth.FirebaseAuth
 
 /**
@@ -324,6 +325,11 @@ class RegisterClienteActivity : AppCompatActivity() {
             .addOnSuccessListener { authResult ->
                 val user = authResult.user
                 val userId = user?.uid ?: ""
+
+                // Guardar foto en almacenamiento local del dispositivo (sin Firebase)
+                fotoUri?.let { uri ->
+                    UserPhotoManager.guardarFotoLocal(this, userId, uri)
+                }
 
                 // Enviar email de verificación
                 user?.sendEmailVerification()

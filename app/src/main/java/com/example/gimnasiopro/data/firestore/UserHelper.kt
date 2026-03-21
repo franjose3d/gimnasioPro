@@ -48,22 +48,23 @@ object UserHelper {
 
     /**
      * Obtiene la información de cualquier usuario por ID.
-     * Busca PRIMERO en trainers (prioridad), luego en clientes.
+     * Busca SIEMPRE en trainers primero. Si existe en trainers con nombre válido,
+     * devuelve TRAINER aunque también exista un documento en clientes
+     * (evita que phantom accounts en clientes enmascaren cuentas de trainer).
      *
      * LÓGICA:
-     * 1. Si existe en trainers CON nombre → es TRAINER
-     * 2. Si existe en clientes CON nombre → es CLIENTE
-     * 3. Si no existe o documentos vacíos → null
+     * 1. Si existe en trainers CON nombre → es TRAINER (siempre, incluso si hay doc en clientes)
+     * 2. Si NO existe en trainers con nombre → busca en clientes
+     * 3. Si no existe en ninguna con nombre → null
      */
     suspend fun getUserInfo(userId: String): UserInfo? {
         Log.d(TAG, "🔍 Buscando usuario: $userId")
 
-        // PRIORIDAD 1: Buscar en TRAINERS primero
+        // PRIORIDAD ABSOLUTA: Buscar en TRAINERS
         try {
             val trainerDoc = firestore.collection("trainers").document(userId).get().await()
             if (trainerDoc.exists()) {
                 val nombre = trainerDoc.getString("nombre")
-                // Validar que el documento tenga nombre válido (no esté vacío)
                 if (!nombre.isNullOrBlank()) {
                     Log.d(TAG, "✅ Usuario $userId identificado como TRAINER")
                     return UserInfo(
@@ -82,14 +83,15 @@ object UserHelper {
             }
         } catch (e: Exception) {
             Log.e(TAG, "❌ Error buscando en trainers: ${e.message}")
+            // No caer a clientes si hubo un error de red — podría ser un trainer con mala conexión
+            // Dejamos que el llamador reintente o use caché
         }
 
-        // PRIORIDAD 2: Si no es trainer, buscar en CLIENTES
+        // Solo buscar en CLIENTES si definitivamente no hay doc de trainer con nombre
         try {
             val clienteDoc = firestore.collection("clientes").document(userId).get().await()
             if (clienteDoc.exists()) {
                 val nombre = clienteDoc.getString("nombre")
-                // Validar que el documento tenga nombre válido (no esté vacío)
                 if (!nombre.isNullOrBlank()) {
                     Log.d(TAG, "✅ Usuario $userId identificado como CLIENTE")
                     return UserInfo(
@@ -116,7 +118,8 @@ object UserHelper {
 
     /**
      * Obtiene el tipo de usuario (cliente o trainer).
-     * Si el usuario no existe en ninguna colección, intenta crear el documento de cliente.
+     * Devuelve "cliente" como fallback si no se puede determinar,
+     * pero NUNCA crea documentos automáticamente (causaba phantom accounts para trainers).
      */
     suspend fun getTipoUsuario(userId: String): String {
         val userInfo = getUserInfo(userId)
@@ -125,17 +128,8 @@ object UserHelper {
             return userInfo.tipo
         }
 
-        // Usuario no encontrado - intentar crear documento de cliente
-        Log.w(TAG, "⚠️ Usuario $userId no encontrado, intentando crear documento de cliente...")
-
-        val created = crearDocumentoClienteBasico(userId)
-        if (created) {
-            Log.d(TAG, "✅ Documento de cliente creado para $userId")
-            return "cliente"
-        }
-
-        Log.e(TAG, "❌ No se pudo determinar ni crear tipo de usuario para $userId")
-        return "cliente" // Default para que no falle completamente
+        Log.w(TAG, "⚠️ No se pudo determinar tipo de usuario $userId, usando 'cliente' como fallback")
+        return "cliente"
     }
 
     /**

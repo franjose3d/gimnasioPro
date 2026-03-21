@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.gimnasiopro.R
 import com.example.gimnasiopro.presentation.auth.VerificarEmailActivity
+import com.example.gimnasiopro.utils.UserPhotoManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
 import java.util.UUID
@@ -385,6 +386,8 @@ class RegisterTrainerActivity : AppCompatActivity() {
                 .addOnSuccessListener {
                     fotoRef.downloadUrl.addOnSuccessListener { downloadUrl ->
                         fotoUrlFinal = downloadUrl.toString()
+                        // Cachear URL localmente para cargarla sin Firebase en el futuro
+                        UserPhotoManager.guardarFotoUrl(this, userId, fotoUrlFinal)
                         verificarYGuardar()
                     }
                 }

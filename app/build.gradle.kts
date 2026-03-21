@@ -97,6 +97,8 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.messaging)
+    implementation("com.google.firebase:firebase-analytics")
+
 
     // ====== NUEVO: Google AdMob ======
     implementation(libs.play.services.ads)
@@ -127,4 +129,13 @@ dependencies {
     // Debug
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+// AGP 9.x pinta concurrent-futures:1.1.0 como constraint estricta,
+// pero androidx.test:core:1.7.0 requiere 1.2.0. Forzamos la versión correcta.
+configurations.all {
+    resolutionStrategy {
+        force("androidx.concurrent:concurrent-futures:1.2.0")
+        force("androidx.concurrent:concurrent-futures-ktx:1.2.0")
+    }
 }

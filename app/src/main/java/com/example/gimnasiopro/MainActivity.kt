@@ -20,6 +20,7 @@ import com.google.firebase.firestore.SetOptions
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
 import com.example.gimnasiopro.utils.BadgeHelper
+import com.example.gimnasiopro.utils.UserPhotoManager
 
 class MainActivity : AppCompatActivity() {
 
@@ -156,6 +157,9 @@ class MainActivity : AppCompatActivity() {
         val currentUser = auth.currentUser
 
         if (currentUser != null) {
+            // Cargar foto desde local/caché (sin Firebase)
+            UserPhotoManager.cargarFoto(this, currentUser.uid, ivUserPhoto)
+
             // Cargar nombre (con cache)
             if (cachedUserId == currentUser.uid && cachedUserName != null) {
                 tvUserName.text = cachedUserName
@@ -234,22 +238,33 @@ class MainActivity : AppCompatActivity() {
 
         // Si ya sabemos el tipo, solo hacemos 1 lectura
         if (tipoGuardado != null) {
-            val coleccion = if (tipoGuardado == "trainer") "trainers" else "clientes"
-            firestore.collection(coleccion).document(uid).get()
-                .addOnSuccessListener { doc ->
-                    if (doc.exists()) {
-                        val nombre = doc.getString("nombre")
-                        if (!nombre.isNullOrBlank()) {
-                            tvUserName.text = nombre.uppercase()
-                            cachedUserName = nombre.uppercase()
-                            cachedUserId = uid
+            if (tipoGuardado == "trainer") {
+                // Confiamos en el cache para trainers
+                firestore.collection("trainers").document(uid).get()
+                    .addOnSuccessListener { doc ->
+                        if (doc.exists()) {
+                            val nombre = doc.getString("nombre")
+                            if (!nombre.isNullOrBlank()) {
+                                tvUserName.text = nombre.uppercase()
+                                cachedUserName = nombre.uppercase()
+                                cachedUserId = uid
+                            }
+                            val fotoUrl = doc.getString("fotoUrl") ?: ""
+                            if (UserPhotoManager.obtenerFotoUrl(this, uid) == null && fotoUrl.isNotBlank()) {
+                                UserPhotoManager.guardarFotoUrl(this, uid, fotoUrl)
+                                UserPhotoManager.cargarFoto(this, uid, ivUserPhoto)
+                            }
                         }
                     }
-                }
-            return
+                return
+            }
+            // Si el cache dice "cliente", verificamos igualmente en trainers por si el tipo
+            // fue guardado incorrectamente (auto-corrección). Si hay doc de trainer válido,
+            // se corrige el cache y se carga como trainer.
         }
 
-        // No sabemos el tipo - buscar en TRAINERS primero (tiene prioridad)
+        // Buscar en TRAINERS primero (prioridad absoluta)
+        // Se llega aquí también cuando tipoGuardado == "cliente" para auto-corregir
         firestore.collection("trainers").document(uid).get()
             .addOnSuccessListener { trainerDoc ->
                 if (trainerDoc.exists()) {
@@ -258,22 +273,34 @@ class MainActivity : AppCompatActivity() {
                         tvUserName.text = nombre.uppercase()
                         cachedUserName = nombre.uppercase()
                         cachedUserId = uid
-                        // Guardar tipo para la próxima vez
+                        // Guardar/corregir tipo en cache
                         prefs.edit().putString("tipo_usuario_$uid", "trainer").apply()
+                        // Cachear fotoUrl si no la tenemos aún
+                        val fotoUrl = trainerDoc.getString("fotoUrl") ?: ""
+                        if (UserPhotoManager.obtenerFotoUrl(this, uid) == null && fotoUrl.isNotBlank()) {
+                            UserPhotoManager.guardarFotoUrl(this, uid, fotoUrl)
+                            UserPhotoManager.cargarFoto(this, uid, ivUserPhoto)
+                        }
                         return@addOnSuccessListener
                     }
                 }
 
-                // Si no está en trainers o el documento está vacío, buscar en clientes
+                // No es trainer (o doc sin nombre) → buscar en clientes
                 firestore.collection("clientes").document(uid).get()
                     .addOnSuccessListener { clienteDoc ->
-                        val nombre = clienteDoc.getString("nombre")
-                            ?: email?.substringBefore("@") ?: "USUARIO"
-                        tvUserName.text = nombre.uppercase()
-                        cachedUserName = nombre.uppercase()
-                        cachedUserId = uid
-                        if (clienteDoc.exists() && !clienteDoc.getString("nombre").isNullOrBlank()) {
+                        val nombreCliente = clienteDoc.getString("nombre")
+                        if (!nombreCliente.isNullOrBlank()) {
+                            tvUserName.text = nombreCliente.uppercase()
+                            cachedUserName = nombreCliente.uppercase()
+                            cachedUserId = uid
                             prefs.edit().putString("tipo_usuario_$uid", "cliente").apply()
+                        } else {
+                            // Nombre no disponible en ninguna colección
+                            val fallback = email?.substringBefore("@")?.uppercase() ?: "USUARIO"
+                            tvUserName.text = fallback
+                            cachedUserName = fallback
+                            cachedUserId = uid
+                            // NO guardamos tipo en prefs para forzar re-búsqueda la próxima vez
                         }
                     }
             }

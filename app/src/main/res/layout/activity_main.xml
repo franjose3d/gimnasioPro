@@ -22,16 +22,17 @@
             android:layout_marginBottom="20dp">
 
             <!-- Foto de perfil -->
+
+            <!-- Textos de saludo -->
             <ImageView
                 android:id="@+id/ivUserPhoto"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
-                android:src="@drawable/ic_user_placeholder"
                 android:background="@drawable/bg_icon_circle"
+                android:contentDescription="@string/desc_user_photo"
                 android:scaleType="centerCrop"
-                android:contentDescription="@string/desc_user_photo" />
+                android:src="@drawable/ic_user_placeholder" />
 
-            <!-- Textos de saludo -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"

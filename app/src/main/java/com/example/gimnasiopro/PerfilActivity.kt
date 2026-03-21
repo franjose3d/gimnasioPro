@@ -1,17 +1,23 @@
 package com.example.gimnasiopro
 
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
+import com.example.gimnasiopro.data.firestore.UserHelper
+import com.example.gimnasiopro.utils.UserPhotoManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.example.gimnasiopro.data.firestore.UserHelper
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.io.File
 
 /**
  * Activity para ver y editar el perfil del usuario.
@@ -25,6 +31,28 @@ class PerfilActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
+
+    // Foto de perfil
+    private lateinit var ivFotoPerfil: ImageView
+    private var cameraFotoUri: Uri? = null
+
+    // Launcher galería
+    private val galeriaLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri -> uri?.let { guardarFotoSeleccionada(it) } }
+
+    // Launcher cámara
+    private val camaraLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success -> if (success) cameraFotoUri?.let { guardarFotoSeleccionada(it) } }
+
+    // Launcher permiso cámara
+    private val permisosCamaraLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) abrirCamara()
+        else Toast.makeText(this, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show()
+    }
 
     // Views comunes
     private lateinit var tvEmail: TextView
@@ -75,6 +103,14 @@ class PerfilActivity : AppCompatActivity() {
     private fun setupViews() {
         // Header
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener { finish() }
+
+        // Foto de perfil
+        ivFotoPerfil = findViewById(R.id.ivFotoPerfil)
+        UserPhotoManager.cargarFoto(this, userId, ivFotoPerfil)
+        ivFotoPerfil.setOnLongClickListener {
+            mostrarOpcionesFoto()
+            true
+        }
 
         // Views comunes
         tvEmail = findViewById(R.id.tvEmail)
@@ -301,6 +337,86 @@ class PerfilActivity : AppCompatActivity() {
                 eliminarCuenta()
             }
             .setNegativeButton("No, cancelar", null)
+            .show()
+    }
+
+    // ====== GESTIÓN DE FOTO DE PERFIL ======
+
+    private fun mostrarOpcionesFoto() {
+        val prefs = getSharedPreferences("user_photo_prefs", MODE_PRIVATE)
+        val tieneFoto = prefs.getString("foto_local_$userId", null) != null ||
+                prefs.getString("foto_url_$userId", null) != null
+
+        val opciones = if (tieneFoto) {
+            arrayOf("Galería", "Cámara", "Eliminar foto")
+        } else {
+            arrayOf("Galería", "Cámara")
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Foto de perfil")
+            .setItems(opciones) { _, which ->
+                when (opciones[which]) {
+                    "Galería" -> galeriaLauncher.launch("image/*")
+                    "Cámara"  -> verificarPermisosCamara()
+                    "Eliminar foto" -> confirmarEliminarFoto()
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun verificarPermisosCamara() {
+        when {
+            checkSelfPermission(android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED -> {
+                abrirCamara()
+            }
+            shouldShowRequestPermissionRationale(android.Manifest.permission.CAMERA) -> {
+                AlertDialog.Builder(this)
+                    .setTitle("Permiso de cámara")
+                    .setMessage("Necesitamos acceso a la cámara para tomar tu foto de perfil.")
+                    .setPositiveButton("Conceder") { _, _ ->
+                        permisosCamaraLauncher.launch(android.Manifest.permission.CAMERA)
+                    }
+                    .setNegativeButton("Cancelar", null)
+                    .show()
+            }
+            else -> permisosCamaraLauncher.launch(android.Manifest.permission.CAMERA)
+        }
+    }
+
+    private fun abrirCamara() {
+        val fotoFile = File.createTempFile("foto_perfil_", ".jpg", cacheDir)
+        cameraFotoUri = FileProvider.getUriForFile(
+            this,
+            "com.mmdevs.gimnasiopro.fileprovider",
+            fotoFile
+        )
+        camaraLauncher.launch(cameraFotoUri!!)
+    }
+
+    private fun guardarFotoSeleccionada(uri: Uri) {
+        UserPhotoManager.guardarFotoLocal(this, userId, uri)
+        UserPhotoManager.cargarFoto(this, userId, ivFotoPerfil)
+        Toast.makeText(this, "✅ Foto actualizada", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun confirmarEliminarFoto() {
+        AlertDialog.Builder(this)
+            .setTitle("Eliminar foto")
+            .setMessage("¿Eliminar tu foto de perfil?")
+            .setPositiveButton("Eliminar") { _, _ ->
+                val prefs = getSharedPreferences("user_photo_prefs", MODE_PRIVATE)
+                val localPath = prefs.getString("foto_local_$userId", null)
+                if (localPath != null) File(localPath).delete()
+                prefs.edit()
+                    .remove("foto_local_$userId")
+                    .remove("foto_url_$userId")
+                    .apply()
+                ivFotoPerfil.setImageResource(R.drawable.ic_user_placeholder)
+                Toast.makeText(this, "Foto eliminada", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancelar", null)
             .show()
     }
 
