@@ -75,9 +75,14 @@ interface MensajeDao {
     suspend fun eliminarConversacion(conversacionId: String)
 
     /**
-     * Eliminar mensajes antiguos (más de 30 días).
-     * Solo se llama si el usuario quiere limpiar espacio.
+     * Fecha del primer mensaje de una conversación (para calcular expiración).
      */
-    @Query("DELETE FROM mensajes_locales WHERE fechaEnvio < :fechaLimite")
-    suspend fun eliminarMensajesAntiguos(fechaLimite: Long)
+    @Query("SELECT MIN(fechaEnvio) FROM mensajes_locales WHERE conversacionId = :conversacionId")
+    suspend fun getFechaPrimerMensaje(conversacionId: String): Long?
+
+    /**
+     * Eliminar mensajes de conversaciones cuyo primer mensaje supera los 7 días.
+     */
+    @Query("DELETE FROM mensajes_locales WHERE conversacionId IN (SELECT conversacionId FROM mensajes_locales GROUP BY conversacionId HAVING MIN(fechaEnvio) < :fechaLimite)")
+    suspend fun eliminarConversacionesExpiradas(fechaLimite: Long)
 }

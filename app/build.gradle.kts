@@ -61,6 +61,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
 
     // Room Database
     implementation(libs.androidx.room.runtime)
@@ -81,9 +83,14 @@ dependencies {
     // Material Design Components
     implementation(libs.google.material)
 
-    // Coil para cargar SVG
+    // Coil para cargar SVG e imágenes en Compose
     implementation(libs.coil.kt)
     implementation(libs.coil.svg)
+    implementation(libs.coil.compose)
+
+    // Navigation Compose + ViewModel Compose
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.11.1")

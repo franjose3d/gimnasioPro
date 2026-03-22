@@ -75,20 +75,20 @@ object UserPhotoManager {
                 if (bmp != null) {
                     imageView.setImageBitmap(bmp)
                 } else {
-                    imageView.setImageResource(R.drawable.ic_user_placeholder)
+                    imageView.setImageResource(android.R.drawable.ic_menu_myplaces)
                 }
             }
             !remoteUrl.isNullOrBlank() -> {
                 imageView.load(remoteUrl) {
                     crossfade(true)
-                    placeholder(R.drawable.ic_user_placeholder)
-                    error(R.drawable.ic_user_placeholder)
+                    placeholder(android.R.drawable.ic_menu_myplaces)
+                    error(android.R.drawable.ic_menu_myplaces)
                     diskCachePolicy(CachePolicy.ENABLED)
                     memoryCachePolicy(CachePolicy.ENABLED)
                 }
             }
             else -> {
-                imageView.setImageResource(R.drawable.ic_user_placeholder)
+                imageView.setImageResource(android.R.drawable.ic_menu_myplaces)
             }
         }
     }

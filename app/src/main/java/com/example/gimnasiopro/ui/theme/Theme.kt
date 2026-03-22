@@ -6,35 +6,33 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
-    primary = ElectricGreen,
-    secondary = ElectricGreenDark,
-    tertiary = ElectricGreen,
-    background = DarkGreenBackground,
-    surface = DarkGreenBackground,
-    onPrimary = TextOnButton,
-    onSecondary = TextOnButton,
-    onTertiary = TextOnButton,
-    onBackground = TextOnBackground,
-    onSurface = TextOnBackground
+private val AppColorScheme = darkColorScheme(
+    primary          = AccentPurple,
+    primaryContainer = CardDark,
+    secondary        = AccentGreen,
+    secondaryContainer = CardDarkSecondary,
+    tertiary         = AccentBlue,
+    background       = DarkBackground,
+    surface          = DarkBackgroundSecondary,
+    surfaceVariant   = CardDark,
+    onPrimary        = TextPrimary,
+    onPrimaryContainer = TextPrimary,
+    onSecondary      = TextOnButton,
+    onSecondaryContainer = TextPrimary,
+    onTertiary       = TextPrimary,
+    onBackground     = TextPrimary,
+    onSurface        = TextPrimary,
+    onSurfaceVariant = TextSecondary,
+    outline          = DividerColor,
+    error            = RedDelete
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = ElectricGreen,
-    secondary = ElectricGreenDark,
-    tertiary = ElectricGreen,
-    background = DarkGreenBackground,
-    surface = DarkGreenBackground,
-    onPrimary = TextOnButton,
-    onSecondary = TextOnButton,
-    onTertiary = TextOnButton,
-    onBackground = TextOnBackground,
-    onSurface = TextOnBackground
-)
+// Alias for backwards compat inside this file
+private val DarkColorScheme  = AppColorScheme
+private val LightColorScheme = AppColorScheme
 
 @Composable
 fun GimnasioProTheme(

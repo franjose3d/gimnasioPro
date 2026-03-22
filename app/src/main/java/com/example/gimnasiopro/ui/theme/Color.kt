@@ -2,17 +2,28 @@ package com.example.gimnasiopro.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// GimnasioPro — paleta oscura azulada/morada
+val DarkBackground          = Color(0xFF0D0D1A)
+val DarkBackgroundSecondary = Color(0xFF13132B)
+val CardDark                = Color(0xFF1A1A3E)
+val CardDarkSecondary       = Color(0xFF252550)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val AccentPurple    = Color(0xFF6B5CE7)
+val AccentGreen     = Color(0xFF4ADE80)
+val AccentGreenDark = Color(0xFF22C55E)
+val AccentBlue      = Color(0xFF3B82F6)
 
-// GimnasioPro Colors
-val DarkGreenBackground = Color(0xFF1B4D3E)
-val ElectricGreen = Color(0xFF39FF14)
-val ElectricGreenDark = Color(0xFF32CD32)
-val TextOnButton = Color(0xFF000000)
-val TextOnBackground = Color(0xFFFFFFFF)
+val TextPrimary   = Color(0xFFFFFFFF)
+val TextSecondary = Color(0xFFA1A1AA)
+val TextHint      = Color(0x80FFFFFF)
+val TextOnButton  = Color(0xFF000000)
+
+val DividerColor  = Color(0xFF3F3F5A)
+val RedDelete     = Color(0xFFFF5252)
+val OrangeAccent  = Color(0xFFFF6B35)
+
+// Legacy aliases (kept so Theme.kt compiles without changes)
+val DarkGreenBackground = DarkBackground
+val ElectricGreen       = AccentGreen
+val ElectricGreenDark   = AccentGreenDark
+val TextOnBackground    = TextPrimary

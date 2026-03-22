@@ -89,8 +89,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         notificationManager.createNotificationChannel(channel)
 
         // Intent para abrir notificaciones cuando se toca
-        val intent = Intent(this, Class.forName("com.example.gimnasiopro.NotificacionesActivity"))
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        // Si el payload FCM incluye datos de enrutamiento, los pasamos
+        val intent = Intent(this, Class.forName("com.example.gimnasiopro.NotificacionesActivity")).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            data.entries.forEach { (key, value) -> putExtra(key, value) }
+        }
         val pendingIntent = PendingIntent.getActivity(
             this,
             0,
@@ -109,7 +112,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         // Crear notificación
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification) // Usar icono de la app
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(titulo)
             .setContentText(mensaje)
             .setPriority(NotificationCompat.PRIORITY_HIGH)

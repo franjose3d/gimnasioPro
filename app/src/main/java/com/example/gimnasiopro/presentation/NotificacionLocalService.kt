@@ -92,10 +92,13 @@ object NotificacionLocalService {
             else -> CHANNEL_ID_SISTEMA
         }
 
-        // Intent para abrir NotificacionesActivity
+        // Intent para abrir NotificacionesActivity (o chat directamente si es mensaje)
         val intent = Intent(context, NotificacionesActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra("notificacion_id", notificacion.id)
+            putExtra("notificacion_tipo", notificacion.tipo)
+            putExtra("OTRO_USUARIO_ID", notificacion.remitenteId)
+            putExtra("OTRO_USUARIO_NOMBRE", notificacion.remitenteNombre)
         }
 
         val pendingIntent = PendingIntent.getActivity(
@@ -111,7 +114,7 @@ object NotificacionLocalService {
 
         // Crear notificación
         val notification = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(R.drawable.ic_notification)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(notificacion.titulo)
             .setContentText(notificacion.mensaje)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -148,8 +151,8 @@ object NotificacionLocalService {
                         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                     )
 
-                    addAction(R.drawable.ic_check, "Aceptar", pendingIntentAceptar)
-                    addAction(R.drawable.ic_close, "Rechazar", pendingIntentRechazar)
+                    addAction(android.R.drawable.checkbox_on_background, "Aceptar", pendingIntentAceptar)
+                    addAction(android.R.drawable.ic_menu_close_clear_cancel, "Rechazar", pendingIntentRechazar)
                 }
             }
             .build()

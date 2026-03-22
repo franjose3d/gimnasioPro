@@ -117,8 +117,9 @@ class NotificacionRepository {
                 titulo = "Nueva solicitud de conexión",
                 mensaje = if (mensaje.isNotEmpty()) mensaje.take(200) else "$clienteNombre quiere conectar contigo como trainer",
                 fechaCreacion = Date(),
+                fechaExpiracion = Notificacion.calcularFechaExpiracion(),
                 datosExtra = extras,
-                leida = false  // 🔔 EXPLÍCITO: marca como no leída
+                leida = false
             )
 
             Log.d(TAG, "📤 Creando notificación de solicitud:")
@@ -161,8 +162,9 @@ class NotificacionRepository {
                 titulo = "Invitación de trainer",
                 mensaje = if (mensaje.isNotEmpty()) mensaje.take(200) else "$trainerNombre te invita a ser su cliente",
                 fechaCreacion = Date(),
+                fechaExpiracion = Notificacion.calcularFechaExpiracion(),
                 datosExtra = extras,
-                leida = false  // 🔔 EXPLÍCITO: marca como no leída
+                leida = false
             )
 
             Log.d(TAG, "📤 Creando notificación de invitación:")
@@ -198,7 +200,8 @@ class NotificacionRepository {
                 tipo = Notificacion.TIPO_CONEXION_ACEPTADA,
                 titulo = "¡Conexión aceptada!",
                 mensaje = "$aceptadorNombre ha aceptado tu solicitud de conexión",
-                fechaCreacion = Date()
+                fechaCreacion = Date(),
+                fechaExpiracion = Notificacion.calcularFechaExpiracion()
             )
 
             val docRef = notificacionesCollection.add(notificacion.toMap()).await()
@@ -226,7 +229,8 @@ class NotificacionRepository {
                 tipo = Notificacion.TIPO_CONEXION_RECHAZADA,
                 titulo = "Solicitud rechazada",
                 mensaje = "$rechazadorNombre ha rechazado la solicitud de conexión",
-                fechaCreacion = Date()
+                fechaCreacion = Date(),
+                fechaExpiracion = Notificacion.calcularFechaExpiracion()
             )
 
             val docRef = notificacionesCollection.add(notificacion.toMap()).await()
@@ -254,7 +258,8 @@ class NotificacionRepository {
                 tipo = Notificacion.TIPO_RUTINA_ACTUALIZADA,
                 titulo = "Rutina actualizada",
                 mensaje = "$trainerNombre ha actualizado tu rutina: $rutinaNombre",
-                fechaCreacion = Date()
+                fechaCreacion = Date(),
+                fechaExpiracion = Notificacion.calcularFechaExpiracion()
             )
 
             val docRef = notificacionesCollection.add(notificacion.toMap()).await()

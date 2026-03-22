@@ -191,21 +191,30 @@ class MensajeRepository(
     }
 
     /**
-     * Limpiar mensajes antiguos (más de 30 días) para liberar espacio.
-     * Solo se llama si el usuario lo solicita.
+     * Obtener fecha del primer mensaje de una conversación.
+     * Usado para calcular cuántos días le quedan antes de expirar (7 días desde el primer mensaje).
      */
-    suspend fun limpiarMensajesAntiguos(): Result<Int> {
+    suspend fun getFechaPrimerMensaje(conversacionId: String): Long? {
         return try {
-            val hace30Dias = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000)
-
-            // Contar antes de eliminar
-            val mensajes = mensajeDao.getMensajesPorConversacion("").map { it.size }
-
-            mensajeDao.eliminarMensajesAntiguos(hace30Dias)
-
-            Result.success(0) // Retornar cantidad eliminada si se necesita
+            mensajeDao.getFechaPrimerMensaje(conversacionId)
         } catch (e: Exception) {
-            Log.e(TAG, "Error limpiando mensajes antiguos: ${e.message}")
+            Log.e(TAG, "Error obteniendo fecha primer mensaje: ${e.message}")
+            null
+        }
+    }
+
+    /**
+     * Eliminar conversaciones cuyo primer mensaje tiene más de 7 días (expiradas).
+     * Llamar al iniciar la app para mantener Room limpio.
+     */
+    suspend fun eliminarConversacionesExpiradas(): Result<Unit> {
+        return try {
+            val hace7Dias = System.currentTimeMillis() - (7L * 24 * 60 * 60 * 1000)
+            mensajeDao.eliminarConversacionesExpiradas(hace7Dias)
+            Log.d(TAG, "✅ Conversaciones expiradas eliminadas")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error eliminando conversaciones expiradas: ${e.message}")
             Result.failure(e)
         }
     }

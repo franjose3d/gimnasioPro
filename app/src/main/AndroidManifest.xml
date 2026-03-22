@@ -61,120 +61,12 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".GimActivity"
-            android:exported="false"
-            android:label="@string/btn_gim"
-            android:theme="@style/Theme.GimnasioPro" />
-
-        <activity
-            android:name=".EjerciciosActivity"
-            android:exported="false"
-            android:label="@string/btn_ejercicios"
-            android:theme="@style/Theme.GimnasioPro" />
-
-        <activity
-            android:name=".ListaEjerciciosActivity"
-            android:exported="false"
-            android:label="@string/titulo_ejercicios"
-            android:theme="@style/Theme.GimnasioPro" />
-
-        <activity
-            android:name=".RutinasActivity"
-            android:exported="false"
-            android:label="@string/btn_rutinas"
-            android:theme="@style/Theme.GimnasioPro" />
-
-        <activity
-            android:name=".DetalleRutinaActivity"
-            android:exported="false"
-            android:label="@string/titulo_detalle_rutina"
-            android:theme="@style/Theme.GimnasioPro" />
-
-        <activity
-            android:name=".ProgresoActivity"
-            android:exported="false"
-            android:label="@string/btn_progreso"
-            android:theme="@style/Theme.GimnasioPro" />
-
-        <activity
-            android:name=".PersonalTrainerActivity"
-            android:exported="false"
-            android:label="@string/btn_personal_trainer"
-            android:theme="@style/Theme.GimnasioPro" />
-
-        <activity
-            android:name=".EntrenamientoActivity"
-            android:exported="false"
-            android:label="@string/titulo_entrenamiento"
-            android:theme="@style/Theme.GimnasioPro" />
-        <activity
-            android:name=".presentation.trainer.RegisterTrainerActivity"
-            android:exported="false"
-            android:label="Registro de Entrenador"
-            android:theme="@style/Theme.GimnasioPro" />
-        <activity
-            android:name=".presentation.auth.VerificarEmailActivity"
-            android:exported="false"
-            />
-        <activity
-            android:name=".presentation.auth.LoginActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-        <!-- Registro Cliente -->
-        <activity
-            android:name=".presentation.cliente.RegisterClienteActivity"
-            android:exported="false" />
-
-        <!-- Perfil de usuario -->
-        <activity
-            android:name=".PerfilActivity"
-            android:exported="false"
-            android:label="Mi Perfil"
-            android:theme="@style/Theme.GimnasioPro" />
-
-        <!-- Búsqueda de ejercicios -->
-        <activity
-            android:name=".BuscarEjerciciosActivity"
-            android:exported="false"
-            android:label="@string/titulo_buscar_ejercicios"
-            android:theme="@style/Theme.GimnasioPro"
-            android:windowSoftInputMode="stateVisible|adjustResize" />
-
-        <!-- Buscar Trainer (para clientes) -->
-        <activity
-            android:name=".BuscarTrainerActivity"
-            android:exported="false"
-            android:label="Buscar Trainer"
-            android:theme="@style/Theme.GimnasioPro" />
-
-        <!-- Lista de Clientes (para trainers) -->
-        <activity
-            android:name=".ListaClientesActivity"
-            android:exported="false"
-            android:label="Mis Clientes"
-            android:theme="@style/Theme.GimnasioPro" />
-
-        <!-- Contacta Activity -->
-        <activity
-            android:name=".ContactaActivity"
-            android:exported="false"
-            android:label="Contacta"
-            android:theme="@style/Theme.GimnasioPro" />
-
-        <!-- Conversacion Activity -->
-        <activity
-            android:name=".ConversacionActivity"
-            android:exported="false"
-            android:label="Conversación"
-            android:theme="@style/Theme.GimnasioPro"
-            android:windowSoftInputMode="adjustResize" />
-
-        <!-- Notificaciones Activity -->
+        <!-- NotificacionesActivity se mantiene como destino del PendingIntent de FCM -->
         <activity
             android:name=".NotificacionesActivity"
             android:exported="false"
             android:label="Notificaciones"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.GimnasioPro" />
 
         <!-- ====== FIREBASE MESSAGING SERVICE (NUEVO) ====== -->
