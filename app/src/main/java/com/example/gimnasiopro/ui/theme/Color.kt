@@ -9,9 +9,9 @@ val CardDark                = Color(0xFF1A1A3E)
 val CardDarkSecondary       = Color(0xFF252550)
 
 val AccentPurple    = Color(0xFF6B5CE7)
-val AccentGreen     = Color(0xFF4ADE80)
+val AccentGreen     = Color(0xFF8BC34A)
 val AccentGreenDark = Color(0xFF22C55E)
-val AccentBlue      = Color(0xFF3B82F6)
+val AccentBlue      = Color(0xFF3F51B5)
 
 val TextPrimary   = Color(0xFFFFFFFF)
 val TextSecondary = Color(0xFFA1A1AA)

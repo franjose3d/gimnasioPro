@@ -123,12 +123,19 @@ fun RutinasScreen(
                     }
                 },
                 actions = {
-                    TextButton(onClick = onRutinasClick) {
+                    Button(
+                        onClick = onRutinasClick,
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .height(40.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AccentGreen),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
+                    ) {
                         Text(
                             text = "Rutinas",
-                            color = AccentGreen,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp
+                            color = TextOnButton,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp
                         )
                     }
                 },

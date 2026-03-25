@@ -46,6 +46,7 @@ sealed class Screen(val route: String) {
     }
 
     // ── Rutinas flow ──────────────────────────────────────────────────────
+    object RutinasPreestablecidas : Screen("rutinas_preestablecidas")
     object Rutinas : Screen(
         "rutinas?MODO_TRAINER={MODO_TRAINER}&CLIENTE_ID={CLIENTE_ID}&CLIENTE_NOMBRE={CLIENTE_NOMBRE}"
     ) {

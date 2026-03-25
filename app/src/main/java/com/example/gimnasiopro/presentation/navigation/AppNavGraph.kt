@@ -25,6 +25,7 @@ import com.example.gimnasiopro.presentation.perfil.PerfilScreen
 import com.example.gimnasiopro.presentation.personaltrainer.PersonalTrainerScreen
 import com.example.gimnasiopro.presentation.progreso.ProgresoScreen
 import com.example.gimnasiopro.presentation.rutinas.RutinasScreen
+import com.example.gimnasiopro.presentation.rutinaspreestablecidas.RutinasPreestablecidasScreen
 import com.example.gimnasiopro.presentation.trainer.RegisterTrainerScreen
 
 /**
@@ -228,6 +229,9 @@ fun AppNavGraph(
                     navController.navigate(
                         Screen.DetalleRutina.createRoute(numero, modoTrainer, clienteId, clienteNombre)
                     )
+                },
+                onRutinasClick   = {
+                    navController.navigate(Screen.RutinasPreestablecidas.route)
                 }
             )
         }
@@ -345,8 +349,7 @@ fun AppNavGraph(
             )
         }
 
-        composable(
-            route     = Screen.Conversacion.route,
+        composable(Screen.Conversacion.route,
             arguments = listOf(
                 navArgument("OTRO_USUARIO_ID") {
                     type = NavType.StringType
@@ -359,6 +362,14 @@ fun AppNavGraph(
             )
         ) {
             ConversacionScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // ── Rutinas Preestablecidas ───────────────────────────────────────────
+
+        composable(Screen.RutinasPreestablecidas.route) {
+            RutinasPreestablecidasScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
