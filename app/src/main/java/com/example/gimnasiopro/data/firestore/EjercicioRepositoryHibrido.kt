@@ -267,6 +267,7 @@ fun EjercicioFirestore.toRoom(): Ejercicio {
     return Ejercicio(
         id = this.id.toLongOrNull() ?: 0L,
         grupoMuscular = this.grupoMuscular,
+        grupoMuscularSecundario = this.grupoMuscularSecundario,
         nombre = this.nombre,
         descripcion = this.descripcion,
         imagenUrl = this.imagenUrl
@@ -281,6 +282,7 @@ fun Ejercicio.toFirestoreModel(creadoPor: String? = null): EjercicioFirestore {
     return EjercicioFirestore(
         id = "", // Dejar vacío para que Firestore genere el ID automáticamente
         grupoMuscular = this.grupoMuscular,
+        grupoMuscularSecundario = this.grupoMuscularSecundario,
         nombre = this.nombre,
         descripcion = this.descripcion,
         imagenUrl = this.imagenUrl,

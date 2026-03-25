@@ -97,12 +97,20 @@ class EjercicioRepository(private val ejercicioDao: EjercicioDao) {
 
     /**
      * Obtiene el conteo de ejercicios por grupo muscular.
-     * Se usa para calcular el equilibrio muscular.
+     * Los ejercicios con grupo secundario cuentan para ambos grupos.
+     * Se usa para calcular el equilibrio muscular en las estadísticas.
      */
     suspend fun getConteoPorGrupoMuscular(ejercicioIds: List<Long>): Map<String, Int> {
         if (ejercicioIds.isEmpty()) return emptyMap()
 
         val ejercicios = ejercicioDao.getEjerciciosByIds(ejercicioIds)
-        return ejercicios.groupingBy { it.grupoMuscular }.eachCount()
+        val resultado = mutableMapOf<String, Int>()
+        ejercicios.forEach { ej ->
+            resultado[ej.grupoMuscular] = (resultado[ej.grupoMuscular] ?: 0) + 1
+            ej.grupoMuscularSecundario?.let { secundario ->
+                resultado[secundario] = (resultado[secundario] ?: 0) + 1
+            }
+        }
+        return resultado
     }
 }

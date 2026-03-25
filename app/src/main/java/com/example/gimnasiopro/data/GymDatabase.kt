@@ -13,7 +13,8 @@ import com.example.gimnasiopro.data.local.MensajeDao
 /**
  * Base de datos Room para la aplicación GimnasioPro.
  *
- * Version 7: Añadida columna numeroSeries a registros_entrenamiento
+ * Version 8: Añadida tabla registros_series
+ * Version 9: Añadida columna grupoMuscularSecundario a ejercicios
  */
 @Database(
     entities = [
@@ -25,7 +26,7 @@ import com.example.gimnasiopro.data.local.MensajeDao
         RutinaDiaSemana::class,
         MensajeLocal::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = false
 )
 @TypeConverters(EjercicioIdsConverter::class)
@@ -49,7 +50,6 @@ abstract class GymDatabase : RoomDatabase() {
          */
         private val MIGRATION_7_8 = object : Migration(7, 8) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                // Crear tabla de series
                 database.execSQL("""
             CREATE TABLE IF NOT EXISTS registros_series (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -60,12 +60,22 @@ abstract class GymDatabase : RoomDatabase() {
                 FOREIGN KEY(registroEntrenamientoId) REFERENCES registros_entrenamiento(id) ON DELETE CASCADE
             )
         """)
-
-                // Crear índice para mejorar rendimiento
                 database.execSQL("""
-            CREATE INDEX IF NOT EXISTS index_registros_series_registroEntrenamientoId 
+            CREATE INDEX IF NOT EXISTS index_registros_series_registroEntrenamientoId
             ON registros_series(registroEntrenamientoId)
         """)
+            }
+        }
+
+        /**
+         * Migración de versión 8 a 9:
+         * Añade columna grupoMuscularSecundario a la tabla ejercicios
+         */
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE ejercicios ADD COLUMN grupoMuscularSecundario TEXT"
+                )
             }
         }
 
@@ -79,8 +89,7 @@ abstract class GymDatabase : RoomDatabase() {
                     GymDatabase::class.java,
                     "gimnasio_pro_database"
                 )
-                    .addMigrations(MIGRATION_7_8)  // ← NUEVO: Usar migración
-                    // ❌ ELIMINADO: .fallbackToDestructiveMigration()
+                    .addMigrations(MIGRATION_7_8, MIGRATION_8_9)
                     .build()
                 INSTANCE = instance
                 instance

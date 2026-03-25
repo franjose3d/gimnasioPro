@@ -127,10 +127,14 @@ class RutinaRepositoryHibrido(
                 }
             }
 
-            // 4. Subir rutinas locales que no están en Firebase
-            val numerosEnFirebase = rutinasFirebase.map { it.numeroRutina }.toSet()
+            // 4. Subir rutinas locales nuevas o más recientes que Firebase
+            val rutinasFirebaseMap = rutinasFirebase.associateBy { it.numeroRutina }
             rutinasLocales.values.forEach { rutinaLocal ->
-                if (rutinaLocal.numeroRutina !in numerosEnFirebase && rutinaLocal.ejercicioIds.isNotEmpty()) {
+                if (rutinaLocal.ejercicioIds.isEmpty()) return@forEach
+                val rutinaFb = rutinasFirebaseMap[rutinaLocal.numeroRutina]
+                val debeSubir = rutinaFb == null ||
+                    rutinaLocal.fechaModificacion > rutinaFb.fechaModificacion.time
+                if (debeSubir) {
                     sincronizarRutinaConFirebase(rutinaLocal)
                     subidas++
                     Log.d(TAG, "⬆️ Rutina ${rutinaLocal.numeroRutina} subida a Firebase")

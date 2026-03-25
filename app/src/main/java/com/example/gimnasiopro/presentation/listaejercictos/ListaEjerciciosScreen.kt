@@ -46,6 +46,7 @@ fun ListaEjerciciosScreen(
     var agregarGrupo by remember { mutableStateOf(state.grupoMuscular) }
     var agregarNombre by remember { mutableStateOf("") }
     var agregarDesc by remember { mutableStateOf("") }
+    var agregarGrupoSecundario by remember { mutableStateOf("") }
     var eliminarTarget by remember { mutableStateOf<Ejercicio?>(null) }
     var showRutinaDialog by remember { mutableStateOf(false) }
     var rutinasInfo by remember { mutableStateOf<List<Pair<Int, Int>>>(emptyList()) }
@@ -100,6 +101,33 @@ fun ListaEjerciciosScreen(
                             }
                         }
                     }
+                    // Grupo muscular secundario (opcional)
+                    var grupoSecExpanded by remember { mutableStateOf(false) }
+                    ExposedDropdownMenuBox(
+                        expanded = grupoSecExpanded,
+                        onExpandedChange = { grupoSecExpanded = it }
+                    ) {
+                        OutlinedTextField(
+                            value = agregarGrupoSecundario,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Grupo secundario (opcional)") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = grupoSecExpanded) },
+                            modifier = Modifier.menuAnchor().fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(expanded = grupoSecExpanded, onDismissRequest = { grupoSecExpanded = false }) {
+                            DropdownMenuItem(
+                                text = { Text("— Ninguno —") },
+                                onClick = { agregarGrupoSecundario = ""; grupoSecExpanded = false }
+                            )
+                            ListaEjerciciosViewModel.GRUPOS_MUSCULARES.forEach { g ->
+                                DropdownMenuItem(
+                                    text = { Text(g) },
+                                    onClick = { agregarGrupoSecundario = g; grupoSecExpanded = false }
+                                )
+                            }
+                        }
+                    }
                     OutlinedTextField(
                         value = agregarNombre,
                         onValueChange = { agregarNombre = it },
@@ -118,8 +146,13 @@ fun ListaEjerciciosScreen(
             },
             confirmButton = {
                 TextButton(onClick = {
-                    viewModel.agregarEjercicio(agregarGrupo, agregarNombre.trim(), agregarDesc.trim())
-                    agregarNombre = ""; agregarDesc = ""
+                    viewModel.agregarEjercicio(
+                        agregarGrupo,
+                        agregarNombre.trim(),
+                        agregarDesc.trim(),
+                        agregarGrupoSecundario.ifBlank { null }
+                    )
+                    agregarNombre = ""; agregarDesc = ""; agregarGrupoSecundario = ""
                     showAgregarDialog = false
                 }) { Text("Guardar") }
             },

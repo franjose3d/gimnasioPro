@@ -22,9 +22,9 @@ interface EjercicioDao {
     fun getAllEjercicios(): Flow<List<Ejercicio>>
 
     /**
-     * Obtiene todos los ejercicios de un grupo muscular específico.
+     * Obtiene todos los ejercicios de un grupo muscular específico (principal o secundario).
      */
-    @Query("SELECT * FROM ejercicios WHERE grupoMuscular = :grupoMuscular ORDER BY nombre")
+    @Query("SELECT * FROM ejercicios WHERE grupoMuscular = :grupoMuscular OR grupoMuscularSecundario = :grupoMuscular ORDER BY nombre")
     fun getEjerciciosByGrupoMuscular(grupoMuscular: String): Flow<List<Ejercicio>>
 
     /**

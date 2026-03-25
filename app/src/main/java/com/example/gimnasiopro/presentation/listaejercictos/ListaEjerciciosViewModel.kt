@@ -167,7 +167,7 @@ class ListaEjerciciosViewModel(
 
     // ── Add exercise (trainer only) ───────────────────────────────────────────
 
-    fun agregarEjercicio(grupo: String, nombre: String, descripcion: String) {
+    fun agregarEjercicio(grupo: String, nombre: String, descripcion: String, grupoSecundario: String? = null) {
         if (nombre.isBlank()) { toast("El nombre no puede estar vacío"); return }
         if (descripcion.isBlank()) { toast("La descripción no puede estar vacía"); return }
         viewModelScope.launch {
@@ -179,7 +179,12 @@ class ListaEjerciciosViewModel(
                     return@launch
                 }
                 val trainerId = auth.currentUser?.uid
-                val nuevo = Ejercicio(grupoMuscular = grupo, nombre = nombre, descripcion = descripcion)
+                val nuevo = Ejercicio(
+                    grupoMuscular = grupo,
+                    grupoMuscularSecundario = grupoSecundario,
+                    nombre = nombre,
+                    descripcion = descripcion
+                )
                 ejercicioRepo.insertEjercicio(nuevo, trainerId)
                 toast("✅ Ejercicio agregado correctamente")
             } catch (e: Exception) {

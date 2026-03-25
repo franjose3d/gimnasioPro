@@ -9,24 +9,68 @@ service cloud.firestore {
       return exists(/databases/$(database)/documents/trainers/$(request.auth.uid)/misClientes/$(clienteId));
     }
 
-    // ==================== EJERCICIOS (Global) ====================
+    // ==================== EJERCICIOS (colección plana - legado) ====================
     // Los ejercicios son globales, cualquier cliente o trainer autenticado puede leerlos
     // Solo pueden crear/editar ejercicios que ellos mismos crearon
     match /ejercicios/{ejercicioId} {
       // Cualquier cliente o trainer autenticado puede leer ejercicios
       allow read: if request.auth != null;
-      
+
       // Crear ejercicio: solo trainers autenticados, debe incluir creadoPor
       allow create: if request.auth != null &&
                        request.resource.data.creadoPor == request.auth.uid;
-      
+
       // Actualizar: SOLO el creador puede editar
       allow update: if request.auth != null &&
                        resource.data.creadoPor == request.auth.uid;
 
       // Eliminar: solo el creador
-      allow delete: if request.auth != null && 
+      allow delete: if request.auth != null &&
                        resource.data.creadoPor == request.auth.uid;
+    }
+
+    // ==================== EJERCICIOS (estructura jerárquica) ====================
+    // Colección: gruposMusculares/{grupoId}/ejercicios/{ejercicioId}
+    // Cualquier autenticado puede leer; actualizar solo si es predefinido o si es el creador
+    match /gruposMusculares/{grupoId}/ejercicios/{ejercicioId} {
+      // Lectura: cualquier usuario autenticado
+      allow read: if request.auth != null;
+
+      // Crear ejercicio:
+      // - Personalizado: creadoPor debe coincidir con auth.uid
+      // - Predefinido (migración): permitido con esPredefinido == true
+      allow create: if request.auth != null &&
+                       (
+                         request.resource.data.creadoPor == request.auth.uid ||
+                         request.resource.data.esPredefinido == true
+                       );
+
+      // Actualizar: el creador puede editar los suyos; ejercicios predefinidos
+      // (sin creadoPor o creadoPor == null) pueden ser actualizados por cualquier autenticado
+      // (necesario para la migración de grupoMuscularSecundario)
+      allow update: if request.auth != null &&
+                       (resource.data.creadoPor == request.auth.uid ||
+                        !('creadoPor' in resource.data) ||
+                        resource.data.creadoPor == null);
+
+      // Eliminar: solo el creador
+      allow delete: if request.auth != null &&
+                       resource.data.creadoPor == request.auth.uid;
+    }
+
+    // Documento padre del grupo muscular (necesario para groupDoc.get/set durante migración)
+    match /gruposMusculares/{grupoId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null &&
+                               request.resource.data.keys().hasOnly(["nombre", "orden"]) &&
+                               request.resource.data.nombre == grupoId;
+      allow delete: if false;
+    }
+
+    // CollectionGroup query: permite buscar en todas las subcolecciones 'ejercicios'
+    // (usado para encontrar ejercicios por grupoMuscularSecundario)
+    match /{path=**}/ejercicios/{ejercicioId} {
+      allow read: if request.auth != null;
     }
     
     // ==================== TRAINERS ====================
@@ -177,6 +221,25 @@ service cloud.firestore {
       // Solo el remitente puede editar/eliminar
       allow update, delete: if request.auth != null &&
                                resource.data.remitenteId == request.auth.uid;
+    }
+
+    // ==================== USERS (token FCM y datos mínimos de sesión) ====================
+    match /users/{userId} {
+      allow read, write: if request.auth != null && userId == request.auth.uid;
+    }
+
+    // ==================== MENSAJES PENDIENTES (buzón temporal) ====================
+    // Estructura: mensajes_pendientes/{destinatarioId}/mensajes/{mensajeId}
+    match /mensajes_pendientes/{destinatarioId}/mensajes/{mensajeId} {
+      // El destinatario puede leer y borrar su buzón
+      allow read, delete: if request.auth != null && destinatarioId == request.auth.uid;
+
+      // El remitente autenticado puede crear el mensaje en el buzón del destinatario
+      allow create: if request.auth != null &&
+                       request.resource.data.de == request.auth.uid &&
+                       destinatarioId != request.auth.uid;
+
+      allow update: if false;
     }
   }
 }

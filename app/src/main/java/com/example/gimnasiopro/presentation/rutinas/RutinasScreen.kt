@@ -26,7 +26,8 @@ import com.example.gimnasiopro.ui.theme.*
 fun RutinasScreen(
     viewModel: RutinasViewModel = viewModel(),
     onNavigateBack: () -> Unit,
-    onRutinaSelected: (numero: Int) -> Unit
+    onRutinaSelected: (numero: Int) -> Unit,
+    onRutinasClick: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -119,6 +120,16 @@ fun RutinasScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.KeyboardArrowLeft, "Volver", tint = AccentGreen)
+                    }
+                },
+                actions = {
+                    TextButton(onClick = onRutinasClick) {
+                        Text(
+                            text = "Rutinas",
+                            color = AccentGreen,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

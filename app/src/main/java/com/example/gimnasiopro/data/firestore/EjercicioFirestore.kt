@@ -10,6 +10,7 @@ import java.util.Date
 data class EjercicioFirestore(
     val id: String = "",
     val grupoMuscular: String,
+    val grupoMuscularSecundario: String? = null,
     val nombre: String,
     val descripcion: String,
     val imagenUrl: String? = null,
@@ -24,6 +25,7 @@ data class EjercicioFirestore(
         return mapOf(
             "id" to id,
             "grupoMuscular" to grupoMuscular,
+            "grupoMuscularSecundario" to grupoMuscularSecundario,
             "nombre" to nombre,
             "descripcion" to descripcion,
             "imagenUrl" to imagenUrl,
@@ -43,6 +45,7 @@ data class EjercicioFirestore(
                 EjercicioFirestore(
                     id = document.id,
                     grupoMuscular = data["grupoMuscular"] as? String ?: "",
+                    grupoMuscularSecundario = data["grupoMuscularSecundario"] as? String,
                     nombre = data["nombre"] as? String ?: "",
                     descripcion = data["descripcion"] as? String ?: "",
                     imagenUrl = data["imagenUrl"] as? String,
@@ -63,6 +66,7 @@ data class EjercicioFirestore(
                 EjercicioFirestore(
                     id = id,
                     grupoMuscular = map["grupoMuscular"] as? String ?: "",
+                    grupoMuscularSecundario = map["grupoMuscularSecundario"] as? String,
                     nombre = map["nombre"] as? String ?: "",
                     descripcion = map["descripcion"] as? String ?: "",
                     imagenUrl = map["imagenUrl"] as? String,

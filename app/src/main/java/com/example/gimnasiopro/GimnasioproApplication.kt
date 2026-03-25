@@ -12,6 +12,7 @@ import com.example.gimnasiopro.data.RutinaDiaSemanaRepository
 import com.example.gimnasiopro.data.firestore.EjercicioFirestoreRepository
 import com.example.gimnasiopro.data.firestore.EjercicioRepositoryHibrido
 import com.example.gimnasiopro.data.firestore.FirestoreInitializer
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -103,6 +104,40 @@ class GimnasioproApplication : Application() {
         FirestoreInitializer(this, localEjercicioRepository)
     }
 
+    // Evita lanzar migraciones en paralelo
+    @Volatile
+    private var isMigrationRunning = false
+
+    private fun triggerFirestoreMigration() {
+        if (isMigrationRunning) return
+        applicationScope.launch {
+            if (isMigrationRunning) return@launch
+            isMigrationRunning = true
+            try {
+                val result = firestoreInitializer.inicializarEjercicios()
+                result.fold(
+                    onSuccess = { migrado ->
+                        if (migrado) {
+                            Log.d(TAG, "Ejercicios migrados a Firestore exitosamente")
+                        } else {
+                            Log.d(TAG, "Ejercicios ya estaban migrados o migración pospuesta")
+                        }
+                        Log.d(TAG, "Iniciando sincronización automática...")
+                    },
+                    onFailure = { error ->
+                        Log.e(TAG, "Error al migrar ejercicios a Firestore: ${error.message}", error)
+                        Log.i(TAG, "Modo offline activado - usando solo datos locales")
+                    }
+                )
+            } catch (e: Exception) {
+                Log.e(TAG, "Error al inicializar Firestore: ${e.message}", e)
+                Log.i(TAG, "Modo offline activado - usando solo datos locales")
+            } finally {
+                isMigrationRunning = false
+            }
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "Application onCreate - iniciando inicialización híbrida")
@@ -134,28 +169,13 @@ class GimnasioproApplication : Application() {
         // 2. Inicializar la base de datos local PRIMERO (para cache inmediato)
         DatabaseInitializer.initializeIfNeeded(this, localEjercicioRepository, rutinaRepository)
 
-        // 3. Inicializar Firestore en background (no bloquea el inicio de la app)
-        applicationScope.launch {
-            try {
-                val result = firestoreInitializer.inicializarEjercicios()
-                result.fold(
-                    onSuccess = { migrado ->
-                        if (migrado) {
-                            Log.d(TAG, "✅ Ejercicios migrados a Firestore exitosamente")
-                        } else {
-                            Log.d(TAG, "ℹ️ Ejercicios ya estaban migrados a Firestore")
-                        }
-                        // Forzar sincronización después de la migración
-                        Log.d(TAG, "🔄 Iniciando sincronización automática...")
-                    },
-                    onFailure = { error ->
-                        Log.e(TAG, "❌ Error al migrar ejercicios a Firestore: ${error.message}", error)
-                        Log.i(TAG, "📱 Modo offline activado - usando solo datos locales")
-                    }
-                )
-            } catch (e: Exception) {
-                Log.e(TAG, "❌ Error al inicializar Firestore: ${e.message}", e)
-                Log.i(TAG, "📱 Modo offline activado - usando solo datos locales")
+        // 3. Intentar migración al arrancar (si hay sesión)
+        triggerFirestoreMigration()
+
+        // 4. Reintentar migración cuando el usuario inicia sesión sin reiniciar la app
+        FirebaseAuth.getInstance().addAuthStateListener { auth ->
+            if (auth.currentUser != null) {
+                triggerFirestoreMigration()
             }
         }
     }
