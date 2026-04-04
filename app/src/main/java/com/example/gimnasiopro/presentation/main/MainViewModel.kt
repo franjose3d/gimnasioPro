@@ -29,7 +29,9 @@ data class MainUiState(
     val userId: String = "",
     val racha: Int = 0,
     val notifCount: Int = 0,
-    val estaLogueado: Boolean = false
+    val estaLogueado: Boolean = false,
+    val gimnasioNombre: String? = null,
+    val gimnasioLogoUrl: String? = null
 )
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -73,6 +75,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 _state.update { it.copy(racha = racha) }
             } catch (e: Exception) {
                 Log.w(TAG, "Error cargando racha: ${e.message}")
+            }
+
+            // 3. Load linked gym (nullable — no gym linked = null)
+            try {
+                val gym = app.gimnasioRepository.getGimnasioActual()
+                _state.update { it.copy(
+                    gimnasioNombre  = gym?.nombre,
+                    gimnasioLogoUrl = gym?.logoUrl?.ifBlank { null }
+                )}
+            } catch (e: Exception) {
+                Log.w(TAG, "Error cargando gimnasio: ${e.message}")
             }
 
             _state.update { it.copy(isLoading = false) }
@@ -155,6 +168,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 FirebaseFirestore.getInstance().collection("users").document(userId)
                     .set(hashMapOf("fcmToken" to token), SetOptions.merge())
                     .addOnFailureListener { e -> Log.e(TAG, "Error guardando FCM: ${e.message}") }
+            }
+        }
+    }
+
+    fun recargarGimnasio() {
+        viewModelScope.launch {
+            try {
+                val gym = app.gimnasioRepository.getGimnasioActual()
+                _state.update { it.copy(
+                    gimnasioNombre  = gym?.nombre,
+                    gimnasioLogoUrl = gym?.logoUrl?.ifBlank { null }
+                )}
+            } catch (e: Exception) {
+                Log.w(TAG, "Error recargando gimnasio: ${e.message}")
             }
         }
     }

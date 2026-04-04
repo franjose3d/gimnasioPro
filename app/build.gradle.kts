@@ -110,6 +110,12 @@ dependencies {
     // ====== NUEVO: Google AdMob ======
     implementation(libs.play.services.ads)
 
+    // ====== CameraX + ML Kit (escáner QR de gimnasio) ======
+    implementation("androidx.camera:camera-camera2:1.4.2")
+    implementation("androidx.camera:camera-lifecycle:1.4.2")
+    implementation("androidx.camera:camera-view:1.4.2")
+    implementation("com.google.mlkit:barcode-scanning:17.3.0")
+
 
     // ====== TESTING ======
     // Unit Tests

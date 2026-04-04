@@ -12,6 +12,7 @@ import com.example.gimnasiopro.data.RutinaDiaSemanaRepository
 import com.example.gimnasiopro.data.firestore.EjercicioFirestoreRepository
 import com.example.gimnasiopro.data.firestore.EjercicioRepositoryHibrido
 import com.example.gimnasiopro.data.firestore.FirestoreInitializer
+import com.example.gimnasiopro.data.firestore.GimnasioRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -94,6 +95,12 @@ class GimnasioproApplication : Application() {
     val rutinaDiaSemanaRepository: RutinaDiaSemanaRepository by lazy {
         Log.d(TAG, "Inicializando repositorio de rutinas por día...")
         RutinaDiaSemanaRepository(database.rutinaDiaSemanaDao())
+    }
+
+    // Repositorio de gimnasios (Firestore, solo lectura + gimnasioId en perfil)
+    val gimnasioRepository: GimnasioRepository by lazy {
+        Log.d(TAG, "Inicializando repositorio de gimnasio...")
+        GimnasioRepository()
     }
 
     // Scope para operaciones en background

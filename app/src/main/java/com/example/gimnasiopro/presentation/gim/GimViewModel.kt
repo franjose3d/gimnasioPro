@@ -10,6 +10,8 @@ import com.example.gimnasiopro.data.Rutina
 import com.example.gimnasiopro.data.RutinaDiaSemana
 import com.example.gimnasiopro.data.RutinaDiaSemanaRepository
 import com.example.gimnasiopro.data.RutinaRepository
+import com.example.gimnasiopro.data.firestore.GimnasioFirestore
+import com.example.gimnasiopro.data.firestore.GimnasioRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,7 +28,14 @@ data class GimUiState(
     val navigateToRutinas: Boolean = false,
     val showRutinaPickerDia: Int? = null,        // diaSemana for picker dialog
     val rutinasDisponibles: List<Rutina> = emptyList(),
-    val showOpcionesDia: Int? = null             // diaSemana for options (long press)
+    val showOpcionesDia: Int? = null,            // diaSemana for options (long press)
+    // ── Gimnasio ─────────────────────────────────────────────────────────────
+    val gimnasio: GimnasioFirestore? = null,
+    val isVinculando: Boolean = false,
+    val showVincularDialog: Boolean = false,
+    val codigoInput: String = "",
+    val errorCodigo: String? = null,
+    val showQrScanner: Boolean = false
 )
 
 class GimViewModel(application: Application) : AndroidViewModel(application) {
@@ -35,6 +44,7 @@ class GimViewModel(application: Application) : AndroidViewModel(application) {
     private val db                     = GymDatabase.getDatabase(application)
     private val rutinaDiaSemanaRepo    = RutinaDiaSemanaRepository(db.rutinaDiaSemanaDao())
     private val rutinaRepo             = RutinaRepository(db.rutinaDao())
+    private val gimnasioRepo           = app.gimnasioRepository
 
     private val _state = MutableStateFlow(GimUiState(diaSeleccionado = getDiaActual()))
     val state: StateFlow<GimUiState> = _state.asStateFlow()
@@ -46,6 +56,7 @@ class GimViewModel(application: Application) : AndroidViewModel(application) {
     init {
         syncRutinas()
         cargarDiasConRutina()
+        cargarGimnasio()
     }
 
     private fun syncRutinas() {
@@ -146,6 +157,79 @@ class GimViewModel(application: Application) : AndroidViewModel(application) {
 
     fun clearToast() = _state.update { it.copy(toast = null) }
     private fun toast(msg: String) = _state.update { it.copy(toast = msg) }
+
+    // ── Gimnasio ─────────────────────────────────────────────────────────────
+
+    fun cargarGimnasio() {
+        viewModelScope.launch {
+            try {
+                val gym = gimnasioRepo.getGimnasioActual()
+                _state.update { it.copy(gimnasio = gym) }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error cargando gimnasio: ${e.message}")
+            }
+        }
+    }
+
+    fun onMostrarVincularDialog() = _state.update {
+        it.copy(showVincularDialog = true, codigoInput = "", errorCodigo = null)
+    }
+
+    fun onDismissVincularDialog() = _state.update {
+        it.copy(showVincularDialog = false, codigoInput = "", errorCodigo = null)
+    }
+
+    fun onCodigoChange(codigo: String) = _state.update {
+        it.copy(codigoInput = codigo, errorCodigo = null)
+    }
+
+    fun vincularPorCodigo() {
+        val codigo = _state.value.codigoInput.trim()
+        if (codigo.isBlank()) {
+            _state.update { it.copy(errorCodigo = "Introduce el código del gimnasio") }
+            return
+        }
+        _state.update { it.copy(isVinculando = true, errorCodigo = null) }
+        viewModelScope.launch {
+            val gym = gimnasioRepo.buscarPorCodigo(codigo)
+            if (gym == null) {
+                _state.update { it.copy(isVinculando = false, errorCodigo = "Código no encontrado o gimnasio inactivo") }
+                return@launch
+            }
+            val ok = gimnasioRepo.vincularGimnasio(gym.id)
+            if (ok) {
+                _state.update { it.copy(
+                    isVinculando = false,
+                    showVincularDialog = false,
+                    codigoInput = "",
+                    gimnasio = gym
+                )}
+                toast("Vinculado a ${gym.nombre}")
+            } else {
+                _state.update { it.copy(isVinculando = false, errorCodigo = "No se pudo guardar. Inténtalo de nuevo.") }
+            }
+        }
+    }
+
+    fun onCodigoQrDetectado(codigo: String) {
+        _state.update { it.copy(showQrScanner = false, codigoInput = codigo) }
+        vincularPorCodigo()
+    }
+
+    fun desvincularGimnasio() {
+        viewModelScope.launch {
+            val ok = gimnasioRepo.desvincularGimnasio()
+            if (ok) {
+                _state.update { it.copy(gimnasio = null) }
+                toast("Gimnasio desvinculado")
+            } else {
+                toast("Error al desvincular. Inténtalo de nuevo.")
+            }
+        }
+    }
+
+    fun onMostrarQrScanner() = _state.update { it.copy(showQrScanner = true) }
+    fun onDismissQrScanner() = _state.update { it.copy(showQrScanner = false) }
 
     private fun getDiaActual(): Int {
         val cal = Calendar.getInstance()

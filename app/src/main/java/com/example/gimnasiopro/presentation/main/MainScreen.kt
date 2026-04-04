@@ -16,6 +16,9 @@ import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -26,6 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import coil.compose.AsyncImage
 import com.example.gimnasiopro.ui.theme.*
 import java.io.File
@@ -45,6 +50,16 @@ fun MainScreen(
 ) {
     val state   by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+
+    // Recargar gimnasio al volver a esta pantalla
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    DisposableEffect(lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) viewModel.recargarGimnasio()
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
 
     // Profile options dialog
     var showProfileDialog by remember { mutableStateOf(false) }
@@ -186,7 +201,8 @@ fun MainScreen(
                 .padding(bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            NavCard("GYM", Icons.Default.FitnessCenter, AccentBlue, Modifier.fillMaxWidth().weight(1f), onGim)
+            NavCard("GYM", Icons.Default.FitnessCenter, AccentBlue, Modifier.fillMaxWidth().weight(1f), onGim,
+                subtitle = state.gimnasioNombre, logoUrl = state.gimnasioLogoUrl)
             Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 NavCard("EJERCICIOS", Icons.Default.Search, AccentPurple, Modifier.weight(1f).fillMaxHeight(), onEjercicios, subtitle = "BIBLIOTECA")
                 NavCard("RUTINAS", Icons.Default.FormatListBulleted, AccentGreen, Modifier.weight(1f).fillMaxHeight(), onRutinas, subtitle = "MIS PLANES")
@@ -274,7 +290,8 @@ private fun NavCard(
     accentColor: androidx.compose.ui.graphics.Color,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
-    subtitle: String? = null
+    subtitle: String? = null,
+    logoUrl: String? = null
 ) {
     Surface(
         color = CardDark,
@@ -285,15 +302,29 @@ private fun NavCard(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+                .padding(16.dp)
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = accentColor,
-                modifier = Modifier.size(28.dp)
-            )
+            if (logoUrl != null) {
+                AsyncImage(
+                    model = logoUrl,
+                    contentDescription = subtitle,
+                    contentScale = ContentScale.Fit,
+                    alignment = androidx.compose.ui.Alignment.CenterStart,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+                Spacer(Modifier.height(8.dp))
+            } else {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = accentColor,
+                    modifier = Modifier.size(28.dp)
+                )
+                Spacer(Modifier.weight(1f))
+            }
             Column {
                 Text(label, fontWeight = FontWeight.Bold, fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurface)

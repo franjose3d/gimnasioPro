@@ -14,11 +14,12 @@ GimnasioPro es una aplicación móvil para **entrenar de forma inteligente**, pe
 - ✅ Conexión entre trainers y clientes
 - ✅ Funcionamiento 100% offline con sincronización en la nube
 - ✅ Sistema de mensajería interno entre trainer-cliente
+- ✅ Vinculación a gimnasio por código de acceso o escáner QR
 
 Adicionalmente, el proyecto cuenta con un portal web complementario para la presentación de servicios llamado **mmdevs**, desarrollado bajo los siguientes parámetros:
-- **Tecnologías:** kotlin, firebase, room, recyclerview
+- **Tecnologías:** kotlin, firebase, room, jetpack compose
 - **Diseño:** SOLID, responsive (One-page layout), incluye animaciones (Parallax, Scroll Reveal)
-- **Estructura Modularizada:** Separación de estructura (XML), estilos (SVG) y lógica (JS).
+- **Estructura Modularizada:** Separación de estructura (Compose), estilos y lógica (ViewModel/StateFlow).
 
 ---
 ---
@@ -92,7 +93,7 @@ Adicionalmente, el proyecto cuenta con un portal web complementario para la pres
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    PRESENTATION                             │
-│      Activities / Adapters / ViewModels / DI Manual        │
+│      Composables / ViewModels / StateFlow / DI Manual      │
 ├─────────────────────────────────────────────────────────────┤
 │                       DOMAIN                                │
 │            Use Cases / Repository Interfaces                │
@@ -116,15 +117,20 @@ Adicionalmente, el proyecto cuenta con un portal web complementario para la pres
 
 ## 📦 Tecnologías Utilizadas
 
-- **Lenguaje:** Kotlin
-- **Base de datos local:** Room Database
-- **Base de datos remota:** Firebase Firestore
+- **Lenguaje:** Kotlin 2.2.10
+- **UI:** Jetpack Compose + Material Design 3
+- **Base de datos local:** Room Database v9
+- **Base de datos remota:** Firebase Firestore (Spark Plan — sin Cloud Functions)
 - **Autenticación:** Firebase Auth
 - **Mensajería push:** Firebase Cloud Messaging (FCM)
-- **UI:** XML Layouts (Android Views)
+- **Imágenes:** Coil 2.7.0 (AsyncImage)
+- **Escáner QR:** CameraX 1.4.2 + ML Kit Barcode Scanning 17.3.0
+- **Notificaciones badge:** ShortcutBadger 1.1.22 (30+ fabricantes)
 - **Arquitectura:** Clean Architecture + MVVM
-- **Gestión de dependencias:** Gradle con Version Catalog
-- **Testing:** JUnit, Mockito
+- **Async:** Coroutines + StateFlow
+- **DI:** Manual via GimnasioproApplication (sin Hilt/Dagger)
+- **Gestión de dependencias:** Gradle con Version Catalog (libs.versions.toml)
+- **Testing:** JUnit4, Espresso, Mockito, Robolectric
 
 ---
 
@@ -162,6 +168,15 @@ Cada rutina tiene un `numeroRutina` (1-20) **INMUTABLE**:
 
 ```
 Firestore/
+├── gimnasios/{gimnasioId}/        # Colección de gimnasios (solo lectura)
+│   ├── nombre: String
+│   ├── direccion: String          # Para mostrar en UI
+│   ├── mapsQuery: String          # Para búsqueda en Google Maps
+│   ├── logoUrl: String            # URL directa de imagen (ej: i.imgur.com)
+│   ├── webUrl: String             # Con https:// incluido
+│   ├── codigoAcceso: String       # Código para vincular usuarios
+│   └── activo: Boolean
+│
 ├── ejercicios/                    # Colección global
 │   └── {ejercicioId}/
 │       ├── nombre: String
@@ -234,6 +249,12 @@ Las reglas de seguridad implementadas en `firestore.rules`:
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // Gimnasios (solo lectura autenticada, escritura bloqueada)
+    match /gimnasios/{gimnasioId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
     
     // Ejercicios (lectura global, escritura solo del creador)
     match /ejercicios/{ejercicioId} {
@@ -599,6 +620,8 @@ adb logcat | grep BadgeManager
 - ✅ Búsqueda de ejercicios por nombre
 - ✅ Funcionamiento offline completo
 - ✅ Sincronización automática en la nube
+- ✅ Vinculación a gimnasio por código de acceso o QR
+- ✅ Acceso a web del gimnasio y navegación con Google Maps
 
 ---
 
@@ -645,6 +668,14 @@ adb logcat | grep BadgeManager
    # Opción 2: Crear manualmente en Firebase Console → Índices
    # Ver detalles en firestore.indexes.json
    ```
+   
+   Índice compuesto requerido para la búsqueda de gimnasios:
+   - Colección: `gimnasios`
+   - Campos: `codigoAcceso` (Ascending) + `activo` (Ascending)
+
+6. **Crear colección de gimnasios** *(opcional para vincular gym)*
+   - Crear documento en `gimnasios/{id}` con los campos:
+     `nombre`, `direccion`, `mapsQuery`, `logoUrl`, `webUrl`, `codigoAcceso`, `activo: true`
 
 6. **Compilar y ejecutar**
    ```bash
@@ -690,60 +721,59 @@ Después de la instalación:
 app/src/main/
 ├── java/com/example/gimnasiopro/
 │   ├── data/                       # Capa de datos
-│   │   ├── Ejercicio.kt           # Entidades Room
-│   │   ├── EjercicioDao.kt        # DAOs
-│   │   ├── EjercicioRepository.kt # Repositorios locales
-│   │   ├── GymDatabase.kt         # Configuración Room
-│   │   └── firestore/             # Firebase
+│   │   ├── GymDatabase.kt         # Room DB v9 (7 tablas)
+│   │   ├── *Dao.kt                # DAOs Room
+│   │   ├── *Repository.kt         # Repositorios locales
+│   │   └── firestore/             # Firebase Firestore
+│   │       ├── GimnasioFirestore.kt       # Data class gimnasio
+│   │       ├── GimnasioRepository.kt      # Búsqueda y vinculación
 │   │       ├── EjercicioFirestore.kt
-│   │       ├── RutinaFirestore.kt
-│   │       ├── EjercicioFirestoreRepository.kt
 │   │       ├── RutinaRepositoryHibrido.kt
 │   │       └── ConexionRepository.kt
 │   │
-│   ├── domain/                     # Lógica de negocio
-│   │   ├── model/
-│   │   ├── repository/
-│   │   └── usecase/
+│   ├── domain/                     # Lógica de negocio (Kotlin puro)
+│   │   └── model/                 # User, Cliente, Trainer
 │   │
-│   ├── presentation/               # UI
-│   │   ├── cliente/
-│   │   └── trainer/
+│   ├── presentation/               # UI Jetpack Compose
+│   │   ├── navigation/            # NavGraph + NavRoutes
+│   │   ├── main/                  # MainScreen + MainViewModel
+│   │   ├── gim/                   # GimScreen + GimViewModel (gym linking + QR)
+│   │   ├── rutinas/
+│   │   ├── ejercicios/
+│   │   ├── estadisticas/
+│   │   └── auth/
 │   │
-│   ├── components/                 # UI reutilizable
-│   │   ├── EjercicioAdapter.kt
-│   │   ├── RutinaAdapter.kt
-│   │   └── NotificacionAdapter.kt
+│   ├── utils/
+│   │   └── NotificationBadgeManager.kt
 │   │
-│   ├── utils/                      # Utilidades
-│   │   ├── NotificationBadgeManager.kt
-│   │   └── SyncManager.kt
-│   │
+│   ├── GimnasioproApplication.kt  # DI manual + lazy repos
 │   └── MainActivity.kt
 │
 └── res/
-    ├── layout/                     # XML Layouts
-    ├── values/
-    │   ├── colors.xml             # Tema Azul oscuro 
-    │   └── strings.xml
-    └── drawable/
+    └── values/
+        ├── colors.xml
+        └── strings.xml
 ```
 
 ---
 
 ## 🎨 Diseño y UI
 
-### Tema
-- **Color principal:** Azul oscuro 
-- **Acento:** Azul claro 
-- **Background:** Gris oscuro 
-- **Texto:** Blanco/Gris claro
+### Tema (Dark)
+- **Background:** `#0D0D1A`
+- **Surface secundaria:** `#13132B`
+- **Card:** `#1A1A3E`
+- **Acento purple:** `#6B5CE7`
+- **Verde éxito:** `#4ADE80`
+- **Azul info:** `#3B82F6`
+- **Texto primario:** `#FFFFFF` / **Texto secundario:** `#A1A1AA`
 
-### Componentes Reutilizables
-- Botones redondeados
-- Cards con elevación
-- RecyclerViews optimizados
-- Diálogos personalizados
+### Componentes Reutilizables (Jetpack Compose)
+- Botones con `RoundedCornerShape` y `contentPadding` personalizado
+- Cards `Surface` clickables con diálogos de opciones
+- `AsyncImage` (Coil) para logos y fotos de perfil
+- TopAppBar compacta (48dp) con subtítulo de gym vinculado
+- Overlay de escáner QR fullscreen con lifecycle management
 
 ---
 
@@ -754,7 +784,10 @@ app/src/main/
 - ✅ Conexión trainer-cliente
 - ✅ Sincronización offline-first
 - ✅ Estadísticas básicas
-
+- ✅ UI migrada a Jetpack Compose + Material Design 3
+- ✅ Vinculación a gimnasio (código de acceso + escáner QR)
+- ✅ Logo del gimnasio en pantalla principal
+- ✅ Integración con Google Maps y web del gimnasio
 
 ### Próximas Versiones
 
@@ -762,7 +795,6 @@ app/src/main/
 - [ ] Gráficos de progreso avanzados
 - [ ] Exportar/importar rutinas
 - [ ] Compartir rutinas entre usuarios
-- [ ] Modo oscuro/claro
 
 #### v1.2
 - [ ] Grupos de entrenamiento
@@ -771,7 +803,6 @@ app/src/main/
 - [ ] Integración con wearables
 
 #### v2.0
-- [ ] Migración a Jetpack Compose
 - [ ] Videos de ejercicios
 - [ ] Planes de nutrición
 - [ ] IA para recomendación de rutinas
