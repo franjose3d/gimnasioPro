@@ -117,8 +117,22 @@ service cloud.firestore {
       // o cualquier autenticado haciendo búsqueda por email/teléfono
       // (necesario para que trainers puedan invitar clientes por email/teléfono)
       allow read: if request.auth != null;
-      // Solo el cliente puede crear/modificar su documento
-      allow create, update: if request.auth != null && clienteId == request.auth.uid;
+
+      // Solo el cliente puede crear su documento
+      allow create: if request.auth != null && clienteId == request.auth.uid;
+
+      // Update por:
+      // 1) el propio cliente (cualquier campo), o
+      // 2) el trainer conectado, pero SOLO el campo trainerId
+      allow update: if request.auth != null && (
+        clienteId == request.auth.uid ||
+        (
+          isTrainerDelCliente(clienteId) &&
+          request.resource.data.diff(resource.data).changedKeys().hasOnly(["trainerId"]) &&
+          (request.resource.data.trainerId == request.auth.uid || request.resource.data.trainerId == "")
+        )
+      );
+
       allow delete: if request.auth != null && clienteId == request.auth.uid;
 
       // Rutinas del cliente

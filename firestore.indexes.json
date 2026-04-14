@@ -57,6 +57,23 @@
         { "fieldPath": "conversacionId", "order": "ASCENDING" },
         { "fieldPath": "fechaEnvio", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "estadisticas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "anio", "order": "ASCENDING" },
+        { "fieldPath": "mes", "order": "ASCENDING" },
+        { "fieldPath": "dia", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "gimnasios",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "codigoAcceso", "order": "ASCENDING" },
+        { "fieldPath": "activo", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
