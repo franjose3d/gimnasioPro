@@ -1,16 +1,21 @@
 package com.example.gimnasiopro.presentation.perfil
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.gimnasiopro.data.GymDatabase
 import com.example.gimnasiopro.data.firestore.UserHelper
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 data class PerfilUiState(
     val isLoading: Boolean = true,
@@ -37,7 +42,7 @@ data class PerfilUiState(
     val error: String? = null
 )
 
-class PerfilViewModel : ViewModel() {
+class PerfilViewModel(application: Application) : AndroidViewModel(application) {
 
     private val auth      = FirebaseAuth.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
@@ -46,6 +51,10 @@ class PerfilViewModel : ViewModel() {
 
     private val _state = MutableStateFlow(PerfilUiState())
     val state: StateFlow<PerfilUiState> = _state.asStateFlow()
+
+    companion object {
+        private const val TAG = "PerfilViewModel"
+    }
 
     init { cargarPerfil() }
 
@@ -155,23 +164,115 @@ class PerfilViewModel : ViewModel() {
 
     fun eliminarCuenta() {
         val tipo = _state.value.tipoUsuario
+        val uid  = userId
+        if (uid.isEmpty()) {
+            _state.update { it.copy(error = "Sesión no iniciada") }
+            return
+        }
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             try {
                 val coleccion = if (tipo == "trainer") "trainers" else "clientes"
-                firestore.collection(coleccion).document(userId).delete().await()
+
+                // 1. Subcolecciones del documento principal
+                val subcollections = if (tipo == "trainer") {
+                    listOf("rutinas", "estadisticas", "entrenamientos", "calendario", "misClientes")
+                } else {
+                    listOf("rutinas", "estadisticas", "entrenamientos", "calendario", "miTrainer")
+                }
+                for (sub in subcollections) {
+                    eliminarSubcoleccion(coleccion, uid, sub)
+                }
+
+                // 2. Mensajes pendientes entrantes
+                eliminarSubcoleccion("mensajes_pendientes", uid, "mensajes")
+
+                // 3. Documento principal
+                try {
+                    firestore.collection(coleccion).document(uid).delete().await()
+                    Log.d(TAG, "✅ Documento principal eliminado: $coleccion/$uid")
+                } catch (e: Exception) {
+                    Log.w(TAG, "Error eliminando documento principal: ${e.message}")
+                }
+
+                // 4. Conexiones (como cliente o como trainer)
+                val campoConexion = if (tipo == "trainer") "trainerId" else "clienteId"
+                eliminarPorCampo("conexiones", campoConexion, uid)
+
+                // 5. Notificaciones (como destinatario y como remitente)
+                eliminarPorCampo("notificaciones", "destinatarioId", uid)
+                eliminarPorCampo("notificaciones", "remitenteId", uid)
+
+                // 6. Token FCM
+                try {
+                    firestore.collection("users").document(uid).delete().await()
+                } catch (e: Exception) {
+                    Log.w(TAG, "Error eliminando users/$uid: ${e.message}")
+                }
+
+                // 7. Datos locales de Room
+                try {
+                    val db = GymDatabase.getDatabase(getApplication())
+                    withContext(Dispatchers.IO) {
+                        db.clearAllTables()
+                    }
+                    Log.d(TAG, "✅ Datos locales eliminados")
+                } catch (e: Exception) {
+                    Log.w(TAG, "Error eliminando datos locales: ${e.message}")
+                }
+
+                // 8. Cuenta Firebase Auth — SIEMPRE al final
                 try {
                     auth.currentUser?.delete()?.await()
+                    Log.d(TAG, "✅ Cuenta Auth eliminada")
                     _state.update { it.copy(isLoading = false, cuentaEliminada = true) }
                 } catch (authEx: Exception) {
                     val isReauth = authEx.message?.contains("requires-recent-login") == true ||
                                    authEx.message?.contains("recent") == true
-                    _state.update { it.copy(isLoading = false, needsReauth = isReauth,
-                        error = if (!isReauth) "Datos eliminados. Error de auth: ${authEx.message}" else null) }
+                    _state.update { it.copy(
+                        isLoading = false,
+                        needsReauth = isReauth,
+                        error = if (!isReauth) "Datos eliminados. Error de auth: ${authEx.message}" else null
+                    )}
                 }
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false, error = "Error al eliminar cuenta: ${e.message}") }
             }
+        }
+    }
+
+    // Elimina todos los documentos de una subcolección en lotes de 500
+    private suspend fun eliminarSubcoleccion(coleccion: String, docId: String, subcoleccion: String) {
+        try {
+            val snapshot = firestore.collection(coleccion).document(docId)
+                .collection(subcoleccion).get().await()
+            if (snapshot.isEmpty) return
+            // Firestore batch limit: 500 operaciones
+            snapshot.documents.chunked(500).forEach { chunk ->
+                val batch = firestore.batch()
+                chunk.forEach { batch.delete(it.reference) }
+                batch.commit().await()
+            }
+            Log.d(TAG, "✅ Subcolección $coleccion/$docId/$subcoleccion eliminada (${snapshot.size()} docs)")
+        } catch (e: Exception) {
+            Log.w(TAG, "Error eliminando $coleccion/$docId/$subcoleccion: ${e.message}")
+        }
+    }
+
+    // Elimina documentos de una colección raíz filtrando por campo=valor, en lotes de 500
+    private suspend fun eliminarPorCampo(coleccion: String, campo: String, valor: String) {
+        try {
+            val snapshot = firestore.collection(coleccion)
+                .whereEqualTo(campo, valor).get().await()
+            if (snapshot.isEmpty) return
+            snapshot.documents.chunked(500).forEach { chunk ->
+                val batch = firestore.batch()
+                chunk.forEach { batch.delete(it.reference) }
+                batch.commit().await()
+            }
+            Log.d(TAG, "✅ $coleccion donde $campo=$valor eliminados (${snapshot.size()} docs)")
+        } catch (e: Exception) {
+            Log.w(TAG, "Error eliminando $coleccion por $campo: ${e.message}")
         }
     }
 }

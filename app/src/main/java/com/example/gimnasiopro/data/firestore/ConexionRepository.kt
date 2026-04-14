@@ -375,18 +375,27 @@ class ConexionRepository {
         clienteId: String,
         trainerId: String
     ): ConexionTrainerCliente? {
-        val snapshot = conexionesCollection
-            .whereEqualTo("clienteId", clienteId)
-            .whereEqualTo("trainerId", trainerId)
-            .get()
-            .await()
+        // Query solo por clienteId para evitar requerir índice compuesto en Firestore.
+        // El filtro por trainerId se aplica en memoria.
+        return try {
+            val snapshot = conexionesCollection
+                .whereEqualTo("clienteId", clienteId)
+                .get()
+                .await()
 
-        return snapshot.documents
-            .mapNotNull { ConexionTrainerCliente.fromDocument(it) }
-            .firstOrNull { it.estado in listOf(
-                ConexionTrainerCliente.ESTADO_PENDIENTE,
-                ConexionTrainerCliente.ESTADO_ACTIVA
-            )}
+            snapshot.documents
+                .mapNotNull { ConexionTrainerCliente.fromDocument(it) }
+                .firstOrNull {
+                    it.trainerId == trainerId &&
+                    it.estado in listOf(
+                        ConexionTrainerCliente.ESTADO_PENDIENTE,
+                        ConexionTrainerCliente.ESTADO_ACTIVA
+                    )
+                }
+        } catch (e: Exception) {
+            android.util.Log.e("ConexionRepository", "Error buscando conexión entre usuarios: ${e.message}")
+            null
+        }
     }
 
     /**

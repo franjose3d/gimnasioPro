@@ -39,14 +39,14 @@ fun BuscarTrainerScreen(
     }
 
     // Send request dialog
-    if (selectedTrainer != null) {
+    selectedTrainer?.let { trainer ->
         AlertDialog(
             onDismissRequest = { selectedTrainer = null; mensajeSolicitud = "" },
             title = { Text("Solicitar conexión") },
             text = {
                 Column {
                     Text(
-                        "Enviar solicitud a ${selectedTrainer!!.nombre ?: "Trainer"}",
+                        "Enviar solicitud a ${trainer.nombre ?: "Trainer"}",
                         fontSize = 14.sp,
                         color = TextSecondary,
                         modifier = Modifier.padding(bottom = 12.dp)
@@ -72,7 +72,7 @@ fun BuscarTrainerScreen(
             },
             confirmButton = {
                 TextButton(onClick = {
-                    viewModel.enviarSolicitud(selectedTrainer!!, mensajeSolicitud)
+                    viewModel.enviarSolicitud(trainer, mensajeSolicitud)
                     selectedTrainer = null
                     mensajeSolicitud = ""
                 }) { Text("Enviar", color = AccentBlue, fontWeight = FontWeight.Bold) }
@@ -168,7 +168,7 @@ private fun TrainerCard(trainer: UserHelper.UserInfo, onSolicitar: () -> Unit) {
     val poblacion = doc?.getString("poblacion")
     val municipio = doc?.getString("municipio")
     val sobreMi   = doc?.getString("sobreMi")
-    val tarifa    = doc?.getString("tarifa")
+    val tarifa    = doc?.getDouble("tarifa")?.let { if (it > 0) it.toInt().toString() else null }
 
     Surface(
         color = CardDark,

@@ -34,6 +34,10 @@ class BuscarTrainerViewModel : ViewModel() {
     init { loadTrainers() }
 
     fun loadTrainers() {
+        if (currentUserId.isEmpty()) {
+            _state.value = BuscarTrainerUiState.Error("Sesión no iniciada. Por favor inicia sesión.")
+            return
+        }
         _state.value = BuscarTrainerUiState.Loading
         viewModelScope.launch {
             try {
@@ -48,6 +52,10 @@ class BuscarTrainerViewModel : ViewModel() {
     }
 
     fun enviarSolicitud(trainer: UserHelper.UserInfo, mensaje: String) {
+        if (currentUserId.isEmpty()) {
+            _state.value = BuscarTrainerUiState.Error("Sesión no iniciada. Por favor inicia sesión.")
+            return
+        }
         _state.value = BuscarTrainerUiState.Loading
         viewModelScope.launch {
             try {

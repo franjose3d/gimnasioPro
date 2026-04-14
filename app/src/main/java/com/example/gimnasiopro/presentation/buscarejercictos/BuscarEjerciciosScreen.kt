@@ -1,5 +1,7 @@
 package com.example.gimnasiopro.presentation.buscarejercictos
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
@@ -14,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.font.FontWeight
@@ -26,6 +29,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gimnasiopro.data.Ejercicio
 import com.example.gimnasiopro.ui.theme.*
+import java.net.URLEncoder
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -99,27 +103,32 @@ fun BuscarEjerciciosScreen(
                         Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            "${state.selectedIds.size} / 10 seleccionados",
+                            "${state.selectedIds.size}/10 seleccionados",
                             color = AccentBlue,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
                         )
-                        Row {
-                            if (state.selectedIds.isNotEmpty()) {
-                                TextButton(onClick = { viewModel.clearSelection() }) {
-                                    Text("Cancelar", color = TextSecondary)
-                                }
-                            }
-                            Button(
-                                onClick = { viewModel.guardarSeleccionados() },
-                                enabled = state.selectedIds.isNotEmpty(),
-                                colors = ButtonDefaults.buttonColors(containerColor = AccentBlue)
-                            ) {
-                                Text("Guardar", color = TextPrimary)
-                            }
+                        Button(
+                            onClick = { viewModel.guardarSeleccionados() },
+                            enabled = state.selectedIds.isNotEmpty(),
+                            colors = ButtonDefaults.buttonColors(containerColor = AccentBlue),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                            modifier = Modifier.defaultMinSize(minWidth = 0.dp)
+                        ) {
+                            Text(
+                                "Guardar",
+                                color = TextPrimary,
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
                     }
                 }
@@ -150,6 +159,7 @@ fun BuscarEjerciciosScreen(
 
                 else -> {
                     LazyColumn(
+                        modifier = Modifier.weight(1f),
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
@@ -176,6 +186,7 @@ private fun EjercicioBuscarItem(
     modoSeleccion: Boolean,
     onToggle: () -> Unit
 ) {
+    val context = LocalContext.current
     Surface(
         color = if (selected) AccentBlue.copy(alpha = 0.15f) else CardDark,
         shape = MaterialTheme.shapes.medium,
@@ -217,6 +228,26 @@ private fun EjercicioBuscarItem(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
+            }
+            Spacer(Modifier.width(4.dp))
+            Surface(
+                onClick = {
+                    try {
+                        val query = URLEncoder.encode("${ejercicio.nombre} ejercicio gym", "UTF-8")
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/results?search_query=$query"))
+                        )
+                    } catch (_: Exception) {}
+                },
+                color = RedDelete,
+                shape = MaterialTheme.shapes.small
+            ) {
+                Text(
+                    "▶",
+                    color = androidx.compose.ui.graphics.Color.White,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                )
             }
         }
     }
