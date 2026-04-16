@@ -289,8 +289,8 @@ private fun RutinaButton(
 ) {
     val isNamed = !item.nombre.matches(Regex("^Rutina \\d+$", RegexOption.IGNORE_CASE))
     val bgColor = when {
-        isNamed           -> AccentBlue
-        else              -> AccentGreen
+        isNamed || item.tieneEjercicios -> AccentBlue
+        else                            -> AccentGreen
     }
     val textColor = TextOnButton
 
