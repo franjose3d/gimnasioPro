@@ -35,7 +35,8 @@ data class EntrenamientoUiState(
     val ejercicios: List<EjercicioEntrenamientoState> = emptyList(),
     val toast: String? = null,
     val navigateBack: Boolean = false,
-    val showConfirmSalir: Boolean = false
+    val showConfirmSalir: Boolean = false,
+    val ejerciciosParaConfirmar: List<Ejercicio> = emptyList()
 )
 
 class EntrenamientoViewModel(
@@ -51,6 +52,8 @@ class EntrenamientoViewModel(
     private val rutinaRepo        = app.rutinaRepository
     private val registroRepo      = app.registroEntrenamientoRepository
     private val estadisticaRepo   = app.estadisticaRepositoryHibrido
+
+    private val rutinaRepoHibrido = app.rutinaRepositoryHibrido
 
     private val tiempoInicio = System.currentTimeMillis()
 
@@ -255,6 +258,53 @@ class EntrenamientoViewModel(
                 toast("Error al guardar: ${e.message}")
             }
         }
+    }
+
+    // ── Agregar ejercicio durante entrenamiento ───────────────────────────────
+
+    fun onEjerciciosRecibidos(ids: List<Long>) {
+        viewModelScope.launch {
+            val ejercicios = ejercicioRepo.getEjerciciosByIds(ids)
+            _state.update { it.copy(ejerciciosParaConfirmar = ejercicios) }
+        }
+    }
+
+    fun agregarSoloHoy() {
+        val nuevos = _state.value.ejerciciosParaConfirmar
+        _state.update { s ->
+            val nuevosItems = nuevos.map { ej ->
+                EjercicioEntrenamientoState(
+                    ejercicio = ej,
+                    series = List(6) { SerieState() },
+                    seriesVisibles = 3
+                )
+            }
+            s.copy(
+                ejercicios = s.ejercicios + nuevosItems,
+                ejerciciosParaConfirmar = emptyList()
+            )
+        }
+    }
+
+    fun agregarYGuardarEnRutina() {
+        val nuevos = _state.value.ejerciciosParaConfirmar
+        agregarSoloHoy()
+        viewModelScope.launch {
+            try {
+                rutinaRepoHibrido.agregarEjerciciosARutina(
+                    numeroRutina,
+                    nuevos.map { it.id.toInt() }
+                )
+                toast("Ejercicios guardados en la rutina")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error guardando en rutina: ${e.message}")
+                toast("Añadidos al entrenamiento (error al guardar en rutina)")
+            }
+        }
+    }
+
+    fun descartarEjerciciosPickeados() {
+        _state.update { it.copy(ejerciciosParaConfirmar = emptyList()) }
     }
 
     fun clearToast() = _state.update { it.copy(toast = null) }

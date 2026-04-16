@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,6 +33,7 @@ import java.net.URLEncoder
 fun ListaEjerciciosScreen(
     viewModel: ListaEjerciciosViewModel = viewModel(),
     onNavigateBack: () -> Unit,
+    onBuscar: () -> Unit,
     onRequestLogin: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -226,6 +228,11 @@ fun ListaEjerciciosScreen(
                         if (state.selectedIds.isNotEmpty()) showBackDialog = true else onNavigateBack()
                     }) {
                         Icon(Icons.Default.KeyboardArrowLeft, "Volver", tint = AccentGreen)
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onBuscar) {
+                        Icon(Icons.Default.Search, "Buscar ejercicios", tint = AccentBlue)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)

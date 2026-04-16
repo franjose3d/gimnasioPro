@@ -1,11 +1,16 @@
 package com.example.gimnasiopro.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.gimnasiopro.presentation.entrenamiento.EntrenamientoViewModel
 import com.example.gimnasiopro.presentation.auth.LoginScreen
 import com.example.gimnasiopro.presentation.auth.VerificarEmailScreen
 import com.example.gimnasiopro.presentation.buscarejercictos.BuscarEjerciciosScreen
@@ -178,9 +183,11 @@ fun AppNavGraph(
                     defaultValue = -1
                 }
             )
-        ) {
+        ) { backStackEntry ->
+            val numeroRutina = backStackEntry.arguments?.getInt("extra_numero_rutina") ?: -1
             ListaEjerciciosScreen(
                 onNavigateBack = { navController.popBackStack() },
+                onBuscar       = { navController.navigate(Screen.BuscarEjercicios.createRoute(numeroRutina)) },
                 onRequestLogin = { navController.navigate(Screen.PersonalTrainer.route) }
             )
         }
@@ -193,9 +200,16 @@ fun AppNavGraph(
                     defaultValue = -1
                 }
             )
-        ) {
+        ) { backStackEntry ->
+            val numeroRutina = backStackEntry.arguments?.getInt("extra_numero_rutina") ?: -1
             BuscarEjerciciosScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onEjerciciosParaEntrenamiento = if (numeroRutina == -2) { ids ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("ejercicios_entrenamiento", ids.toLongArray())
+                    navController.popBackStack()
+                } else null
             )
         }
 
@@ -277,9 +291,23 @@ fun AppNavGraph(
                     type = NavType.IntType
                 }
             )
-        ) {
+        ) { backStackEntry ->
+            val vm: EntrenamientoViewModel = viewModel()
+            val pickedIds by backStackEntry.savedStateHandle
+                .getStateFlow("ejercicios_entrenamiento", LongArray(0))
+                .collectAsStateWithLifecycle()
+            LaunchedEffect(pickedIds) {
+                if (pickedIds.isNotEmpty()) {
+                    backStackEntry.savedStateHandle["ejercicios_entrenamiento"] = LongArray(0)
+                    vm.onEjerciciosRecibidos(pickedIds.toList())
+                }
+            }
             EntrenamientoScreen(
-                onNavigateBack = { navController.popBackStack() }
+                viewModel         = vm,
+                onNavigateBack    = { navController.popBackStack() },
+                onAgregarEjercicio = {
+                    navController.navigate(Screen.BuscarEjercicios.createRoute(-2))
+                }
             )
         }
 

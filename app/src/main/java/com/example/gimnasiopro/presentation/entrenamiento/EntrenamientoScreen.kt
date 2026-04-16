@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,7 +32,8 @@ import java.net.URLEncoder
 @Composable
 fun EntrenamientoScreen(
     viewModel: EntrenamientoViewModel = viewModel(),
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onAgregarEjercicio: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -59,6 +61,32 @@ fun EntrenamientoScreen(
                 onNavigateBack()
             }
         }
+    }
+
+    // Dialog: confirmar ejercicio extra (guardar en rutina o solo hoy)
+    if (state.ejerciciosParaConfirmar.isNotEmpty()) {
+        val nombres = state.ejerciciosParaConfirmar.joinToString(", ") { it.nombre }
+        AlertDialog(
+            onDismissRequest = { viewModel.descartarEjerciciosPickeados() },
+            title = { Text("Añadir ejercicio") },
+            text = {
+                Text(
+                    "\"$nombres\"\n\n¿Quieres guardarlo también en la rutina para la próxima vez, o solo añadirlo a este entrenamiento?",
+                    fontSize = 14.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { viewModel.agregarYGuardarEnRutina() },
+                    colors = ButtonDefaults.buttonColors(containerColor = AccentGreen)
+                ) { Text("Guardar en rutina", color = TextPrimary) }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.agregarSoloHoy() }) {
+                    Text("Solo para hoy")
+                }
+            }
+        )
     }
 
     if (state.showConfirmSalir) {
@@ -130,28 +158,49 @@ fun EntrenamientoScreen(
                         }
                     }
 
-                    // Finalize button
+                    // Bottom action bar
                     Surface(
                         color = MaterialTheme.colorScheme.surface,
                         tonalElevation = 4.dp
                     ) {
-                        Button(
-                            onClick = { viewModel.finalizar() },
-                            enabled = !state.isFinalizing,
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .navigationBarsPadding()
-                                .padding(16.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = AccentGreen)
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            if (state.isFinalizing) {
-                                CircularProgressIndicator(
-                                    Modifier.size(20.dp),
-                                    color = TextPrimary,
-                                    strokeWidth = 2.dp
+                            OutlinedButton(
+                                onClick = onAgregarEjercicio,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(48.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Add,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
                                 )
-                            } else {
-                                Text("Finalizar entrenamiento", color = TextPrimary, fontWeight = FontWeight.Bold)
+                                Spacer(Modifier.width(4.dp))
+                                Text("Añadir", fontWeight = FontWeight.Bold)
+                            }
+                            Button(
+                                onClick = { viewModel.finalizar() },
+                                enabled = !state.isFinalizing,
+                                modifier = Modifier
+                                    .weight(2f)
+                                    .height(48.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = AccentGreen)
+                            ) {
+                                if (state.isFinalizing) {
+                                    CircularProgressIndicator(
+                                        Modifier.size(20.dp),
+                                        color = TextPrimary,
+                                        strokeWidth = 2.dp
+                                    )
+                                } else {
+                                    Text("Finalizar entrenamiento", color = TextPrimary, fontWeight = FontWeight.Bold)
+                                }
                             }
                         }
                     }
@@ -347,8 +396,11 @@ private fun SerieRow(
             modifier = Modifier.width(36.dp).requiredHeight(30.dp),
             contentPadding = PaddingValues(0.dp)
         ) {
-            val pesoStr = if (serie.pesoKg % 1 == 0f) serie.pesoKg.toInt().toString()
-                          else String.format("%.1f", serie.pesoKg)
+            val pesoStr = when {
+                serie.pesoKg == 0f -> "0.00"
+                serie.pesoKg % 1 == 0f -> serie.pesoKg.toInt().toString()
+                else -> String.format("%.1f", serie.pesoKg)
+            }
             Text(pesoStr, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
         }
         SmallIconButton("+") { viewModel.incrementPeso(ejercicioIndex, serieIndex) }

@@ -447,6 +447,7 @@ private fun GimnasioCard(
                 )
             }
         } else {
+            val context = LocalContext.current
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -461,6 +462,27 @@ private fun GimnasioCard(
                     colors = ButtonDefaults.buttonColors(containerColor = AccentPurple)
                 ) {
                     Text("Vincular a mi gimnasio", fontSize = 13.sp, color = TextOnButton)
+                }
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    "¿Quieres que tu gimnasio aparezca en la app?",
+                    fontSize = 12.sp,
+                    color = TextSecondary,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(4.dp))
+                TextButton(
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:gimnasiopro1973@gmail.com"))
+                        try { context.startActivity(intent) } catch (_: Exception) {}
+                    },
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Text(
+                        "gimnasiopro1973@gmail.com",
+                        fontSize = 12.sp,
+                        color = AccentBlue
+                    )
                 }
             }
         }

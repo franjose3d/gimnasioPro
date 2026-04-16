@@ -35,7 +35,8 @@ import java.net.URLEncoder
 @Composable
 fun BuscarEjerciciosScreen(
     viewModel: BuscarEjerciciosViewModel = viewModel(),
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onEjerciciosParaEntrenamiento: ((List<Long>) -> Unit)? = null
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -96,8 +97,9 @@ fun BuscarEjerciciosScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Selection bar (shown when rutina destination is set)
-            if (viewModel.numRutina > 0) {
+            // Selection bar (shown when rutina destination is set or in entrenamiento pick mode)
+            val modoEntrenamiento = viewModel.numRutina == -2
+            if (viewModel.numRutina > 0 || modoEntrenamiento) {
                 Surface(color = AccentBlue.copy(alpha = 0.10f)) {
                     Row(
                         Modifier
@@ -116,14 +118,20 @@ fun BuscarEjerciciosScreen(
                             modifier = Modifier.weight(1f)
                         )
                         Button(
-                            onClick = { viewModel.guardarSeleccionados() },
+                            onClick = {
+                                if (modoEntrenamiento) {
+                                    onEjerciciosParaEntrenamiento?.invoke(state.selectedIds.toList())
+                                } else {
+                                    viewModel.guardarSeleccionados()
+                                }
+                            },
                             enabled = state.selectedIds.isNotEmpty(),
                             colors = ButtonDefaults.buttonColors(containerColor = AccentBlue),
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                             modifier = Modifier.defaultMinSize(minWidth = 0.dp)
                         ) {
                             Text(
-                                "Guardar",
+                                if (modoEntrenamiento) "Añadir" else "Guardar",
                                 color = TextPrimary,
                                 maxLines = 1,
                                 softWrap = false,
@@ -167,7 +175,7 @@ fun BuscarEjerciciosScreen(
                             EjercicioBuscarItem(
                                 ejercicio = ejercicio,
                                 selected = ejercicio.id in state.selectedIds,
-                                modoSeleccion = viewModel.numRutina > 0,
+                                modoSeleccion = viewModel.numRutina > 0 || viewModel.numRutina == -2,
                                 onToggle = { viewModel.toggleSelection(ejercicio.id) }
                             )
                         }
