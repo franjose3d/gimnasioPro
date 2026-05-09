@@ -99,7 +99,13 @@ class EntrenamientoViewModel(
                     val series = if (ultimasSeries.isNotEmpty()) {
                         ultimasSeries.map { SerieState(it.repeticiones, it.pesoKg) }
                     } else {
-                        List(3) { SerieState() }
+                        val mejorPeso = registroRepo.getPesoMaximoEjercicio(ej.id)
+                        val mejorReps = registroRepo.getRepeticionesMaximasEjercicio(ej.id)
+                        if (mejorPeso > 0f || mejorReps > 0) {
+                            List(3) { SerieState(mejorReps, mejorPeso) }
+                        } else {
+                            List(3) { SerieState() }
+                        }
                     }
                     EjercicioEntrenamientoState(
                         ejercicio = ej,

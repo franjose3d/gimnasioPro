@@ -1,6 +1,7 @@
 package com.example.gimnasiopro.presentation.progreso
 
 import android.app.Application
+import com.example.gimnasiopro.data.EjercicioConRecord
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -18,6 +19,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+
 data class ProgresoUiState(
     val isLoading: Boolean = true,
     val titulo: String = "Mi Progreso",
@@ -27,9 +29,13 @@ data class ProgresoUiState(
     val racha: Int = 0,
     val pesoHoy: String = "0 kg",
     val recordPeso: String = "0 kg",
-    // grupo → porcentaje 0-100
     val equilibrio: Map<String, Int> = emptyMap(),
-    val error: String? = null
+    val error: String? = null,
+    val historialEjercicios: List<EjercicioConRecord> = emptyList(),
+    val showMenuOpciones: Boolean = false,
+    val showDialogEliminar: Boolean = false,
+    val seccionConfirmando: String? = null,
+    val isDeleting: Boolean = false
 )
 
 class ProgresoViewModel(
@@ -42,6 +48,8 @@ class ProgresoViewModel(
     private val clienteNombre= savedState.get<String>("CLIENTE_NOMBRE")
 
     private val app = application as GimnasioproApplication
+    private fun getPrefs() = app.getSharedPreferences("gimnasiopro_prefs",
+        android.content.Context.MODE_PRIVATE)
 
     private val _state = MutableStateFlow(ProgresoUiState(
         titulo = if (modoTrainer && clienteNombre != null) "Progreso de $clienteNombre" else "Mi Progreso"
@@ -73,20 +81,22 @@ class ProgresoViewModel(
                 val pesoHoy     = estadRepo.getVolumenHoy()
                 val record      = estadRepo.getRecordVolumen()
 
-                // Equilibrio muscular
+                // Equilibrio muscular — últimos 30 días naturales
+                val fin = System.currentTimeMillis()
                 val cal = Calendar.getInstance()
-                cal.set(Calendar.DAY_OF_MONTH, 1)
+                cal.add(Calendar.DAY_OF_MONTH, -30)
                 cal.set(Calendar.HOUR_OF_DAY, 0); cal.set(Calendar.MINUTE, 0)
                 cal.set(Calendar.SECOND, 0);       cal.set(Calendar.MILLISECOND, 0)
                 val inicio = cal.timeInMillis
-                cal.add(Calendar.MONTH, 1)
-                val fin = cal.timeInMillis
+                val efectivoInicio = maxOf(inicio, getPrefs().getLong("equilibrio_reset_date", 0L))
 
-                val ids     = registroRepo.getEjerciciosCompletadosEntreFechas(inicio, fin)
+                val ids = registroRepo.getEjerciciosCompletadosEntreFechas(efectivoInicio, fin)
                 val conteos = ejercRepo.getConteoPorGrupoMuscular(ids)
                 val total   = conteos.values.sum()
                 val equilibrio = if (total > 0) conteos.mapValues { (_, v) -> ((v.toFloat() / total) * 100).toInt() }
                                  else emptyMap()
+
+                val historial = registroRepo.getEjerciciosConRecord()
 
                 _state.update { it.copy(
                     isLoading = false,
@@ -96,7 +106,8 @@ class ProgresoViewModel(
                     racha = racha,
                     pesoHoy = formatearPeso(pesoHoy),
                     recordPeso = formatearPeso(record),
-                    equilibrio = equilibrio
+                    equilibrio = equilibrio,
+                    historialEjercicios = historial
                 )}
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false, error = e.message) }
@@ -162,5 +173,48 @@ class ProgresoViewModel(
         v >= 1000 -> String.format(Locale.getDefault(), "%.1f t", v / 1000)
         v > 0     -> String.format(Locale.getDefault(), "%.0f kg", v)
         else      -> "0 kg"
+    }
+    // ── Gestión del menú y dialogs ───────────────────────────────────────────
+
+    fun toggleMenu() = _state.update { it.copy(showMenuOpciones =
+        !it.showMenuOpciones) }
+
+    fun mostrarDialogEliminar() =
+        _state.update { it.copy(showMenuOpciones = false, showDialogEliminar =
+            true) }
+
+    fun ocultarDialogEliminar() =
+        _state.update { it.copy(showDialogEliminar = false, seccionConfirmando =
+            null) }
+
+    fun confirmarEliminar(seccion: String) =
+        _state.update { it.copy(seccionConfirmando = seccion) }
+
+    fun cancelarConfirmacion() =
+        _state.update { it.copy(seccionConfirmando = null) }
+
+    fun ejecutarEliminar(seccion: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isDeleting = true, seccionConfirmando = null)
+            }
+            try {
+                val repo = app.estadisticaRepositoryHibrido
+                when (seccion) {
+                    "tiempo_hoy"         -> repo.resetTiempoHoy()
+                    "tiempo_mes"         -> repo.resetTiempoMes()
+                    "entrenamientos_mes" -> repo.resetEntrenamientosMes()
+                    "racha"              -> repo.resetRacha()
+                    "peso_movido"        -> repo.resetPesoMovido()
+                    "equilibrio"         -> getPrefs().edit().putLong("equilibrio_reset_date", System.currentTimeMillis()).apply()
+                    "todo"               -> repo.deleteAll()
+                }
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message) }
+            } finally {
+                _state.update { it.copy(isDeleting = false, showDialogEliminar =
+                    false) }
+                load()
+            }
+        }
     }
 }

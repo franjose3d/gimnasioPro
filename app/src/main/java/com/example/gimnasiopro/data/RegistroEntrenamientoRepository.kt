@@ -66,6 +66,13 @@ class RegistroEntrenamientoRepository(
         return serieDao.getUltimasSeriesDeEjercicio(ejercicioId, rutinaId, numeroSeries)
     }
 
+    suspend fun getUltimasSeriesGlobalesPorEjercicio(
+        ejercicioId: Long,
+        numeroSeries: Int
+    ): List<RegistroSerie> {
+        return serieDao.getUltimasSeriesDeEjercicioGlobal(ejercicioId, numeroSeries)
+    }
+
     /**
      * Obtiene el último registro de un ejercicio en una rutina.
      * Útil para precargar los valores anteriores.
@@ -109,6 +116,10 @@ class RegistroEntrenamientoRepository(
      */
     suspend fun getEjerciciosCompletadosEntreFechas(fechaInicio: Long, fechaFin: Long): List<Long> {
         return registroDao.getEjerciciosCompletadosEntreFechas(fechaInicio, fechaFin)
+    }
+
+    suspend fun getEjerciciosConRecord(): List<EjercicioConRecord> {
+        return registroDao.getEjerciciosConRecord()
     }
 
     // ==================== Métodos para Estadísticas/Progreso ====================

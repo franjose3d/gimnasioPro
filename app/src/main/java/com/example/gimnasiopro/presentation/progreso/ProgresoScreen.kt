@@ -1,5 +1,6 @@
 package com.example.gimnasiopro.presentation.progreso
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -16,12 +17,17 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gimnasiopro.ui.theme.*
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.MoreVert
+import com.example.gimnasiopro.data.EjercicioConRecord
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProgresoScreen(
     viewModel: ProgresoViewModel = viewModel(),
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onMisEjercicios: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -35,8 +41,27 @@ fun ProgresoScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.load() }) {
-                        Icon(Icons.Default.Refresh, "Actualizar", tint = AccentBlue)
+                    Box {
+                        IconButton(onClick = { viewModel.toggleMenu() }) {
+                            Icon(Icons.Default.MoreVert, "Opciones", tint = AccentBlue)
+                        }
+                        DropdownMenu(
+                            expanded = state.showMenuOpciones,
+                            onDismissRequest = { viewModel.toggleMenu() }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Actualizar") },
+                                leadingIcon = { Icon(Icons.Default.Refresh, null) },
+                                onClick = { viewModel.toggleMenu(); viewModel.load() }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Eliminar estadísticas", color =
+                                    MaterialTheme.colorScheme.error) },
+                                leadingIcon = { Icon(Icons.Default.Delete, null, tint =
+                                    MaterialTheme.colorScheme.error) },
+                                onClick = { viewModel.mostrarDialogEliminar() }
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -146,8 +171,65 @@ fun ProgresoScreen(
                 }
             }
 
+            if (state.historialEjercicios.isNotEmpty()) {
+                Spacer(Modifier.height(24.dp))
+                Surface(
+                    color = CardDark,
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onMisEjercicios() }
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Mis Ejercicios",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = AccentBlue
+                        )
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = AccentBlue
+                        )
+                    }
+                }
+            }
+
             Spacer(Modifier.height(32.dp))
         }
+    }
+
+    if (state.showDialogEliminar) {
+        DialogEliminarEstadisticas(
+            isDeleting = state.isDeleting,
+            onDismiss = { viewModel.ocultarDialogEliminar() },
+            onEliminar = { seccion -> viewModel.confirmarEliminar(seccion) }
+        )
+    }
+
+    if (state.seccionConfirmando != null) {
+        AlertDialog(
+            onDismissRequest = { viewModel.cancelarConfirmacion() },
+            title = { Text("¿Confirmar borrado?") },
+            text = {
+                Text("Se eliminarán los datos de ${nombreSeccion(state.seccionConfirmando!!)}. Esta acción no se puede deshacer.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { viewModel.ejecutarEliminar(state.seccionConfirmando!!) },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) { Text("Eliminar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.cancelarConfirmacion() }) { Text("Cancelar") }
+            }
+        )
     }
 }
 
@@ -184,4 +266,96 @@ private fun MuscleRow(grupo: String, pct: Int) {
             trackColor = DividerColor
         )
     }
+}
+
+@Composable
+private fun EjercicioRecordRow(ejercicio: EjercicioConRecord) {
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                ejercicio.nombre,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Text(ejercicio.grupoMuscular, fontSize = 11.sp, color = TextSecondary)
+        }
+        Column(horizontalAlignment = Alignment.End) {
+            val pesoStr = if (ejercicio.mejorPeso >= 1000)
+                String.format("%.1f t", ejercicio.mejorPeso / 1000)
+            else
+                String.format("%.0f kg", ejercicio.mejorPeso)
+            Text(pesoStr, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = OrangeAccent)
+            Text("${ejercicio.mejorReps} reps", fontSize = 11.sp, color = TextSecondary)
+        }
+    }
+}
+
+private fun nombreSeccion(seccion: String) = when (seccion) {
+    "tiempo_hoy"         -> "Tiempo de hoy"
+    "tiempo_mes"         -> "Tiempo del mes"
+    "entrenamientos_mes" -> "Entrenamientos del mes"
+    "racha"              -> "Racha actual"
+    "peso_movido"        -> "Peso movido"
+    "todo"               -> "todas las estadísticas"
+    else                 -> seccion
+}
+
+@Composable
+private fun DialogEliminarEstadisticas(
+    isDeleting: Boolean,
+    onDismiss: () -> Unit,
+    onEliminar: (String) -> Unit
+) {
+    val secciones = listOf(
+        "tiempo_hoy"         to "Tiempo de hoy",
+        "tiempo_mes"         to "Tiempo del mes",
+        "entrenamientos_mes" to "Entrenamientos del mes",
+        "racha"              to "Racha actual",
+        "peso_movido"        to "Peso movido",
+        "equilibrio"         to "Equilibrio muscular",
+        "todo"               to "Borrar todo"
+    )
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Eliminar estadísticas") },
+        text = {
+            if (isDeleting) {
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = AccentBlue)
+                }
+            } else {
+                Column {
+                    Text("Selecciona qué quieres borrar:", fontSize = 13.sp, color = TextSecondary)
+                    Spacer(Modifier.height(12.dp))
+                    secciones.forEachIndexed { index, (clave, nombre) ->
+                        Row(
+                            Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(nombre, fontSize = 14.sp)
+                            TextButton(
+                                onClick = { onEliminar(clave) },
+                                colors = ButtonDefaults.textButtonColors(
+                                    contentColor = if (clave == "todo") MaterialTheme.colorScheme.error else OrangeAccent
+                                )
+                            ) { Text("Borrar") }
+                        }
+                        if (index < secciones.lastIndex) {
+                            HorizontalDivider(color = DividerColor)
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cerrar") }
+        }
+    )
 }

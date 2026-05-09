@@ -218,6 +218,49 @@ class EstadisticaRepository(private val estadisticaDao: EstadisticaEntrenamiento
         }
     }
 
+    // ==================== Resets por sección ====================
+
+    suspend fun resetTiempoHoy() {
+        val cal = Calendar.getInstance()
+        estadisticaDao.resetTiempoHoy(
+            cal.get(Calendar.YEAR),
+            cal.get(Calendar.MONTH) + 1,
+            cal.get(Calendar.DAY_OF_MONTH)
+        )
+    }
+
+    suspend fun resetTiempoMes() {
+        val cal = Calendar.getInstance()
+        estadisticaDao.resetTiempoMes(
+            cal.get(Calendar.YEAR),
+            cal.get(Calendar.MONTH) + 1
+        )
+    }
+
+    suspend fun resetEntrenamientosMes() {
+        val cal = Calendar.getInstance()
+        estadisticaDao.resetEntrenamientosMes(
+            cal.get(Calendar.YEAR),
+            cal.get(Calendar.MONTH) + 1
+        )
+    }
+
+    suspend fun resetRacha() {
+        val cal = Calendar.getInstance()
+        estadisticaDao.resetRacha(
+            cal.get(Calendar.YEAR),
+            cal.get(Calendar.MONTH) + 1
+        )
+    }
+
+    suspend fun resetPesoMovido() {
+        estadisticaDao.resetPesoMovido()
+    }
+
+    suspend fun deleteAll() {
+        estadisticaDao.deleteAll()
+    }
+
     // ==================== Utilidades de formato ====================
 
     companion object {

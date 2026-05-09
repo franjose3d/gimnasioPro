@@ -82,6 +82,8 @@ sealed class Screen(val route: String) {
     }
 
     // ── Progreso ──────────────────────────────────────────────────────────
+    object MisEjercicios : Screen("mis_ejercicios")
+
     object Progreso : Screen(
         "progreso?MODO_TRAINER={MODO_TRAINER}&CLIENTE_ID={CLIENTE_ID}&CLIENTE_NOMBRE={CLIENTE_NOMBRE}"
     ) {

@@ -235,4 +235,88 @@ class EstadisticaFirestoreRepository(
             Result.failure(e)
         }
     }
+
+    // ── Resets por sección ───────────────────────────────────────────────────
+
+    suspend fun resetTiempoHoy(): Result<Unit> {
+        return try {
+            val fechaStr = EstadisticaFirestore.formatFecha(java.util.Date())
+            val doc = estadisticasCollection.document(fechaStr).get().await()
+            if (doc.exists()) {
+                estadisticasCollection.document(fechaStr)
+                    .update("tiempoEntrenamientoMs", 0L).await()
+            }
+            Result.success(Unit)
+        } catch (e: Exception) { Result.failure(e) }
+    }
+
+    suspend fun resetTiempoMes(): Result<Unit> {
+        return try {
+            val cal = java.util.Calendar.getInstance()
+            val docs = estadisticasCollection
+                .whereEqualTo("anio", cal.get(java.util.Calendar.YEAR))
+                .whereEqualTo("mes", cal.get(java.util.Calendar.MONTH) + 1)
+                .get().await()
+            val batch = firestore.batch()
+            docs.documents.forEach { batch.update(it.reference,
+                "tiempoEntrenamientoMs", 0L) }
+            batch.commit().await()
+            Result.success(Unit)
+        } catch (e: Exception) { Result.failure(e) }
+    }
+
+    suspend fun resetEntrenamientosMes(): Result<Unit> {
+        return try {
+            val cal = java.util.Calendar.getInstance()
+            val docs = estadisticasCollection
+                .whereEqualTo("anio", cal.get(java.util.Calendar.YEAR))
+                .whereEqualTo("mes", cal.get(java.util.Calendar.MONTH) + 1)
+                .get().await()
+            val batch = firestore.batch()
+            docs.documents.forEach { batch.update(it.reference,
+                "numeroEntrenamientos", 0) }
+            batch.commit().await()
+            Result.success(Unit)
+        } catch (e: Exception) { Result.failure(e) }
+    }
+
+    suspend fun resetRacha(): Result<Unit> {
+        return try {
+            val cal = java.util.Calendar.getInstance()
+            val anio = cal.get(java.util.Calendar.YEAR)
+            val mes = cal.get(java.util.Calendar.MONTH) + 1
+            val todos = estadisticasCollection.get().await()
+            val batch = firestore.batch()
+            todos.documents
+                .filter { doc ->
+                    val a = (doc.getLong("anio") ?: 0L).toInt()
+                    val m = (doc.getLong("mes") ?: 0L).toInt()
+                    a < anio || (a == anio && m < mes)
+                }
+                .forEach { batch.delete(it.reference) }
+            batch.commit().await()
+            Result.success(Unit)
+        } catch (e: Exception) { Result.failure(e) }
+    }
+
+    suspend fun resetPesoMovido(): Result<Unit> {
+        return try {
+            val todos = estadisticasCollection.get().await()
+            val batch = firestore.batch()
+            todos.documents.forEach { batch.update(it.reference, "volumenTotal",
+                0.0) }
+            batch.commit().await()
+            Result.success(Unit)
+        } catch (e: Exception) { Result.failure(e) }
+    }
+
+    suspend fun deleteAll(): Result<Unit> {
+        return try {
+            val todos = estadisticasCollection.get().await()
+            val batch = firestore.batch()
+            todos.documents.forEach { batch.delete(it.reference) }
+            batch.commit().await()
+            Result.success(Unit)
+        } catch (e: Exception) { Result.failure(e) }
+    }
 }

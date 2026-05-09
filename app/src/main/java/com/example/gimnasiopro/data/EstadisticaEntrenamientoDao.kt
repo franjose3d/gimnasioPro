@@ -117,6 +117,24 @@ interface EstadisticaEntrenamientoDao {
         ORDER BY mes ASC
     """)
     suspend fun getResumenAnual(anio: Int): List<ResumenMensual>
+
+    @Query("UPDATE estadisticas_entrenamiento SET tiempoEntrenamientoMs = 0 WHERE anio = :anio AND mes = :mes AND dia = :dia")
+    suspend fun resetTiempoHoy(anio: Int, mes: Int, dia: Int)
+
+    @Query("UPDATE estadisticas_entrenamiento SET tiempoEntrenamientoMs = 0 WHERE anio = :anio AND mes = :mes")
+    suspend fun resetTiempoMes(anio: Int, mes: Int)
+
+    @Query("UPDATE estadisticas_entrenamiento SET numeroEntrenamientos = 0 WHERE anio = :anio AND mes = :mes")
+    suspend fun resetEntrenamientosMes(anio: Int, mes: Int)
+
+    @Query("DELETE FROM estadisticas_entrenamiento WHERE anio < :anio OR (anio = :anio AND mes < :mes)")
+    suspend fun resetRacha(anio: Int, mes: Int)
+
+    @Query("UPDATE estadisticas_entrenamiento SET volumenTotal = 0")
+    suspend fun resetPesoMovido()
+
+    @Query("DELETE FROM estadisticas_entrenamiento")
+    suspend fun deleteAll()
 }
 
 /**

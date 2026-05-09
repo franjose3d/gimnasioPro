@@ -37,4 +37,22 @@ interface RegistroSerieDao {
         rutinaId: Int,
         numeroSeries: Int
     ): List<RegistroSerie>
+
+    @Query("""
+        SELECT rs.* FROM registros_series rs
+        INNER JOIN registros_entrenamiento re ON rs.registroEntrenamientoId = re.id
+        WHERE re.ejercicioId = :ejercicioId
+          AND re.id = (
+              SELECT id FROM registros_entrenamiento
+              WHERE ejercicioId = :ejercicioId
+              ORDER BY fechaEntrenamiento DESC
+              LIMIT 1
+          )
+        ORDER BY rs.numeroSerie ASC
+        LIMIT :numeroSeries
+    """)
+    suspend fun getUltimasSeriesDeEjercicioGlobal(
+        ejercicioId: Long,
+        numeroSeries: Int
+    ): List<RegistroSerie>
 }

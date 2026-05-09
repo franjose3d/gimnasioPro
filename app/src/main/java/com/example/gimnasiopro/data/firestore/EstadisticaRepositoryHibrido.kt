@@ -302,5 +302,48 @@ class EstadisticaRepositoryHibrido(
             Result.failure(e)
         }
     }
+    // ==================== Resets por sección ====================
+
+    suspend fun resetTiempoHoy() {
+        localRepository.resetTiempoHoy()
+        try { getFirestoreRepository()?.resetTiempoHoy() } catch (e: Exception) {
+            Log.e(TAG, "Error reseteando tiempo hoy en Firestore: ${e.message}")
+        }
+    }
+
+    suspend fun resetTiempoMes() {
+        localRepository.resetTiempoMes()
+        try { getFirestoreRepository()?.resetTiempoMes() } catch (e: Exception) {
+            Log.e(TAG, "Error reseteando tiempo mes en Firestore: ${e.message}")
+        }
+    }
+
+    suspend fun resetEntrenamientosMes() {
+        localRepository.resetEntrenamientosMes()
+        try { getFirestoreRepository()?.resetEntrenamientosMes() } catch (e: Exception) {
+            Log.e(TAG, "Error reseteando entrenamientos mes en Firestore: ${e.message}")
+        }
+    }
+
+    suspend fun resetRacha() {
+        localRepository.resetRacha()
+        try { getFirestoreRepository()?.resetRacha() } catch (e: Exception) {
+            Log.e(TAG, "Error reseteando racha en Firestore: ${e.message}")
+        }
+    }
+
+    suspend fun resetPesoMovido() {
+        localRepository.resetPesoMovido()
+        try { getFirestoreRepository()?.resetPesoMovido() } catch (e: Exception) {
+            Log.e(TAG, "Error reseteando peso movido en Firestore: ${e.message}")
+        }
+    }
+
+    suspend fun deleteAll() {
+        localRepository.deleteAll()
+        try { getFirestoreRepository()?.deleteAll() } catch (e: Exception) {
+            Log.e(TAG, "Error borrando todo en Firestore: ${e.message}")
+        }
+    }
 }
 

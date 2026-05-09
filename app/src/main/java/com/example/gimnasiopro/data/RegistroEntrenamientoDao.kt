@@ -131,9 +131,28 @@ interface RegistroEntrenamientoDao {
      * Obtiene todos los ejercicios completados en un rango de fechas.
      */
     @Query("""
-        SELECT ejercicioId FROM registros_entrenamiento 
+        SELECT ejercicioId FROM registros_entrenamiento
         WHERE completado = 1 AND fechaEntrenamiento BETWEEN :fechaInicio AND :fechaFin
     """)
     suspend fun getEjerciciosCompletadosEntreFechas(fechaInicio: Long, fechaFin: Long): List<Long>
+
+    @Query("""
+        SELECT e.nombre, e.grupoMuscular,
+               COALESCE(MAX(re.pesoKg), 0) as mejorPeso,
+               COALESCE(MAX(re.repeticiones), 0) as mejorReps
+        FROM registros_entrenamiento re
+        INNER JOIN ejercicios e ON re.ejercicioId = e.id
+        WHERE re.completado = 1
+        GROUP BY re.ejercicioId
+        ORDER BY e.grupoMuscular ASC, e.nombre ASC
+    """)
+    suspend fun getEjerciciosConRecord(): List<EjercicioConRecord>
 }
+
+data class EjercicioConRecord(
+    val nombre: String,
+    val grupoMuscular: String,
+    val mejorPeso: Float,
+    val mejorReps: Int
+)
 

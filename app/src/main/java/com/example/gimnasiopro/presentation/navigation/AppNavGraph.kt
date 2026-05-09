@@ -28,6 +28,7 @@ import com.example.gimnasiopro.presentation.main.MainScreen
 import com.example.gimnasiopro.presentation.notificaciones.NotificacionesScreen
 import com.example.gimnasiopro.presentation.perfil.PerfilScreen
 import com.example.gimnasiopro.presentation.personaltrainer.PersonalTrainerScreen
+import com.example.gimnasiopro.presentation.progreso.MisEjerciciosScreen
 import com.example.gimnasiopro.presentation.progreso.ProgresoScreen
 import com.example.gimnasiopro.presentation.rutinas.RutinasScreen
 import com.example.gimnasiopro.presentation.rutinaspreestablecidas.RutinasPreestablecidasScreen
@@ -333,6 +334,13 @@ fun AppNavGraph(
             )
         ) {
             ProgresoScreen(
+                onNavigateBack   = { navController.popBackStack() },
+                onMisEjercicios  = { navController.navigate(Screen.MisEjercicios.route) }
+            )
+        }
+
+        composable(Screen.MisEjercicios.route) {
+            MisEjerciciosScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
