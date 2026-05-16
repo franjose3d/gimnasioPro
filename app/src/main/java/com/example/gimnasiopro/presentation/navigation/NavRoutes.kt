@@ -82,7 +82,9 @@ sealed class Screen(val route: String) {
     }
 
     // ── Progreso ──────────────────────────────────────────────────────────
-    object MisEjercicios : Screen("mis_ejercicios")
+    object MisEjercicios : Screen("mis_ejercicios?modoEliminar={modoEliminar}") {
+        fun createRoute(modoEliminar: Boolean = false) = "mis_ejercicios?modoEliminar=$modoEliminar"
+    }
 
     object Progreso : Screen(
         "progreso?MODO_TRAINER={MODO_TRAINER}&CLIENTE_ID={CLIENTE_ID}&CLIENTE_NOMBRE={CLIENTE_NOMBRE}"

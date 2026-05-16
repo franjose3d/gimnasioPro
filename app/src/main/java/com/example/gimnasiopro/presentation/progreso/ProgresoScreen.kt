@@ -27,7 +27,8 @@ import com.example.gimnasiopro.data.EjercicioConRecord
 fun ProgresoScreen(
     viewModel: ProgresoViewModel = viewModel(),
     onNavigateBack: () -> Unit,
-    onMisEjercicios: () -> Unit = {}
+    onMisEjercicios: () -> Unit = {},
+    onEliminarEjercicios: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -209,7 +210,11 @@ fun ProgresoScreen(
         DialogEliminarEstadisticas(
             isDeleting = state.isDeleting,
             onDismiss = { viewModel.ocultarDialogEliminar() },
-            onEliminar = { seccion -> viewModel.confirmarEliminar(seccion) }
+            onEliminar = { seccion -> viewModel.confirmarEliminar(seccion) },
+            onEliminarMisEjercicios = {
+                viewModel.ocultarDialogEliminar()
+                onEliminarEjercicios()
+            }
         )
     }
 
@@ -309,7 +314,8 @@ private fun nombreSeccion(seccion: String) = when (seccion) {
 private fun DialogEliminarEstadisticas(
     isDeleting: Boolean,
     onDismiss: () -> Unit,
-    onEliminar: (String) -> Unit
+    onEliminar: (String) -> Unit,
+    onEliminarMisEjercicios: () -> Unit
 ) {
     val secciones = listOf(
         "tiempo_hoy"         to "Tiempo de hoy",
@@ -349,6 +355,18 @@ private fun DialogEliminarEstadisticas(
                         if (index < secciones.lastIndex) {
                             HorizontalDivider(color = DividerColor)
                         }
+                    }
+                    HorizontalDivider(color = DividerColor)
+                    Row(
+                        Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Mis Ejercicios", fontSize = 14.sp)
+                        TextButton(
+                            onClick = onEliminarMisEjercicios,
+                            colors = ButtonDefaults.textButtonColors(contentColor = OrangeAccent)
+                        ) { Text("Seleccionar") }
                     }
                 }
             }

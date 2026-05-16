@@ -14,7 +14,11 @@ import kotlinx.coroutines.launch
 data class MisEjerciciosUiState(
     val isLoading: Boolean = true,
     val ejercicios: List<EjercicioConRecord> = emptyList(),
-    val error: String? = null
+    val error: String? = null,
+    val modoEliminar: Boolean = false,
+    val seleccionados: Set<Long> = emptySet(),
+    val isDeleting: Boolean = false,
+    val showConfirmacion: Boolean = false
 )
 
 class MisEjerciciosViewModel(application: Application) : AndroidViewModel(application) {
@@ -26,6 +30,10 @@ class MisEjerciciosViewModel(application: Application) : AndroidViewModel(applic
 
     init { load() }
 
+    fun setModoEliminar(modo: Boolean) {
+        _state.update { it.copy(modoEliminar = modo, seleccionados = emptySet()) }
+    }
+
     fun load() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
@@ -34,6 +42,34 @@ class MisEjerciciosViewModel(application: Application) : AndroidViewModel(applic
                 _state.update { it.copy(isLoading = false, ejercicios = ejercicios) }
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+
+    fun toggleSeleccion(ejercicioId: Long) {
+        _state.update { s ->
+            val nuevos = s.seleccionados.toMutableSet()
+            if (ejercicioId in nuevos) nuevos.remove(ejercicioId) else nuevos.add(ejercicioId)
+            s.copy(seleccionados = nuevos)
+        }
+    }
+
+    fun confirmarEliminar() = _state.update { it.copy(showConfirmacion = true) }
+    fun cancelarEliminar()  = _state.update { it.copy(showConfirmacion = false) }
+
+    fun ejecutarEliminar() {
+        val ids = _state.value.seleccionados
+        if (ids.isEmpty()) return
+        viewModelScope.launch {
+            _state.update { it.copy(isDeleting = true, showConfirmacion = false) }
+            try {
+                ids.forEach { id ->
+                    app.registroEntrenamientoRepository.deleteSeriesDeEjercicio(id)
+                }
+                _state.update { it.copy(seleccionados = emptySet()) }
+                load()
+            } catch (e: Exception) {
+                _state.update { it.copy(isDeleting = false, error = e.message) }
             }
         }
     }

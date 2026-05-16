@@ -334,13 +334,24 @@ fun AppNavGraph(
             )
         ) {
             ProgresoScreen(
-                onNavigateBack   = { navController.popBackStack() },
-                onMisEjercicios  = { navController.navigate(Screen.MisEjercicios.route) }
+                onNavigateBack          = { navController.popBackStack() },
+                onMisEjercicios         = { navController.navigate(Screen.MisEjercicios.createRoute()) },
+                onEliminarEjercicios    = { navController.navigate(Screen.MisEjercicios.createRoute(modoEliminar = true)) }
             )
         }
 
-        composable(Screen.MisEjercicios.route) {
+        composable(
+            route     = Screen.MisEjercicios.route,
+            arguments = listOf(
+                navArgument("modoEliminar") {
+                    type         = NavType.BoolType
+                    defaultValue = false
+                }
+            )
+        ) { backStackEntry ->
+            val modoEliminar = backStackEntry.arguments?.getBoolean("modoEliminar") ?: false
             MisEjerciciosScreen(
+                modoEliminar   = modoEliminar,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

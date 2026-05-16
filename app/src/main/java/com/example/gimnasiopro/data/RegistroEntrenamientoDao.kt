@@ -137,10 +137,11 @@ interface RegistroEntrenamientoDao {
     suspend fun getEjerciciosCompletadosEntreFechas(fechaInicio: Long, fechaFin: Long): List<Long>
 
     @Query("""
-        SELECT e.nombre, e.grupoMuscular,
-               COALESCE(MAX(re.pesoKg), 0) as mejorPeso,
-               COALESCE(MAX(re.repeticiones), 0) as mejorReps
-        FROM registros_entrenamiento re
+        SELECT re.ejercicioId, e.nombre, e.grupoMuscular,
+               COALESCE(MAX(rs.pesoKg), 0) as mejorPeso,
+               COALESCE(MAX(rs.repeticiones), 0) as mejorReps
+        FROM registros_series rs
+        INNER JOIN registros_entrenamiento re ON rs.registroEntrenamientoId = re.id
         INNER JOIN ejercicios e ON re.ejercicioId = e.id
         WHERE re.completado = 1
         GROUP BY re.ejercicioId
@@ -150,6 +151,7 @@ interface RegistroEntrenamientoDao {
 }
 
 data class EjercicioConRecord(
+    val ejercicioId: Long,
     val nombre: String,
     val grupoMuscular: String,
     val mejorPeso: Float,

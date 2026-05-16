@@ -55,4 +55,27 @@ interface RegistroSerieDao {
         ejercicioId: Long,
         numeroSeries: Int
     ): List<RegistroSerie>
+
+    @Query("""
+        SELECT MAX(rs.pesoKg) FROM registros_series rs
+        INNER JOIN registros_entrenamiento re ON rs.registroEntrenamientoId = re.id
+        WHERE re.ejercicioId = :ejercicioId
+    """)
+    suspend fun getPesoMaximoSerie(ejercicioId: Long): Float?
+
+    @Query("""
+        SELECT MAX(rs.repeticiones) FROM registros_series rs
+        INNER JOIN registros_entrenamiento re ON rs.registroEntrenamientoId = re.id
+        WHERE re.ejercicioId = :ejercicioId
+    """)
+    suspend fun getRepeticionesMaximasSerie(ejercicioId: Long): Int?
+
+    @Query("""
+        DELETE FROM registros_series
+        WHERE registroEntrenamientoId IN (
+            SELECT id FROM registros_entrenamiento
+            WHERE ejercicioId = :ejercicioId
+        )
+    """)
+    suspend fun deleteSeriesByEjercicioId(ejercicioId: Long)
 }

@@ -132,17 +132,21 @@ class RegistroEntrenamientoRepository(
     }
 
     /**
-     * Obtiene el peso máximo levantado en un ejercicio.
+     * Obtiene el peso máximo levantado en una sola serie de un ejercicio.
      */
     suspend fun getPesoMaximoEjercicio(ejercicioId: Long): Float {
-        return registroDao.getPesoMaximoEjercicio(ejercicioId) ?: 0f
+        return serieDao.getPesoMaximoSerie(ejercicioId) ?: 0f
     }
 
     /**
-     * Obtiene las repeticiones máximas en un ejercicio.
+     * Obtiene las repeticiones máximas en una sola serie de un ejercicio.
      */
     suspend fun getRepeticionesMaximasEjercicio(ejercicioId: Long): Int {
-        return registroDao.getRepeticionesMaximasEjercicio(ejercicioId) ?: 0
+        return serieDao.getRepeticionesMaximasSerie(ejercicioId) ?: 0
+    }
+
+    suspend fun deleteSeriesDeEjercicio(ejercicioId: Long) {
+        serieDao.deleteSeriesByEjercicioId(ejercicioId)
     }
 
     /**
